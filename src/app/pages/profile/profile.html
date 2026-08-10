@@ -1,0 +1,291 @@
+<div class="profile-page-layout">
+  <!-- Navbar Header -->
+  <div class="top-nav">
+    <div class="container flex-between">
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-back" (click)="backToDashboard()">
+          ← Back to Event Dashboard
+        </button>
+        <button class="btn-back" (click)="navigateToMyLearning()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;">
+          &#128214; My Learning
+        </button>
+      </div>
+      <div class="nav-title">Physician Profile & CME Certificates</div>
+    </div>
+  </div>
+
+  <div class="container main-container" *ngIf="user">
+    <!-- User Profile Overview Card -->
+    <div class="profile-header-card">
+      <div class="avatar-large" style="position: relative; overflow: hidden; background: #cbd5e1; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+        <img [src]="profilePhotoUrl" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;" />
+        <label *ngIf="isEditing" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15,23,42,0.85); color: #fff; font-size: 0.65rem; padding: 0.3rem; text-align: center; cursor: pointer; margin: 0; transition: all 0.2s;">
+          Upload
+          <input type="file" (change)="onPhotoSelected($event)" style="display: none;" accept="image/*" />
+        </label>
+      </div>
+
+      <div class="profile-details">
+        <div *ngIf="uploadError" style="color: #ef4444; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.5rem; text-align: left;">
+          ⚠️ {{ uploadError }}
+        </div>
+        <div class="name-row">
+          <h2>{{ user.name }}</h2>
+          <span class="role-badge">{{ user.role === 'admin' ? 'Administrator' : 'Verified Medical Doctor' }}</span>
+          <button class="btn-edit" (click)="isEditing = !isEditing">
+            {{ isEditing ? 'Cancel Edit' : '✏️ Edit Profile' }}
+          </button>
+        </div>
+
+        <p class="specialty-text">
+          <strong>Specialization:</strong> {{ user.specialty }} &bull; 
+          <strong>MMC Reg No:</strong> {{ user.registrationNo || 'N/A' }}
+        </p>
+
+        <div class="contact-strip">
+          <span>📱 Mobile: +91 {{ user.phone }}</span>
+          <span>✉️ Email: {{ user.email }}</span>
+          <span>📍 City: {{ user.city || 'Mumbai' }}</span>
+        </div>
+
+        <div class="contact-strip" style="margin-top: 0.5rem; color: #475569; font-size: 0.8rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">
+          <span>🧑 Gender: {{ user.gender || 'Male' }}</span>
+          <span>🎂 DOB: {{ user.dob || '1990-08-15' }}</span>
+          <span>💼 Role: {{ user.designation || 'Senior Cardiologist' }} ({{ user.department || 'Cardiology' }})</span>
+        </div>
+
+        <div class="contact-strip" style="margin-top: 0.3rem; color: #475569; font-size: 0.8rem;">
+          <span>🎓 Qualification: {{ user.qualification || 'MD, DM Cardiology' }}</span>
+          <span>🏢 Hospital: {{ user.hospital || 'Fortis Hospital Mumbai' }}</span>
+          <span>⏳ Exp: {{ user.experience || 8 }} Years</span>
+          <span>🗣️ Language: {{ user.language || 'English' }}</span>
+        </div>
+
+        <div class="interests-strip" style="margin-top: 0.65rem; text-align: left;" *ngIf="user.interests && user.interests.length > 0">
+          <strong style="font-size: 0.8rem; color: #1e293b;">Interests: </strong>
+          <span *ngFor="let interest of user.interests" class="interest-tag" style="background: #e2e8f0; color: #475569; font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 12px; margin-right: 0.35rem; margin-top: 0.25rem; display: inline-block; font-weight: 500;">
+            {{ interest }}
+          </span>
+        </div>
+
+        <!-- Edit Form Box -->
+        <div *ngIf="isEditing" class="edit-form-box animate-in" style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem; text-align: left;">
+          <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div>
+              <label>First Name</label>
+              <input type="text" [(ngModel)]="editFirstName" placeholder="First Name" />
+            </div>
+            <div>
+              <label>Sir Name (Surname)</label>
+              <input type="text" [(ngModel)]="editLastName" placeholder="Surname" />
+            </div>
+            <div>
+              <label>Specialization Dropdown</label>
+              <select [(ngModel)]="editSpecialtyDropdown" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <option value="Cardiology">Cardiology</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Surgery">Surgery</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Others">Others</option>
+              </select>
+              
+              <!-- Other Custom Specialization (Free Text Input) -->
+              <div *ngIf="editSpecialtyDropdown === 'Others'" style="margin-top: 0.5rem;">
+                <label style="font-size: 0.72rem; color: #475569;">Specify Custom Specialty</label>
+                <input type="text" [(ngModel)]="editSpecialtyOther" placeholder="Enter custom specialization" />
+              </div>
+            </div>
+            <div>
+              <label>MMC Registration Number</label>
+              <input type="text" [(ngModel)]="editRegNo" placeholder="MMC Registration No" />
+            </div>
+            <div>
+              <label>Email Address</label>
+              <input type="email" [(ngModel)]="editEmail" placeholder="Email Address" />
+            </div>
+            <div>
+              <label>Phone Number</label>
+              <input type="text" [(ngModel)]="editPhone" placeholder="Phone Number" />
+            </div>
+            <div>
+              <label>City</label>
+              <input type="text" [(ngModel)]="editCity" placeholder="City" />
+            </div>
+            <div>
+              <label>Gender</label>
+              <select [(ngModel)]="editGender" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+            <div>
+              <label>Date of Birth</label>
+              <input type="date" [(ngModel)]="editDob" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;" />
+            </div>
+            <div>
+              <label>Designation</label>
+              <input type="text" [(ngModel)]="editDesignation" placeholder="e.g. Consultant" />
+            </div>
+            <div>
+              <label>Department</label>
+              <input type="text" [(ngModel)]="editDepartment" placeholder="e.g. Pediatric ICU" />
+            </div>
+            <div>
+              <label>Qualification</label>
+              <input type="text" [(ngModel)]="editQualification" placeholder="e.g. MD, DM" />
+            </div>
+            <div>
+              <label>Hospital/Institution</label>
+              <input type="text" [(ngModel)]="editHospital" placeholder="e.g. Fortis Hospital" />
+            </div>
+            <div>
+              <label>Years of Experience</label>
+              <input type="number" [(ngModel)]="editExperience" min="0" />
+            </div>
+            <div>
+              <label>Preferred Language</label>
+              <select [(ngModel)]="editLanguage" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Marathi">Marathi</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Interests Selection -->
+          <div style="margin-top: 1.5rem; text-align: left;">
+            <label style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">🎯 Select Specialties & Interests</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+              <button *ngFor="let interest of allInterests" 
+                      type="button"
+                      [style.background]="isInterestSelected(interest) ? '#0ea5e9' : '#f1f5f9'"
+                      [style.color]="isInterestSelected(interest) ? '#ffffff' : '#475569'"
+                      style="border: 1px solid #cbd5e1; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;"
+                      (click)="toggleInterest(interest)">
+                {{ interest }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Consents Selection -->
+          <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; text-align: left;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #334155; cursor: pointer;">
+              <input type="checkbox" [(ngModel)]="editEmailConsent" />
+              I consent to receive CME alerts and certificates via email
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #334155; cursor: pointer;">
+              <input type="checkbox" [(ngModel)]="editWhatsappConsent" />
+              I consent to receive event details and registration updates on WhatsApp
+            </label>
+          </div>
+
+          <!-- Change Password Form -->
+          <div style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; text-align: left;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0 0 0.75rem 0;">🔒 Change Password</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+              <div>
+                <label style="font-size: 0.75rem; display: block; margin-bottom: 0.25rem;">Current Password</label>
+                <input type="password" [(ngModel)]="currentPassword" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;" />
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; display: block; margin-bottom: 0.25rem;">New Password</label>
+                <input type="password" [(ngModel)]="newPassword" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;" />
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; display: block; margin-bottom: 0.25rem;">Confirm New Password</label>
+                <input type="password" [(ngModel)]="confirmPassword" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;" />
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem;">
+              <button type="button" (click)="changePassword()" style="background: #1e293b; color: #fff; padding: 0.45rem 1rem; border: none; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
+                Update Password
+              </button>
+              <span *ngIf="passwordChangeMessage" [style.color]="passwordChangeSuccess ? '#10b981' : '#ef4444'" style="font-size: 0.8rem; font-weight: 600;">
+                {{ passwordChangeMessage }}
+              </span>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <button class="btn-save" (click)="saveProfile()" style="padding: 0.6rem 1.5rem; font-size: 0.88rem;">Save All Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preserved Credit Points Preserved Badge Card -->
+      <div class="credit-summary-card">
+        <div class="trophy-icon">🏆</div>
+        <div class="credit-num">{{ totalCreditPoints }}</div>
+        <div class="credit-label">Preserved CME Credit Points</div>
+        <div class="credit-sub">Earned via Courses & Event Attendance</div>
+      </div>
+    </div>
+
+    <!-- Certificates Section -->
+    <div class="section-title-row">
+      <h3>📜 Earned CME Certificates ({{ certificates.length }})</h3>
+      <p>All certificates are official, verified, and downloadable for medical council submission.</p>
+    </div>
+
+    <div class="certificates-grid" *ngIf="certificates.length > 0">
+      <div class="cert-card" *ngFor="let cert of certificates">
+        <div class="cert-card-header">
+          <span class="cert-code" [style.background]="cert.type === 'event' ? '#fef3c7' : '#dcfce7'" [style.color]="cert.type === 'event' ? '#92400e' : '#166534'">
+            {{ cert.type === 'event' ? '📅 Event' : '🎓 Course' }} • {{ cert.verificationCode }}
+          </span>
+          <span class="cert-points">⭐ {{ cert.creditPoints }} CME Credit Point</span>
+        </div>
+
+        <h4 class="cert-course-title">{{ cert.courseTitle }}</h4>
+
+        <div class="cert-meta">
+          <div>Issued to: <strong>{{ cert.recipientName }}</strong></div>
+          <div>Issue Date: <strong>{{ cert.issueDate }}</strong></div>
+          <div>Issuer: <strong>{{ cert.issuer }}</strong></div>
+        </div>
+
+        <div class="cert-card-actions">
+          <button class="btn-view-cert" (click)="openCertificate(cert)">
+            👁️ View Certificate
+          </button>
+          <button class="btn-download-cert" (click)="openCertificate(cert)">
+            ⬇️ Download PNG / PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-certs" *ngIf="certificates.length === 0">
+      <div class="empty-icon">📜</div>
+      <h4>No certificates earned yet</h4>
+      <p>Attend a CME Event or complete an online Course to earn CME Credit Points and your certificates!</p>
+      <button class="btn-primary" (click)="backToDashboard()">Browse CME Events →</button>
+    </div>
+  </div>
+
+  <!-- Certificate View & Download Canvas Modal -->
+  <div class="modal-overlay" *ngIf="showCertModal && selectedCertificate">
+    <div class="cert-modal-dialog">
+      <div class="cert-dialog-header">
+        <h4>Accredited CME Certificate Preview</h4>
+        <button class="close-btn" (click)="closeCertificateModal()">✕</button>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas #certCanvas class="cert-canvas"></canvas>
+      </div>
+
+      <div class="cert-dialog-footer">
+        <button class="btn-secondary" (click)="closeCertificateModal()">Close</button>
+        <button class="btn-download-action" (click)="downloadCertificate()">
+          ⬇️ Download PNG
+        </button>
+        <button class="btn-download-pdf-action" (click)="downloadCertificatePdf()">
+          ⬇️ Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

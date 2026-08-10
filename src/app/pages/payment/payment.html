@@ -1,0 +1,27 @@
+<div class="form-container" *ngIf="patient && appointment">
+  <h2>Confirm & Pay</h2>
+
+  <div class="summary">
+    <p><strong>Patient:</strong> {{ patient.name }} ({{ patient.age }}, {{ patient.gender }})</p>
+    <p><strong>Doctor:</strong> {{ appointment.doctorName }}</p>
+    <p><strong>Date/Time:</strong> {{ appointment.date }} at {{ appointment.time }}</p>
+    <p><strong>Consultation:</strong> {{ appointment.consultationType }}</p>
+    <p><strong>Fee:</strong> ₹{{ appointment.fee }}</p>
+  </div>
+
+  <h3>Option 1: Pay now on this device</h3>
+  <button (click)="payNow()">Pay ₹{{ appointment.fee }} Now</button>
+
+  <hr />
+
+  <h3>Option 2: Share payment link with patient</h3>
+  <button (click)="generatePaymentLink()" [disabled]="generatingLink">
+    {{ generatingLink ? 'Generating...' : 'Generate Payment Link' }}
+  </button>
+
+  <div *ngIf="paymentLink" class="link-box">
+    <p>{{ paymentLink }}</p>
+    <button (click)="shareOnWhatsApp()">Share via WhatsApp</button>
+    <button (click)="copyLink()">Copy Link</button>
+  </div>
+</div>

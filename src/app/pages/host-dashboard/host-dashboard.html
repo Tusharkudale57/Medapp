@@ -1,0 +1,451 @@
+<div class="host-layout">
+
+  <!-- Navbar -->
+  <header class="host-navbar">
+    <div class="nav-inner">
+      <button class="back-btn" (click)="backToDashboard()">&#8592; Dashboard</button>
+      <div class="nav-brand">
+        <span class="brand-icon">&#9881;</span>
+        <div>
+          <div class="brand-name">Admin Dashboard</div>
+          <div class="brand-sub">CME Event Management & Attendance Console</div>
+        </div>
+      </div>
+      <div class="host-pill" (click)="toggleRole()" style="cursor: pointer;" title="Click to instantly switch between Admin & Doctor roles">
+        <span class="host-badge">Admin Host 🔄</span>
+        <span class="host-name">{{ authService.currentUser()?.name }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Summary Stats -->
+  <section class="stats-banner">
+    <div class="stats-inner">
+      <div class="stat-card">
+        <div class="stat-icon">&#128197;</div>
+        <div class="stat-num">{{ hostEvents.length }}</div>
+        <div class="stat-label">Total Events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#128100;</div>
+        <div class="stat-num">{{ totalRegistrations }}</div>
+        <div class="stat-label">Total Enrolled</div>
+      </div>
+      <div class="stat-card stat-present">
+        <div class="stat-icon">&#10003;</div>
+        <div class="stat-num">{{ totalPresent }}</div>
+        <div class="stat-label">Marked Present</div>
+      </div>
+      <div class="stat-card stat-cert">
+        <div class="stat-icon">&#127891;</div>
+        <div class="stat-num">{{ totalCertificatesIssued }}</div>
+        <div class="stat-label">Certificates Issued</div>
+      </div>
+      <div class="stat-card create-stat" (click)="openCreateModal()">
+        <div class="create-plus">+</div>
+        <div class="stat-label">Create New Event</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toggle Tab View between Events and Courses -->
+  <div style="max-width: 1200px; margin: 1.5rem auto 0; padding: 0 1.5rem; display: flex; gap: 0.75rem;">
+    <button (click)="activeHostTab = 'events'" 
+      [style.background]="activeHostTab === 'events' ? '#1e3a8a' : '#fff'"
+      [style.color]="activeHostTab === 'events' ? '#fff' : '#475569'"
+      [style.border]="'1px solid ' + (activeHostTab === 'events' ? '#1e3a8a' : '#cbd5e1')"
+      style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+      📅 Manage CME Events
+    </button>
+    <button (click)="activeHostTab = 'courses'" 
+      [style.background]="activeHostTab === 'courses' ? '#1e3a8a' : '#fff'"
+      [style.color]="activeHostTab === 'courses' ? '#fff' : '#475569'"
+      [style.border]="'1px solid ' + (activeHostTab === 'courses' ? '#1e3a8a' : '#cbd5e1')"
+      style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+      🎓 Manage CME Courses
+    </button>
+  </div>
+
+  <!-- Events List -->
+  <main class="host-main">
+    <ng-container *ngIf="activeHostTab === 'events'">
+      <div class="section-header">
+        <h2>Your CME Events</h2>
+        <button class="btn-create" (click)="openCreateModal()">+ New Event</button>
+      </div>
+
+    <!-- No Events -->
+    <div *ngIf="hostEvents.length === 0" class="empty-state">
+      <div class="empty-icon">&#128197;</div>
+      <h3>No events yet</h3>
+      <p>Create your first CME event and start tracking attendance.</p>
+      <button class="btn-create" (click)="openCreateModal()">+ Create First Event</button>
+    </div>
+
+    <!-- Event Cards -->
+    <div *ngIf="hostEvents.length > 0" class="hec-list">
+      <div *ngFor="let event of hostEvents" class="hec-card" [style.border-left-color]="event.bannerColor">
+
+        <!-- Card Header -->
+        <div class="hec-header" [style.background]="'linear-gradient(135deg,' + event.bannerColor + '22,' + event.bannerColor + '08)'">
+          <div class="hec-meta">
+            <span class="hec-mode-badge" [style.background]="event.bannerColor">{{ event.mode }}</span>
+            <span class="hec-cat">{{ event.category }}</span>
+          </div>
+          <h3 class="hec-title">{{ event.title }}</h3>
+          <div class="hec-subline">
+            <span>&#128197; {{ formatDate(event.date) }} at {{ event.time }}</span>
+            <span>&#128205; {{ event.venue }}</span>
+          </div>
+        </div>
+
+        <!-- Card Body — Attendance Stats & Info -->
+        <div class="hec-body">
+          <!-- Left side: Speaker and tags -->
+          <div class="hec-body-left">
+            <div class="hec-speaker">
+              <div class="spk-avatar">{{ event.speaker[4] || 'D' }}</div>
+              <div class="spk-info">
+                <div class="spk-name">{{ event.speaker }}</div>
+                <div class="spk-role">{{ event.speakerRole }}</div>
+              </div>
+            </div>
+
+            <div class="hec-info-row">
+              <span class="info-tag price-tag" [class.free]="event.price === 0">
+                {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
+              </span>
+              <span class="info-tag seats-tag">{{ event.maxSeats }} seats &bull; {{ seatsLeft(event) }} left</span>
+              <span class="info-tag credit-tag">&#127891; {{ event.creditPoints }} CME Credit(s)</span>
+            </div>
+          </div>
+
+          <!-- Right side: Attendance status -->
+          <div class="hec-body-right">
+            <div class="attendance-summary">
+              <div class="att-stat enrolled">
+                <div class="att-num">{{ getEnrolledCount(event.id) }}</div>
+                <div class="att-lbl">Enrolled</div>
+              </div>
+              <div class="att-arrow">&#8594;</div>
+              <div class="att-stat present">
+                <div class="att-num">{{ getPresentCount(event.id) }}</div>
+                <div class="att-lbl">Present</div>
+              </div>
+              <div class="att-arrow">&#8594;</div>
+              <div class="att-stat absent">
+                <div class="att-num">{{ getAbsentCount(event.id) }}</div>
+                <div class="att-lbl">Absent</div>
+              </div>
+              <div class="att-arrow">&#8594;</div>
+              <div class="att-stat cert">
+                <div class="att-num">{{ getCertIssuedCount(event.id) }}</div>
+                <div class="att-lbl">Certs Issued</div>
+              </div>
+            </div>
+
+            <div *ngIf="getEnrolledCount(event.id) > 0" class="attendance-bar-wrap">
+              <div class="att-bar-bg">
+                <div class="att-bar-fill" [style.width]="getAttendancePercent(event.id) + '%'"></div>
+              </div>
+              <span class="att-pct">{{ getAttendancePercent(event.id) }}% Attendance</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="hec-actions">
+          <button class="action-btn attend-btn" (click)="openAttendanceModal(event)">
+            &#9998; Manage Attendance & Issue Certificates ({{ getEnrolledCount(event.id) }})
+          </button>
+          <div class="hec-actions-row">
+            <button class="action-btn copy-btn" (click)="copyPaymentLink(event)" [class.copied]="copiedEventId === event.id">
+              <span *ngIf="copiedEventId !== event.id">&#128279; Copy Link</span>
+              <span *ngIf="copiedEventId === event.id">&#10003; Copied!</span>
+            </button>
+            <button class="action-btn whatsapp-btn" (click)="shareOnWhatsApp(event)">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L0 24l6.32-1.508A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 01-5.002-1.367l-.359-.213-3.722.888.938-3.62-.234-.374A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
+              </svg>
+              Share WhatsApp
+            </button>
+            <button class="action-btn delete-btn" (click)="deleteEvent(event.id)">
+              &#128465; Remove Event
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+    <!-- View 2: CME Courses list -->
+    <ng-container *ngIf="activeHostTab === 'courses'">
+      <div class="section-header">
+        <h2>Your CME Courses</h2>
+        <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.25rem;">Select any course below to share on WhatsApp or copy enrollment links.</p>
+      </div>
+
+      <div class="courses-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+        <div *ngFor="let course of coursesList" class="course-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; box-shadow:0 4px 6px rgba(0,0,0,0.02); display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <span style="background:#dcfce7; color:#166534; padding:0.25rem 0.6rem; border-radius:20px; font-size:0.73rem; font-weight:700;">{{ course.category }}</span>
+              <span style="font-weight:700; color:#2563eb; font-size:0.85rem;">⭐ {{ course.creditPoints }} CME Credit</span>
+            </div>
+            <h3 style="font-size:1.05rem; font-weight:800; color:#0f172a; margin:0 0 0.5rem; line-height:1.4;">{{ course.title }}</h3>
+            <p style="font-size:0.85rem; color:#64748b; line-height:1.4; margin-bottom:1rem;">{{ course.shortDescription }}</p>
+          </div>
+
+          <div style="border-top:1px solid #f1f5f9; padding-top:1rem; display:flex; gap:0.5rem;">
+            <button (click)="copyCourseLink(course)" 
+              [style.background]="copiedCourseId === course.id ? '#10b981' : '#f1f5f9'"
+              [style.color]="copiedCourseId === course.id ? '#fff' : '#475569'"
+              style="flex:1; border:none; padding:0.55rem; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.15s;">
+              {{ copiedCourseId === course.id ? '✓ Copied!' : '📋 Copy Link' }}
+            </button>
+            <button (click)="sendCourseLinkWhatsApp(course)" style="flex:1.2; border:none; background:#22c55e; color:#fff; padding:0.55rem; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.25rem; transition:background 0.15s;">
+              <span style="font-size:1rem;">💬</span> Send WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </main>
+
+  <!-- ====== ATTENDANCE SHEET MODAL ========================================= -->
+  <div *ngIf="showAttendanceModal && selectedEventForAttendance" class="modal-backdrop" (click)="closeAttendanceModal()">
+    <div class="modal-box attendance-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <div class="modal-tag">Attendance Sheet</div>
+          <h2>{{ selectedEventForAttendance.title }}</h2>
+          <p class="modal-sub">{{ formatDate(selectedEventForAttendance.date) }} &bull; {{ selectedEventForAttendance.venue }}</p>
+        </div>
+        <button class="close-btn" (click)="closeAttendanceModal()">&#10005;</button>
+      </div>
+
+      <!-- Attendance Summary Stats -->
+      <div class="att-summary-bar">
+        <div class="att-sum-item enrolled">
+          <span class="asn">{{ getEnrolledCount(selectedEventForAttendance.id) }}</span>
+          <span class="asl">Enrolled</span>
+        </div>
+        <div class="att-sum-item present">
+          <span class="asn">{{ getPresentCount(selectedEventForAttendance.id) }}</span>
+          <span class="asl">Present</span>
+        </div>
+        <div class="att-sum-item absent">
+          <span class="asn">{{ getAbsentCount(selectedEventForAttendance.id) }}</span>
+          <span class="asl">Absent</span>
+        </div>
+        <div class="att-sum-item cert">
+          <span class="asn">{{ getCertIssuedCount(selectedEventForAttendance.id) }}</span>
+          <span class="asl">Certs Issued</span>
+        </div>
+      </div>
+
+      <!-- Success msg -->
+      <div *ngIf="certIssuedMsg" class="cert-success-banner">
+        &#10003; {{ certIssuedMsg }}
+      </div>
+
+      <!-- Marked Present Notification Banner -->
+      <div *ngIf="presentMsg" class="cert-success-banner" style="background:#dcfce7; color:#166534; border-color:#bbf7d0;">
+        &#10003; {{ presentMsg }}
+      </div>
+
+      <!-- Marked Absent Notification Banner -->
+      <div *ngIf="absentMsg" class="cert-success-banner" style="background:#fef2f2; color:#991b1b; border-color:#fecaca;">
+        &#10005; {{ absentMsg }}
+      </div>
+
+      <!-- Attendance Table -->
+      <div class="att-table-wrap">
+        <div *ngIf="getAttendees(selectedEventForAttendance.id).length === 0" class="no-attendees">
+          <div class="no-att-icon">&#128100;</div>
+          <p>No registrations yet for this event.</p>
+          <p class="no-att-sub">Doctors who register from the CME Events page will appear here.</p>
+        </div>
+
+        <!-- Refresh IDE diagnostics -->
+        <table *ngIf="getAttendees(selectedEventForAttendance.id).length > 0" class="att-table">
+          <thead>
+            <tr>
+              <th style="width: 50px; text-align: center;">Tick</th>
+              <th>Doctor Name</th>
+              <th>Mobile Number</th>
+              <th>Payment Status</th>
+              <th>Attended (Y/N)</th>
+              <th>Credits Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reg of getAttendees(selectedEventForAttendance.id); let i = index"
+              [class.row-present]="reg.attended"
+              [class.row-cert]="reg.certificateIssued">
+              
+              <!-- Checkbox selection column (Marks Attended) -->
+              <td style="text-align: center; vertical-align: middle;">
+                <input type="checkbox" 
+                  [checked]="reg.attended" 
+                  (change)="toggleAttendeeAttendance(reg)" 
+                  style="width: 20px; height: 20px; cursor: pointer; accent-color: #2563eb;" />
+              </td>
+
+              <!-- Doctor Name and Email -->
+              <td class="td-name">
+                <div class="dr-pill">
+                  <div class="dr-avatar">{{ reg.userName[3] || 'D' }}</div>
+                  <div>
+                    <div class="dr-name">{{ reg.userName }}</div>
+                    <div class="dr-email">{{ reg.userEmail || 'Email not on file' }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Mobile Number -->
+              <td class="td-phone" style="font-weight: 600; color: #475569; padding: 0.75rem;">
+                {{ reg.userPhone || '9876543210' }}
+              </td>
+
+              <!-- Registration Status / Payment Status -->
+              <td class="td-pay">
+                <span class="pay-chip" [class.pay-free]="reg.paymentStatus === 'free'"
+                  [class.pay-paid]="reg.paymentStatus === 'paid'"
+                  [class.pay-sponsored]="reg.paymentStatus === 'sponsored'"
+                  [class.pay-pending]="reg.paymentStatus === 'pending'">
+                  {{ reg.paymentStatus === 'free' ? 'Free' : reg.paymentStatus === 'paid' ? 'Paid' : reg.paymentStatus === 'sponsored' ? 'Sponsored' : 'Pending' }}
+                </span>
+                <div *ngIf="reg.paymentStatus === 'sponsored' && reg.sponsoredBy" style="font-size: 0.68rem; color: #b45309; font-weight: 700; margin-top: 0.2rem; white-space: nowrap;">
+                  Sponsor: {{ reg.sponsoredBy }}
+                </div>
+              </td>
+
+              <!-- Attended Y/N -->
+              <td class="td-att" style="font-weight: 700; font-size: 0.95rem; text-align: center;">
+                <span [style.color]="reg.attended ? '#16a34a' : '#dc2626'">
+                  {{ reg.attended ? 'Y' : 'N' }}
+                </span>
+              </td>
+
+              <!-- Credits Status -->
+              <td class="td-cert">
+                <span *ngIf="reg.certificateIssued" class="cert-issued-badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0;">
+                  🎓 Allocated
+                </span>
+                <span *ngIf="!reg.certificateIssued" class="cert-na-badge" style="background:#f1f5f9; color:#64748b; padding: 0.25rem 0.65rem; border-radius: 20px; font-weight: 700; font-size: 0.73rem;">
+                  ⏳ Pending
+                </span>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <div class="footer-note" style="margin: 0; font-size: 0.8rem; line-height: 1.4; color: #64748b;">
+          Ticking the checkbox marks the doctor as **Attended**. Click <strong>Allocate Credits</strong> below to issue official CME certificates to all selected attendees.
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+          <button (click)="downloadCsvReport()" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 0.25rem;">📊 Download CSV</button>
+          <button class="btn-close-modal" (click)="closeAttendanceModal()" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">Close</button>
+          <button class="btn-allocate" (click)="allocateCreditsToSelected()" style="padding: 0.6rem 1.5rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; cursor: pointer; font-weight: 700; box-shadow: 0 4px 10px rgba(37,99,235,0.25);">Allocate Credits</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== CREATE EVENT MODAL ============================================= -->
+  <div *ngIf="showCreateModal" class="modal-backdrop" (click)="closeCreateModal()">
+    <div class="modal-box create-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Create New CME Event</h2>
+        <button class="close-btn" (click)="closeCreateModal()">&#10005;</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Event Title *</label>
+          <input type="text" [(ngModel)]="newTitle" placeholder="e.g. Advanced Cardiology CME Workshop 2026" />
+        </div>
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea [(ngModel)]="newDescription" rows="3" placeholder="Describe the CME event content and learning objectives..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="newDate" />
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="text" [(ngModel)]="newTime" placeholder="10:00 AM IST" />
+        </div>
+        <div class="form-group full-width">
+          <label>Venue / Meeting Link *</label>
+          <input type="text" [(ngModel)]="newVenue" placeholder="e.g. AIIMS Delhi or https://zoom.us/..." />
+        </div>
+        <div class="form-group">
+          <label>Mode</label>
+          <select [(ngModel)]="newMode">
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newCategory">
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Speaker Name</label>
+          <input type="text" [(ngModel)]="newSpeaker" placeholder="Dr. Full Name" />
+        </div>
+        <div class="form-group">
+          <label>Speaker Role</label>
+          <input type="text" [(ngModel)]="newSpeakerRole" placeholder="Cardiologist, AIIMS Delhi" />
+        </div>
+        <div class="form-group">
+          <label>CME Credit Points</label>
+          <input type="number" [(ngModel)]="newCreditPoints" min="1" max="10" />
+        </div>
+        <div class="form-group">
+          <label>Registration Fee (Rs.) — 0 for Free</label>
+          <input type="number" [(ngModel)]="newPrice" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Max Seats</label>
+          <input type="number" [(ngModel)]="newMaxSeats" min="1" />
+        </div>
+        <div class="form-group full-width">
+          <label>Card Accent Color</label>
+          <div class="color-options">
+            <span *ngFor="let c of colorOptions" class="color-dot"
+              [style.background]="c"
+              [class.selected]="newBannerColor === c"
+              (click)="newBannerColor = c">
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="wa-info-note">
+          After creating, a payment link will be auto-generated. You can share it instantly via WhatsApp.
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+          <button class="btn-create-submit" (click)="createEvent()"
+            [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
+            Create Event & Generate Payment Link
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

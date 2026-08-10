@@ -1,0 +1,24 @@
+<div class="form-container">
+  <h2>Appointment Details</h2>
+  <form [formGroup]="form" (ngSubmit)="onNext()">
+    <label>Select Doctor</label>
+    <select formControlName="doctorName">
+      <option value="">Select</option>
+      <option *ngFor="let d of doctors" [value]="d.name">{{ d.name }} - ₹{{ d.fee }}</option>
+    </select>
+
+    <label>Date</label>
+    <input type="date" formControlName="date" />
+
+    <label>Time</label>
+    <input type="time" formControlName="time" />
+
+    <label>Consultation Type</label>
+    <select formControlName="consultationType">
+      <option value="Online">Online</option>
+      <option value="In-Clinic">In-Clinic</option>
+    </select>
+
+    <button type="submit">Proceed to Payment</button>
+  </form>
+</div>

@@ -1,0 +1,326 @@
+<div class="courses-layout">
+
+  <!-- Navbar -->
+  <header class="courses-navbar">
+    <div class="nav-inner">
+      <button class="back-btn" (click)="backToDashboard()">&#8592; CME Events</button>
+      <div class="nav-brand">
+        <span class="brand-icon">&#127891;</span>
+        <div>
+          <div class="brand-name">Online CME Courses</div>
+          <div class="brand-sub">Self-Paced Accredited Medical Education</div>
+        </div>
+      </div>
+
+      <!-- Explore Dropdown Container -->
+      <div class="explore-dropdown-container" *ngIf="!authService.isAdmin()">
+        <button class="btn-explore" (click)="toggleExploreMenu($event)">
+          Explore
+          <span class="chevron-down">&#9662;</span>
+        </button>
+
+        <!-- Coursera-style Mega Menu Dropdown -->
+        <div class="explore-mega-menu" *ngIf="showExploreMenu">
+          <div class="mega-menu-inner">
+            <!-- Left Sidebar -->
+            <div class="mega-sidebar">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'" (mouseenter)="activeSubMenu = 'specialties'">
+                Medical Specialties <span class="sidebar-arrow">&#8250;</span>
+              </button>
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'" (mouseenter)="activeSubMenu = 'degrees'">
+                Degrees & Fellowships <span class="sidebar-arrow">&#8250;</span>
+              </button>
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'" (mouseenter)="activeSubMenu = 'conferences'">
+                Live Conferences <span class="sidebar-arrow">&#8250;</span>
+              </button>
+            </div>
+
+            <!-- Right Details Panel -->
+            <div class="mega-details">
+              <!-- Specialties Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'specialties'">
+                <h4>Explore Medical Specialties</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Cardiology')">
+                    <h5>Cardiology</h5>
+                    <p>ECG, heart diseases, and coronary therapies.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Pediatrics')">
+                    <h5>Pediatrics</h5>
+                    <p>Child development, immunizations, and newborn care.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Neurology')">
+                    <h5>Neurology</h5>
+                    <p>Brain disorders, stroke management, and nerve blocks.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Surgery')">
+                    <h5>Surgery</h5>
+                    <p>Surgical guidelines, wound closure, and suturing.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('General Medicine')">
+                    <h5>General Medicine</h5>
+                    <p>Primary care protocols and chronic management.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Degrees & Fellowships Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'degrees'">
+                <h4>Accredited Fellowships & Diplomas</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
+                    <h5>Fellowship in Clinical Cardiology</h5>
+                    <p>6-Month Advanced clinical diagnostics certification.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
+                    <h5>Postgraduate Diploma in Pediatrics</h5>
+                    <p>Accredited specialization in child health care.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
+                    <h5>Certificate in Emergency Medicine</h5>
+                    <p>Hands-on training for emergency rooms.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
+                    <h5>Master of Hospital Administration</h5>
+                    <p>Advanced healthcare management degree.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Conferences Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'conferences'">
+                <h4>Live CME Conferences</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
+                    <h5>National Health Summit 2026</h5>
+                    <p>Live offline event on healthcare policies.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Global Surgery Web-Congress', 'Surgery')">
+                    <h5>Global Surgery Web-Congress</h5>
+                    <p>Virtual live broadcasts of clinical surgeries.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Pediatric Cardiology Meet', 'Cardiology')">
+                    <h5>Pediatric Cardiology Meet</h5>
+                    <p>Live offline seminar on congenital defects.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Oncology Board Review', 'General Medicine')">
+                    <h5>Oncology Board Review</h5>
+                    <p>Accredited hybrid review program.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button *ngIf="!authService.isAdmin()" class="btn-my-learning" (click)="navigateToMyLearning()" style="background: transparent; border: 1px solid rgba(255,255,255,0.25); color: #e2e8f0; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; margin-right: 0.5rem;">
+          &#128214; My Learning
+        </button>
+        <div class="user-pill">
+          <div class="avatar">{{ (authService.currentUser()?.name || 'D')[3] || 'D' }}</div>
+          <span>{{ authService.currentUser()?.name }}</span>
+        </div>
+        <button *ngIf="authService.isAdmin()" class="btn-add-course" (click)="openCreateCourseModal()">
+          &#43; Add Course
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="courses-hero">
+    <div class="hero-content">
+      <div class="hero-tag">&#127891; Accredited CME Courses</div>
+      <h1>Advance Your Medical Knowledge</h1>
+      <p>Self-paced online courses with verified digital certificates. Earn CME credit points on completion.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="sn">{{ courses.length }}</span><span class="sl">Courses Available</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><span class="sn">1 Credit</span><span class="sl">Per Completed Course</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><span class="sn">100%</span><span class="sl">Self-Paced Online</span></div>
+      </div>
+    </div>
+    <div class="hero-badge">
+      <div class="gold-seal">
+        <span class="seal-icon">&#127891;</span>
+        <span class="seal-text">Official CME Accreditation</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="courses-main">
+
+    <!-- Search & Category Filter -->
+    <div class="filter-section">
+      <div class="search-box">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
+          placeholder="Search courses by title, specialty or instructor..." />
+      </div>
+      <div class="category-tabs">
+        <button
+          *ngFor="let cat of categories"
+          [class.active]="selectedCategory === cat"
+          (click)="onCategorySelect(cat)">
+          {{ cat }}
+        </button>
+      </div>
+      <div class="course-count">
+        Showing <strong>{{ courses.length }}</strong> accredited courses
+      </div>
+    </div>
+
+    <!-- Course Cards Grid -->
+    <div class="courses-grid" *ngIf="courses.length > 0">
+      <div class="course-card" *ngFor="let course of courses">
+        <div class="card-image-box" (click)="viewCourse(course.id)">
+          <img [src]="course.thumbnail" [alt]="course.title" />
+          <div class="category-badge">{{ course.category }}</div>
+          <div class="credit-badge">+{{ course.creditPoints }} CME Credit</div>
+        </div>
+
+        <div class="card-body">
+          <div class="meta-row">
+            <span class="rating">&#9733; {{ course.rating }} ({{ course.reviewsCount }})</span>
+            <span class="duration">&#9202; {{ course.duration }}</span>
+            <span class="level">{{ course.level }}</span>
+          </div>
+
+          <h3 class="course-title" (click)="viewCourse(course.id)">{{ course.title }}</h3>
+          <p class="course-desc">{{ course.shortDescription }}</p>
+
+          <div class="instructor-row">
+            <img [src]="course.instructorImage" [alt]="course.instructor" class="inst-avatar" />
+            <div class="inst-info">
+              <span class="inst-name">{{ course.instructor }}</span>
+              <span class="inst-role">{{ course.instructorRole }}</span>
+            </div>
+          </div>
+
+          <!-- ADMIN CONTROLS -->
+          <div *ngIf="authService.isAdmin()" class="admin-card-actions">
+            <button class="btn-admin-edit" (click)="openEditPriceModal(course, $event)">
+              Edit Price (Rs. {{ course.price | number }})
+            </button>
+            <button class="btn-admin-delete" (click)="deleteCourse(course.id, $event)">
+              Delete
+            </button>
+          </div>
+
+          <!-- DOCTOR ACTIONS -->
+          <div *ngIf="authService.isDoctor()" class="card-footer">
+            <div class="price-box">
+              <span class="price-val">Rs. {{ course.price | number }}</span>
+              <span class="price-label">Incl. Certificate</span>
+            </div>
+
+            <button
+              *ngIf="!authService.isCoursePurchased(course.id)"
+              class="btn-action btn-purchase"
+              (click)="viewCourse(course.id)">
+              Purchase Now
+            </button>
+
+            <button
+              *ngIf="authService.isCoursePurchased(course.id) && !authService.isCourseCompleted(course.id)"
+              class="btn-action btn-learning"
+              (click)="viewCourse(course.id)">
+              Continue Learning &#8594;
+            </button>
+
+            <button
+              *ngIf="authService.isCourseCompleted(course.id)"
+              class="btn-action btn-completed"
+              (click)="viewCourse(course.id)">
+              &#10003; Completed (1 Credit)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="courses.length === 0">
+      <div class="empty-icon">&#128218;</div>
+      <h3>No courses match your search</h3>
+      <p>Try clearing filters or searching for another medical topic.</p>
+      <button class="btn-secondary" (click)="onCategorySelect('All'); searchQuery = ''; loadCourses()">Reset Filters</button>
+    </div>
+
+  </main>
+
+  <!-- ADMIN MODAL 1: Create New Course -->
+  <div class="modal-overlay" *ngIf="showCreateCourseModal">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h3>Create New CME Medical Course</h3>
+        <button class="close-btn" (click)="showCreateCourseModal = false">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Course Title</label>
+          <input type="text" [(ngModel)]="newCourseTitle" placeholder="e.g. Advanced Oncology & Targeted Immunotherapy" />
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Medical Category</label>
+            <select [(ngModel)]="newCourseCategory">
+              <option value="Cardiology">Cardiology</option>
+              <option value="Pediatrics">Pediatrics</option>
+              <option value="Neurology">Neurology</option>
+              <option value="Surgery">Surgery</option>
+              <option value="Radiology">Radiology</option>
+              <option value="Emergency">Emergency</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Course Price (INR)</label>
+            <input type="number" [(ngModel)]="newCoursePriceInput" placeholder="1999" />
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Total Duration</label>
+            <input type="text" [(ngModel)]="newCourseDuration" placeholder="4.0 Hours" />
+          </div>
+          <div class="form-group">
+            <label>Instructor Name & Title</label>
+            <input type="text" [(ngModel)]="newCourseInstructor" placeholder="Dr. Department Head" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Course Description</label>
+          <textarea rows="3" [(ngModel)]="newCourseDescription" placeholder="Overview of clinical protocols..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showCreateCourseModal = false">Cancel</button>
+        <button class="btn-primary" (click)="saveNewCourse()">Publish New Course</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN MODAL 2: Edit Course Price -->
+  <div class="modal-overlay" *ngIf="showEditPriceModal && selectedCourseForPrice">
+    <div class="admin-modal small-modal">
+      <div class="modal-header">
+        <h3>Edit Course Price</h3>
+        <button class="close-btn" (click)="showEditPriceModal = false">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <p>Course: <strong>{{ selectedCourseForPrice.title }}</strong></p>
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label>New Price (INR)</label>
+          <input type="number" [(ngModel)]="newCoursePrice" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showEditPriceModal = false">Cancel</button>
+        <button class="btn-primary" (click)="saveUpdatedPrice()">Save New Price</button>
+      </div>
+    </div>
+  </div>
+
+</div>

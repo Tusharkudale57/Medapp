@@ -1,0 +1,657 @@
+<div class="my-learning-container">
+
+  <!-- MedCME Brand Navbar styled for White/Light-Blue Theme -->
+  <header class="dash-navbar">
+    <div class="nav-inner">
+      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer;">
+        <span class="brand-icon">&#127973;</span>
+        <div>
+          <div class="brand-name">MedCME Academy</div>
+          <div class="brand-sub">Continuing Medical Education Platform</div>
+        </div>
+      </div>
+
+      <!-- Explore Dropdown Container -->
+      <div class="explore-dropdown-container" *ngIf="!authService.isAdmin()">
+        <button class="btn-explore" (click)="toggleExploreMenu($event)">
+          Explore
+          <span class="chevron-down">&#9662;</span>
+        </button>
+
+        <!-- Coursera-style Mega Menu Dropdown -->
+        <div class="explore-mega-menu" *ngIf="showExploreMenu">
+          <div class="mega-menu-inner">
+            <!-- Left Sidebar -->
+            <div class="mega-sidebar">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'" (mouseenter)="activeSubMenu = 'specialties'">
+                Medical Specialties <span class="sidebar-arrow">&#8250;</span>
+              </button>
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'" (mouseenter)="activeSubMenu = 'degrees'">
+                Degrees & Fellowships <span class="sidebar-arrow">&#8250;</span>
+              </button>
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'" (mouseenter)="activeSubMenu = 'conferences'">
+                Live Conferences <span class="sidebar-arrow">&#8250;</span>
+              </button>
+            </div>
+
+            <!-- Right Details Panel -->
+            <div class="mega-details">
+              <!-- Specialties Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'specialties'">
+                <h4>Explore Medical Specialties</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Cardiology')">
+                    <h5>Cardiology</h5>
+                    <p>ECG, heart diseases, and coronary therapies.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Pediatrics')">
+                    <h5>Pediatrics</h5>
+                    <p>Child development, immunizations, and newborn care.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Neurology')">
+                    <h5>Neurology</h5>
+                    <p>Brain disorders, stroke management, and nerve blocks.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Surgery')">
+                    <h5>Surgery</h5>
+                    <p>Surgical guidelines, wound closure, and suturing.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('General Medicine')">
+                    <h5>General Medicine</h5>
+                    <p>Primary care protocols and chronic management.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Degrees & Fellowships Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'degrees'">
+                <h4>Accredited Fellowships & Diplomas</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
+                    <h5>Fellowship in Clinical Cardiology</h5>
+                    <p>6-Month Advanced clinical diagnostics certification.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
+                    <h5>Postgraduate Diploma in Pediatrics</h5>
+                    <p>Accredited specialization in child health care.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
+                    <h5>Certificate in Emergency Medicine</h5>
+                    <p>Hands-on training for emergency rooms.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
+                    <h5>Master of Hospital Administration</h5>
+                    <p>Advanced healthcare management degree.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Conferences Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'conferences'">
+                <h4>Live CME Conferences</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
+                    <h5>National Health Summit 2026</h5>
+                    <p>Live offline event on healthcare policies.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Global Surgery Web-Congress', 'Surgery')">
+                    <h5>Global Surgery Web-Congress</h5>
+                    <p>Virtual live broadcasts of clinical surgeries.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Pediatric Cardiology Meet', 'Cardiology')">
+                    <h5>Pediatric Cardiology Meet</h5>
+                    <p>Live offline seminar on congenital defects.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Oncology Board Review', 'General Medicine')">
+                    <h5>Oncology Board Review</h5>
+                    <p>Accredited hybrid review program.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-link" (click)="navigateToEvents()">&#128197; CME Events</button>
+        <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button>
+        <button *ngIf="!authService.isAdmin()" class="nav-link active">&#128214; My Learning</button>
+        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button>
+        <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
+        <button class="nav-link" (click)="navigateToProfile()">&#127891; My Profile</button>
+        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">&#9881; Admin Panel</button>
+      </nav>
+      <div class="nav-right">
+        <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;" title="Click to instantly switch between Doctor & Admin roles">
+          <div class="avatar">{{ (authService.currentUser()?.name || 'D')[3] || 'D' }}</div>
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="role-badge" [class.admin-badge]="authService.isAdmin()">
+            {{ authService.isAdmin() ? 'Admin 🔄' : 'Doctor 🔄' }}
+          </span>
+        </div>
+        <button class="btn-logout" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Area (Light Blue Background) -->
+  <section class="welcome-banner">
+    <div class="banner-inner">
+      <div class="banner-left">
+        <div class="user-profile-row">
+          <div class="profile-avatar">{{ (authService.currentUser()?.name || 'T')[0].toUpperCase() }}</div>
+          <div class="welcome-text-col">
+            <h1>{{ greeting }}, {{ authService.currentUser()?.name }}</h1>
+            <p class="goal-subtext">
+              Your career goal is to grow in your role as an <strong>{{ userCareerGoal }}</strong>
+              <a href="javascript:void(0)" class="edit-link" (click)="openGoalModal()">Edit goal</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gorgeous Illustration matching Coursera's Hill illustration -->
+      <div class="banner-right">
+        <div class="hill-illustration">
+          <div class="sky-bg"></div>
+          <div class="hill-background"></div>
+          <div class="path-staircase"></div>
+          <div class="pathway-line"></div>
+          <div class="gold-doorway">
+            <div class="door-frame"></div>
+            <div class="door-opening"></div>
+          </div>
+          <div class="pine-tree tree-left">
+            <div class="tree-trunk"></div>
+            <div class="tree-foliage"></div>
+          </div>
+          <div class="pine-tree tree-right">
+            <div class="tree-trunk"></div>
+            <div class="tree-foliage"></div>
+          </div>
+          <div class="glowing-orb"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Body -->
+  <main class="learning-main-content">
+    <div class="tabs-navigation-strip">
+      <div class="tabs-list">
+        <button class="tab-button" [class.active]="activeTab() === 'in_progress'" (click)="setTab('in_progress')">
+          In Progress
+        </button>
+        <button class="tab-button" [class.active]="activeTab() === 'completed'" (click)="setTab('completed')">
+          Completed
+        </button>
+        <button class="tab-button" [class.active]="activeTab() === 'certificates'" (click)="setTab('certificates')">
+          CME Event Certificates
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Section: In Progress -->
+    <section class="tab-content-panel" *ngIf="activeTab() === 'in_progress'">
+      <div class="section-header">
+        <h2>Continuing Education in Progress</h2>
+        <p>Pick up where you left off in your self-paced courses or check registered live CME events.</p>
+      </div>
+
+      <!-- In Progress Lists -->
+      <div class="learning-grid" *ngIf="inProgressCourses.length > 0 || inProgressEvents.length > 0">
+        
+        <!-- Courses In Progress -->
+        <div class="learning-card" *ngFor="let course of inProgressCourses">
+          <div class="card-thumb-wrapper" (click)="resumeCourse(course.id)">
+            <img [src]="course.thumbnail || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80'" [alt]="course.title" />
+            <div class="card-category-tag">{{ course.category }}</div>
+          </div>
+          <div class="card-info-content">
+            <div class="educator-row">
+              <span class="educator-logo">&#127891;</span>
+              <span class="educator-name">MedCME Academy | Online</span>
+            </div>
+            <h3 class="learning-title" (click)="resumeCourse(course.id)">{{ course.title }}</h3>
+            <div class="meta-points-row">
+              <span class="points-badge">+{{ course.creditPoints }} CME Credit</span>
+              <span class="duration-badge">&#9202; {{ course.duration }}</span>
+            </div>
+            
+            <!-- Progress bar -->
+            <div class="progress-container">
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" style="width: 50%;"></div>
+              </div>
+              <div class="progress-text-row">
+                <span class="percent-label">50% Complete</span>
+                <span class="modules-label">1 of 2 modules</span>
+              </div>
+            </div>
+
+            <button class="btn-resume-learning" (click)="resumeCourse(course.id)">
+              Continue Learning &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- Events In Progress (Registered but not attended) -->
+        <div class="learning-card event-card-type" *ngFor="let event of inProgressEvents">
+          <div class="card-thumb-wrapper event-header" [style.background]="event.bannerColor || '#2563eb'">
+            <div class="event-type-badge">&#128197; Live Event</div>
+            <div class="event-mode">{{ event.mode }}</div>
+          </div>
+          <div class="card-info-content">
+            <div class="educator-row">
+              <span class="educator-name">{{ event.speaker }}</span>
+              <span class="educator-sub">({{ event.speakerRole }})</span>
+            </div>
+            <h3 class="learning-title" (click)="navigateToEvents()">{{ event.title }}</h3>
+            <div class="event-date-row">
+              <span>📅 {{ event.date }} at {{ event.time }}</span>
+              <span>📍 {{ event.venue }}</span>
+            </div>
+            <div class="meta-points-row">
+              <span class="points-badge yellow-badge">+{{ event.creditPoints }} CME Credits</span>
+              <span class="status-pill-progress">Registered</span>
+            </div>
+            <div class="progress-container text-only">
+              <p class="status-msg">Event starts soon. Make sure to attend to claim credit points and get your certificate.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-resume-learning btn-event-view" (click)="navigateToEvents()" style="flex: 1;">
+                View Event Details
+              </button>
+              <button class="btn-resume-learning" (click)="openLiveRoom(event)" style="flex: 1; background: #ef4444; border-color: #ef4444; color: #fff;">
+                🔴 Join Live Room
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Empty State In Progress -->
+      <div class="empty-state-card" *ngIf="inProgressCourses.length === 0 && inProgressEvents.length === 0">
+        <div class="empty-vector">
+          <svg viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="#94a3b8" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        </div>
+        <h3>No learning in progress right now</h3>
+        <p>Explore our catalog of accredited medical conferences, live events, or self-paced courses to start earning CME points.</p>
+        <div class="empty-actions">
+          <button class="btn-empty-primary" (click)="navigateToEvents()">Browse CME Events</button>
+          <button class="btn-empty-secondary" (click)="navigateToCourses()">Browse Online Courses</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Section: Completed -->
+    <section class="tab-content-panel" *ngIf="activeTab() === 'completed'">
+      <div class="section-header">
+        <h2>Your Completed Education</h2>
+        <p>A history of all courses completed and live events attended. Certificates have been issued for these items.</p>
+      </div>
+
+      <!-- Completed List -->
+      <div class="completed-list-table-wrapper" *ngIf="completedCourses.length > 0 || completedEvents.length > 0">
+        <table class="completed-items-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Topic / Title</th>
+              <th>Date Completed</th>
+              <th>CME Credits</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Courses Completed -->
+            <tr *ngFor="let course of completedCourses">
+              <td><span class="type-pill course-pill">🎓 Course</span></td>
+              <td>
+                <div class="completed-title-col">
+                  <strong>{{ course.title }}</strong>
+                  <span>{{ course.instructor }}</span>
+                </div>
+              </td>
+              <td>Recent</td>
+              <td><strong class="credit-color">+{{ course.creditPoints }} CME Point</strong></td>
+              <td><span class="status-success">✓ Verified Pass</span></td>
+              <td>
+                <button class="btn-table-action" (click)="viewCourseDetail(course.id)">
+                  Review Course
+                </button>
+              </td>
+            </tr>
+
+            <!-- Events Completed (Attended) -->
+            <tr *ngFor="let event of completedEvents">
+              <td><span class="type-pill event-pill">📅 Live Event</span></td>
+              <td>
+                <div class="completed-title-col">
+                  <strong>{{ event.title }}</strong>
+                  <span>Speaker: {{ event.speaker }}</span>
+                </div>
+              </td>
+              <td>{{ event.date }}</td>
+              <td><strong class="credit-color">+{{ event.creditPoints }} CME Points</strong></td>
+              <td><span class="status-success">✓ Attended</span></td>
+              <td>
+                <button class="btn-table-action" (click)="navigateToEvents()">
+                  View Details
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State Completed -->
+      <div class="empty-state-card" *ngIf="completedCourses.length === 0 && completedEvents.length === 0">
+        <div class="empty-vector">&#127891;</div>
+        <h3>No completed records found</h3>
+        <p>Once you attend events or pass course quizzes, your completions and credits will show up here.</p>
+      </div>
+    </section>
+
+    <!-- Tab Section: Certificates -->
+    <section class="tab-content-panel" *ngIf="activeTab() === 'certificates'">
+      <div class="section-header">
+        <h2>Earned CME Event Certificates</h2>
+        <p>Review, view details, or download verified PDF/PNG files of your CME live event attendance certificates.</p>
+      </div>
+
+      <!-- Certificates Grid -->
+      <div class="certificates-grid" *ngIf="certificates.length > 0">
+        <div class="cert-card" *ngFor="let cert of certificates">
+          <div class="cert-card-header">
+            <span class="cert-badge" [class.event-badge]="cert.type === 'event'">
+              {{ cert.type === 'event' ? '📅 Live Event' : '🎓 Course' }}
+            </span>
+            <span class="cert-credits">⭐ {{ cert.creditPoints }} CME Credit Point</span>
+          </div>
+
+          <h3 class="cert-title">{{ cert.courseTitle }}</h3>
+          
+          <div class="cert-meta-info">
+            <div class="meta-item"><span>Recipient:</span> <strong>{{ cert.recipientName }}</strong></div>
+            <div class="meta-item"><span>Issue Date:</span> <strong>{{ cert.issueDate }}</strong></div>
+            <div class="meta-item"><span>Issuer:</span> <strong>{{ cert.issuer }}</strong></div>
+            <div class="meta-item text-code"><span>Verification Code:</span> <code>{{ cert.verificationCode }}</code></div>
+          </div>
+
+          <div class="cert-card-actions">
+            <button class="btn-view-cert" (click)="openCertificate(cert)">
+              👁️ View Certificate
+            </button>
+            <button class="btn-download-cert" (click)="openCertificate(cert)">
+              ⬇️ Download PDF / PNG
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State Certificates -->
+      <div class="empty-state-card" *ngIf="certificates.length === 0">
+        <div class="empty-vector">📜</div>
+        <h3>No certificates issued yet</h3>
+        <p>Complete a course or get marked as present in a registered CME live event to receive your accredited certificates.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Goal Editing Modal -->
+  <div class="modal-overlay" *ngIf="showGoalModal" (click)="closeGoalModal()">
+    <div class="modal-box goal-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Update Career Goal</h3>
+        <button class="close-btn" (click)="closeGoalModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-instructions">Customize your career profile. We will update your learning recommendations to match.</p>
+        <div class="form-group">
+          <label>Define Your Career Goal</label>
+          <input type="text" #goalInput [value]="userCareerGoal" placeholder="e.g. IT Project Manager or Chief Cardiologist" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" (click)="closeGoalModal()">Cancel</button>
+        <button class="btn-modal-save" (click)="saveGoal(goalInput.value)">Save Goal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Certificate Canvas Modal -->
+  <div class="modal-overlay" *ngIf="showCertModal && selectedCertificate" (click)="closeCertificateModal()">
+    <div class="cert-modal-dialog" (click)="$event.stopPropagation()">
+      <div class="cert-dialog-header">
+        <h4>Accredited CME Certificate Preview</h4>
+        <button class="close-btn" (click)="closeCertificateModal()">✕</button>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas #certCanvas class="cert-canvas"></canvas>
+      </div>
+
+      <div class="cert-dialog-footer">
+        <button class="btn-secondary" (click)="closeCertificateModal()">Close</button>
+        <button class="btn-download-action" (click)="downloadCertificate()">
+          ⬇️ Download PNG
+        </button>
+        <button class="btn-download-pdf-action" (click)="downloadCertificatePdf()">
+          ⬇️ Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Live Conducting Room Modal -->
+  <div class="modal-overlay" *ngIf="showLiveRoomModal && activeLiveEvent">
+    <div class="modal-box live-room-box animate-in" (click)="$event.stopPropagation()">
+      <div class="live-room-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span class="live-badge-pulse">🔴 Live Session</span>
+          <h3>{{ activeLiveEvent.title }}</h3>
+        </div>
+        <button class="close-detail-btn" (click)="closeLiveRoom()" style="color: #cbd5e1; border: none; background: transparent; font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="live-room-body">
+        <!-- Left Panel: Video Stream & Outline -->
+        <div class="live-stream-panel">
+          <!-- Mock Video Player Feed -->
+          <div class="mock-video-container">
+            <div class="video-mock-feed">
+              <div class="video-speaker-anim">🎙️</div>
+              <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">{{ activeLiveEvent.speaker }}</h4>
+              <p style="margin: 0.15rem 0 0 0; color: #38bdf8; font-size: 0.75rem;">{{ activeLiveEvent.speakerRole }}</p>
+              
+              <p style="margin: 0.85rem 0 0 0; color: #94a3b8; font-size: 0.7rem; font-style: italic; max-width: 80%;">
+                "Next clinical guideline details will cover emergency administration sequences..."
+              </p>
+              
+              <div class="video-wave-bars">
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Assistance / Team Support Box -->
+          <div class="video-assist-team-box">
+            <h5>👥 Video Assistance & Support Active</h5>
+            <p><strong>Moderators:</strong> 2 Active &bull; <strong>Consultants:</strong> 1-2 Active (answering Q&A chat below)</p>
+          </div>
+
+          <!-- Event Conducting Format Timeline -->
+          <div class="conducting-outline-container">
+            <h4>📋 Event Conduct Format & Live Progress</h4>
+            
+            <div class="conducting-step-item completed">
+              <strong>1. Introduction & Panel Details (Completed)</strong>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #94a3b8;">Welcome address and faculty introductions.</p>
+            </div>
+
+            <!-- Basic MCQ interactive area -->
+            <div class="conducting-step-item active">
+              <strong>2. Basic MCQ (Pre-Test) - Interactive</strong>
+              
+              <!-- Quiz form -->
+              <div class="live-conducting-quiz-box" *ngIf="!basicMcqAnswered">
+                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
+                <button class="quiz-option-button" (click)="submitBasicMcq(0)">A. Amiodarone 300mg IV Bolus</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(1)">B. Epinephrine 1mg IV/IO every 3-5 mins</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(2)">C. Atropine 1mg IV every 5 mins</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(3)">D. Adenosine 6mg rapid IV push</button>
+              </div>
+
+              <!-- Quiz result -->
+              <div class="live-conducting-quiz-box" *ngIf="basicMcqAnswered">
+                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
+                <div class="quiz-result-msg success" *ngIf="basicMcqIsCorrect">
+                  ✓ Correct! Epinephrine 1mg is administered after the second shock, followed every 3-5 minutes.
+                </div>
+                <div class="quiz-result-msg error" *ngIf="!basicMcqIsCorrect">
+                  ✕ Incorrect. Epinephrine 1mg IV/IO (Option B) is correct after the second shock. Amiodarone is given after the third shock.
+                </div>
+              </div>
+            </div>
+
+            <div class="conducting-step-item">
+              <strong>3. Lecture Session 1 - Core Resuscitation masterclass (Ongoing)</strong>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #64748b;">Live streaming slides on ACLS algorithms.</p>
+            </div>
+
+            <!-- Mid MCQ interactive area -->
+            <div class="conducting-step-item active">
+              <strong>4. Mid-Session MCQ (Knowledge Check) - Interactive</strong>
+              
+              <div class="live-conducting-quiz-box" *ngIf="!midMcqAnswered">
+                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the correct compression-to-ventilation ratio for newborn resuscitation?</p>
+                <button class="quiz-option-button" (click)="submitMidMcq(0)">A. 15:2 ratio (15 compressions, 2 breaths)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(1)">B. 30:2 ratio (30 compressions, 2 breaths)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(2)">C. 3:1 ratio (90 compressions, 30 breaths/min)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(3)">D. 5:1 ratio (50 compressions, 10 breaths/min)</button>
+              </div>
+
+              <div class="live-conducting-quiz-box" *ngIf="midMcqAnswered">
+                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the correct compression-to-ventilation ratio for newborn resuscitation?</p>
+                <div class="quiz-result-msg success" *ngIf="midMcqIsCorrect">
+                  ✓ Correct! In NRP, a 3:1 ratio (90 compressions + 30 breaths per minute) is recommended.
+                </div>
+                <div class="quiz-result-msg error" *ngIf="!midMcqIsCorrect">
+                  ✕ Incorrect. NRP guidelines specify a 3:1 ratio (Option C) to ensure adequate ventilation.
+                </div>
+              </div>
+            </div>
+
+            <div class="conducting-step-item">
+              <strong>5. Lecture Session 2 - Specialized Dosing & Interactions (Upcoming)</strong>
+            </div>
+
+            <div class="conducting-step-item">
+              <strong>6. Live Q&A and Expert Panel Discussion (Upcoming)</strong>
+            </div>
+
+            <!-- Session Resource Center -->
+            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+              <h5 style="margin: 0 0 0.75rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📚 Resource Center (Downloads)</h5>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="#" (click)="$event.preventDefault(); downloadPPT('ACLS_Mastery_Presentation_2026.pptx')" style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
+                  <span>📊</span> ACLS Mastery Slides (PPTX)
+                </a>
+                <a href="#" (click)="$event.preventDefault(); downloadPPT('Resuscitation_Algorithms_Guide.pdf')" style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
+                  <span>📄</span> Resuscitation Algorithms Guide (PDF)
+                </a>
+              </div>
+            </div>
+
+            <!-- Personal Notes Panel -->
+            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                <h5 style="margin: 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📝 Personal Private Notes</h5>
+                <span style="font-size: 0.65rem; color: #94a3b8; font-style: italic;">Auto-saved locally</span>
+              </div>
+              <textarea [(ngModel)]="liveRoomNotes" (keyup)="saveNotes()" placeholder="Take private notes during the live lecture..." style="width: 100%; height: 100px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+              <button (click)="downloadNotes()" style="margin-top: 0.75rem; background: #0ea5e9; color: #fff; border: none; padding: 0.45rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.2s;">
+                ⬇️ Export Notes (.txt)
+              </button>
+            </div>
+
+            <!-- Feedback & Attendance Verification -->
+            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+
+              <!-- SUCCESS SCREEN: shown after submission -->
+              <div *ngIf="liveSessionCompleted" style="text-align: center; padding: 1.5rem 0.5rem; animation: fadeInUp 0.4s ease;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎉</div>
+                <h4 style="margin: 0 0 0.4rem 0; color: #10b981; font-size: 1.05rem; font-weight: 800;">Session Completed!</h4>
+                <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Your attendance has been verified and CME credits recorded.</p>
+                <div style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; border-radius: 10px; padding: 0.85rem; margin: 1rem 0;">
+                  <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: block;">⚡ +{{ activeLiveEvent.creditPoints || 1 }} CME Credit(s) Earned</span>
+                  <span style="font-size: 0.72rem; color: #94a3b8;">📜 Certificate will appear in My Learning</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                  <button (click)="closeCompletedSession()" style="background: #0ea5e9; color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; width: 100%; transition: background 0.2s;">
+                    📜 Go to My Learning & View Certificate
+                  </button>
+                  <button (click)="closeLiveRoom()" style="background: transparent; color: #64748b; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.78rem; cursor: pointer; width: 100%;">
+                    Close Session
+                  </button>
+                </div>
+              </div>
+
+              <!-- FEEDBACK FORM: shown before submission -->
+              <div *ngIf="!liveSessionCompleted">
+                <h5 style="margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">⭐ Session Feedback & Attendance</h5>
+                <p style="margin: 0 0 0.75rem 0; font-size: 0.72rem; color: #94a3b8; line-height: 1.3;">Rate this event to verify attendance and unlock credits.</p>
+                
+                <div style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem;">
+                  <span *ngFor="let star of [1, 2, 3, 4, 5]" (click)="liveFeedbackRating = star" style="font-size: 1.4rem; cursor: pointer; transition: all 0.15s;" [style.color]="liveFeedbackRating >= star ? '#f59e0b' : '#64748b'">
+                    ★
+                  </span>
+                </div>
+
+                <textarea [(ngModel)]="liveFeedbackText" placeholder="Write feedback comments (optional)..." style="width: 100%; height: 60px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: inherit;"></textarea>
+                
+                <button (click)="submitFeedback()" [disabled]="liveFeedbackSubmitted" style="margin-top: 0.75rem; background: #ef4444; color: #fff; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; width: 100%; transition: all 0.2s;" [style.opacity]="liveFeedbackSubmitted ? '0.6' : '1'">
+                  <span *ngIf="!liveFeedbackSubmitted">Submit Feedback &amp; Verify Attendance</span>
+                  <span *ngIf="liveFeedbackSubmitted">⏳ Verifying attendance...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Live Chat Q&A Board -->
+        <div class="live-chat-panel">
+          <div class="chat-panel-header">
+            <h4>💬 Live Q&A & Support Chat</h4>
+          </div>
+
+          <div class="chat-msg-history" id="chat-history-scroll-ml">
+            <div class="chat-msg-row" *ngFor="let msg of liveChatMessages" [class.self]="msg.isUser" [class.other]="!msg.isUser">
+              <span class="chat-msg-sender">{{ msg.sender }}</span>
+              <div class="chat-msg-bubble">
+                {{ msg.text }}
+              </div>
+              <span class="chat-msg-time">{{ msg.time }}</span>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <input type="text" [(ngModel)]="newChatMessageText" (keyup.enter)="sendLiveChatMessage()" placeholder="Ask the consultants a question..." class="chat-text-input" />
+            <button class="btn-send-chat" (click)="sendLiveChatMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

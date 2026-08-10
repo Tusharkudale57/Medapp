@@ -1,0 +1,71 @@
+.knowledge-page-layout {
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+}
+
+.top-nav {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 1rem 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-back {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #ffffff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-back:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.35);
+}
+
+.nav-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+
+.main-container {
+  padding-bottom: 4rem;
+}
+
+/* Asset Card Styling hover micro-interaction */
+.asset-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.05) !important;
+}
+
+.asset-card button:hover {
+  background: #0284c7 !important;
+}
+
+@media (max-width: 640px) {
+  .flex-between {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+}

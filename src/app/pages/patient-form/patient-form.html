@@ -1,0 +1,26 @@
+<div class="form-container">
+  <h2>Patient Details</h2>
+  <form [formGroup]="form" (ngSubmit)="onNext()">
+    <label>Full Name</label>
+    <input formControlName="name" placeholder="Enter name" />
+
+    <label>Age</label>
+    <input type="number" formControlName="age" placeholder="Enter age" />
+
+    <label>Gender</label>
+    <select formControlName="gender">
+      <option value="">Select</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label>Phone Number</label>
+    <input formControlName="phone" placeholder="10-digit number" />
+
+    <label>Symptoms / Reason for visit</label>
+    <textarea formControlName="symptoms" placeholder="Describe symptoms"></textarea>
+
+    <button type="submit">Next</button>
+  </form>
+</div>

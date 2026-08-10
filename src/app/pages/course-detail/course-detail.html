@@ -1,0 +1,360 @@
+<div class="course-detail-layout" *ngIf="course">
+  <!-- Top Breadcrumb Bar -->
+  <div class="top-nav">
+    <div class="container flex-between">
+      <button class="btn-back" (click)="backToDashboard()">
+        ← Back to Dashboard
+      </button>
+      <div class="cme-point-badge">
+        ⭐ Preserved Credits: <strong>{{ authService.currentUser()?.creditPoints }} CME Points</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="container main-content flex-layout">
+    <!-- Left Main Content Column -->
+    <div class="course-main">
+      <!-- Course Header -->
+      <div class="course-header-card">
+        <div class="header-badges">
+          <span class="badge category">{{ course.category }}</span>
+          <span class="badge credit">⭐ +{{ course.creditPoints }} CME Credit Point</span>
+          <span class="badge level">{{ course.level }}</span>
+        </div>
+
+        <h1 class="course-title">{{ course.title }}</h1>
+        <p class="course-subtitle">{{ course.shortDescription }}</p>
+
+        <div class="meta-strip">
+          <span>★ {{ course.rating }} ({{ course.reviewsCount }} ratings)</span>
+          <span>👨‍🎓 {{ course.studentsCount }} Enrolled Physicians</span>
+          <span>⏱️ {{ course.duration }} Total Duration</span>
+        </div>
+
+        <!-- Instructor Banner -->
+        <div class="instructor-box">
+          <img [src]="course.instructorImage" [alt]="course.instructor" />
+          <div>
+            <div class="inst-name">{{ course.instructor }}</div>
+            <div class="inst-role">{{ course.instructorRole }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="tab-bar">
+        <button [class.active]="activeTab() === 'overview'" (click)="activeTab.set('overview')">
+          📋 Course Overview
+        </button>
+        <button [class.active]="activeTab() === 'modules'" (click)="activeTab.set('modules')">
+          📺 Curriculum & Modules ({{ course.modules.length }})
+        </button>
+        <button [class.active]="activeTab() === 'quiz'" (click)="activeTab.set('quiz')">
+          📝 Assessment Quiz & Credit Claim
+        </button>
+        <button [class.active]="activeTab() === 'accreditation'" (click)="activeTab.set('accreditation')">
+          📜 Accreditation Info
+        </button>
+      </div>
+
+      <!-- Tab Content 1: Overview -->
+      <div class="tab-content" *ngIf="activeTab() === 'overview'">
+        <h3>Course Description & Objectives</h3>
+        <p class="detailed-text">{{ course.detailedDescription }}</p>
+
+        <div class="highlights-grid">
+          <div class="highlight-item">
+            <span class="h-icon">✅</span>
+            <div>
+              <strong>1 CME Credit Preserved</strong>
+              <p>Earn 1 verified CME point instantly preserved in your user profile.</p>
+            </div>
+          </div>
+
+          <div class="highlight-item">
+            <span class="h-icon">🎓</span>
+            <div>
+              <strong>Downloadable Accredited Certificate</strong>
+              <p>Download your verified completion certificate with QR verification code.</p>
+            </div>
+          </div>
+
+          <div class="highlight-item">
+            <span class="h-icon">📱</span>
+            <div>
+              <strong>Lifetime On-Demand Access</strong>
+              <p>Watch video lectures and review clinical notes anytime, anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 2: Modules & Curriculum -->
+      <div class="tab-content" *ngIf="activeTab() === 'modules'">
+        <div *ngIf="!isPurchased()" class="locked-banner">
+          <div class="lock-icon">🔒</div>
+          <h4>Course Content Locked</h4>
+          <p>Please purchase the course using Razorpay to unlock all video lectures, clinical reading materials, and assessment quiz.</p>
+          <button class="btn-primary" (click)="initiatePurchase()">Purchase Now - ₹{{ course.price | number }}</button>
+        </div>
+
+        <div *ngIf="isPurchased()" class="module-player-layout">
+          <!-- Active Module Viewer -->
+          <div class="video-container" *ngIf="activeModule">
+            <div class="video-header">
+              <h4>{{ activeModule.title }}</h4>
+              <span class="mod-dur">⏱️ {{ activeModule.duration }}</span>
+            </div>
+            <video controls [src]="activeModule.videoUrl" poster="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=80" class="video-player">
+              Your browser does not support video tag.
+            </video>
+            
+            <div class="module-text-content" [innerHTML]="activeModule.content"></div>
+          </div>
+
+          <!-- Module List Playlist -->
+          <div class="module-playlist">
+            <h5>Curriculum List</h5>
+            <div 
+              *ngFor="let mod of course.modules; let idx = index" 
+              class="playlist-item" 
+              [class.active]="activeModule?.id === mod.id"
+              (click)="selectModule(mod)">
+              <div class="mod-num">{{ idx + 1 }}</div>
+              <div class="mod-details">
+                <span class="mod-title">{{ mod.title }}</span>
+                <span class="mod-sub">⏱️ {{ mod.duration }}</span>
+              </div>
+            </div>
+
+            <div class="quiz-trigger-box">
+              <button class="btn-success" (click)="activeTab.set('quiz')">
+                Take Final Quiz & Earn 1 Credit →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: Assessment Quiz -->
+      <div class="tab-content" *ngIf="activeTab() === 'quiz'">
+        <div *ngIf="!isPurchased()" class="locked-banner">
+          <div class="lock-icon">🔒</div>
+          <h4>Assessment Quiz Locked</h4>
+          <p>Purchase the course to unlock the 1-Credit CME Assessment Quiz.</p>
+          <button class="btn-primary" (click)="initiatePurchase()">Purchase Now - ₹{{ course.price | number }}</button>
+        </div>
+
+        <div *ngIf="isPurchased()">
+          <div class="quiz-header">
+            <h3>CME Knowledge Assessment Quiz</h3>
+            <p>Answer the clinical questions below to complete the course and claim your <strong>1 Preserved CME Credit Point</strong>.</p>
+          </div>
+
+          <div class="quiz-questions">
+            <div *ngFor="let q of course.quiz; let idx = index" class="quiz-card">
+              <div class="q-number">Question {{ idx + 1 }} of {{ course.quiz.length }}</div>
+              <div class="q-title">{{ q.question }}</div>
+
+              <div class="options-list">
+                <label 
+                  *ngFor="let opt of q.options; let optIdx = index" 
+                  class="option-item"
+                  [class.selected]="userAnswers[q.id] === optIdx">
+                  <input 
+                    type="radio" 
+                    [name]="q.id" 
+                    [value]="optIdx" 
+                    (change)="selectAnswer(q.id, optIdx)" 
+                    [checked]="userAnswers[q.id] === optIdx" />
+                  <span>{{ opt }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="quiz-submit-bar">
+            <button class="btn-primary btn-submit-quiz" (click)="submitQuiz()">
+              Submit Assessment & Claim 1 Credit Point
+            </button>
+          </div>
+
+          <!-- Quiz Result Banner -->
+          <div *ngIf="quizSubmitted" class="quiz-result-card" [class.passed]="quizPassed" [class.failed]="!quizPassed">
+            <div *ngIf="quizPassed">
+              <div class="res-icon">🎉</div>
+              <h3>Congratulations! Assessment Passed!</h3>
+              <p>You scored {{ quizScore }}/{{ course.quiz.length }}. <strong>1 CME Credit Point</strong> has been preserved and added to your profile balance!</p>
+              <button class="btn-success" (click)="navigateToProfile()">View Profile & Download Certificate →</button>
+            </div>
+            <div *ngIf="!quizPassed">
+              <div class="res-icon">⚠️</div>
+              <h3>Score: {{ quizScore }}/{{ course.quiz.length }}</h3>
+              <p>You need at least 60% to pass. Please review the curriculum modules and try again.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 4: Accreditation Info -->
+      <div class="tab-content" *ngIf="activeTab() === 'accreditation'">
+        <h3>Accreditation & CME Credit Details</h3>
+        <p>{{ course.accreditation }}</p>
+        <div class="accred-box">
+          <div class="accred-item">
+            <strong>Credit Point Value:</strong> 1.0 CME Credit
+          </div>
+          <div class="accred-item">
+            <strong>Credit Type:</strong> Category 1 Continuing Medical Education
+          </div>
+          <div class="accred-item">
+            <strong>Target Audience:</strong> General Practitioners, Emergency Physicians, Surgeons, Specialists
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sticky Purchase Sidebar -->
+    <div class="course-sidebar">
+      <div class="sticky-card">
+        <div class="poster-box">
+          <img [src]="course.thumbnail" [alt]="course.title" />
+          <div class="play-overlay" (click)="activeTab.set('modules')">
+            <span class="play-btn">▶</span>
+          </div>
+        </div>
+
+        <div class="price-container">
+          <div class="price-val">₹{{ course.price | number }}</div>
+          <div class="credit-highlight">⭐ Includes 1 Preserved CME Credit</div>
+        </div>
+
+        <!-- Action Button -->
+        <button 
+          *ngIf="!isPurchased()" 
+          class="btn-purchase-large" 
+          (click)="initiatePurchase()">
+          Purchase Now (Razorpay)
+        </button>
+
+        <div *ngIf="!authService.currentUser()" style="margin-top: 0.5rem; font-size: 0.78rem; text-align: center; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 0.4rem 0.5rem; font-weight: 700;">
+          ⚠️ You are not signed in. Clicking will take you to Login or Registration first.
+        </div>
+
+        <button 
+          *ngIf="isPurchased() && !isCompleted()" 
+          class="btn-learning-large" 
+          (click)="activeTab.set('modules')">
+          Access Course Content →
+        </button>
+
+        <button 
+          *ngIf="isCompleted()" 
+          class="btn-completed-large" 
+          (click)="navigateToProfile()">
+          ✓ Completed (Download Cert)
+        </button>
+
+        <div class="guarantee-list">
+          <div>✔️ Instant Access via Razorpay Payment</div>
+          <div>✔️ 1 Preserved CME Credit Point</div>
+          <div>✔️ Downloadable Certificate of Completion</div>
+          <div>✔️ Lifetime On-Demand Content</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulated Razorpay Modal Dialog -->
+  <div class="modal-overlay" *ngIf="showSimulatedRazorpay">
+    <div class="razorpay-modal">
+      <div class="rzp-header">
+        <div class="rzp-brand">
+          <span class="rzp-logo">💳</span>
+          <div class="rzp-text">
+            <strong>Razorpay Payment Gateway</strong>
+            <span class="rzp-test-badge">TEST MODE</span>
+          </div>
+        </div>
+        <button class="close-rzp" (click)="showSimulatedRazorpay = false">✕</button>
+      </div>
+
+      <div class="rzp-amount-bar">
+        <span>Order Amount:</span>
+        <strong class="rzp-amt">₹{{ course.price | number }}.00</strong>
+      </div>
+
+      <div class="rzp-methods">
+        <button [class.active]="selectedPaymentMethod === 'upi'" (click)="selectedPaymentMethod = 'upi'">
+          📲 UPI / QR (GPay, PhonePe)
+        </button>
+        <button [class.active]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">
+          💳 Credit / Debit Card
+        </button>
+        <button [class.active]="selectedPaymentMethod === 'netbanking'" (click)="selectedPaymentMethod = 'netbanking'">
+          🏦 Net Banking
+        </button>
+      </div>
+
+      <div class="rzp-body" *ngIf="!paymentSuccess">
+        <!-- UPI Mode -->
+        <div *ngIf="selectedPaymentMethod === 'upi'" class="payment-method-box">
+          <label>VPA / UPI ID</label>
+          <input type="text" [(ngModel)]="upiId" placeholder="doctor@okicici" />
+          <div class="upi-apps">
+            <span>GPay</span> • <span>PhonePe</span> • <span>Paytm</span> • <span>BHIM</span>
+          </div>
+        </div>
+
+        <!-- Card Mode -->
+        <div *ngIf="selectedPaymentMethod === 'card'" class="payment-method-box">
+          <label>Card Number</label>
+          <input type="text" [(ngModel)]="cardNumber" />
+          <div class="card-row flex-gap">
+            <input type="text" placeholder="MM/YY" value="12/28" />
+            <input type="password" placeholder="CVV" value="882" maxLength="3" />
+          </div>
+        </div>
+
+        <!-- Net Banking Mode -->
+        <div *ngIf="selectedPaymentMethod === 'netbanking'" class="payment-method-box">
+          <label>Select Bank</label>
+          <select class="bank-select">
+            <option>HDFC Bank</option>
+            <option>State Bank of India</option>
+            <option>ICICI Bank</option>
+            <option>Axis Bank</option>
+          </select>
+        </div>
+
+        <button class="btn-pay-now" (click)="confirmSimulatedPayment()" [disabled]="processingPayment">
+          <span *ngIf="!processingPayment">Pay ₹{{ course.price | number }} & Unlock Course</span>
+          <span *ngIf="processingPayment" class="spinner"></span>
+        </button>
+      </div>
+
+      <div class="rzp-success-view" *ngIf="paymentSuccess">
+        <div class="check-icon">✓</div>
+        <h3>Payment Successful!</h3>
+        <p>Transaction ID: {{ paymentTransactionId }}</p>
+        <span class="unlock-text">Unlocking course modules...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Certificate Earned Celebration Modal -->
+  <div class="modal-overlay" *ngIf="showCertAwardedModal">
+    <div class="cert-modal">
+      <div class="cert-modal-seal">🏆</div>
+      <h2>1 CME Credit Point Preserved!</h2>
+      <p>You have successfully completed <strong>{{ course.title }}</strong>.</p>
+      <div class="credit-award-box">
+        ⭐ +1 Credit Point Added to Total
+      </div>
+      <p class="cert-sub">Your verified digital certificate is now ready in your profile section.</p>
+      <button class="btn-success btn-large" (click)="navigateToProfile()">
+        View Profile & Download Certificate 📜
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1479 @@
+<div class="dashboard-layout">
+
+  <!-- Navbar -->
+  <header class="dash-navbar">
+    <div class="nav-inner">
+      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer;">
+        <span class="brand-icon">&#127973;</span>
+        <div>
+          <div class="brand-name">MedCME Academy</div>
+          <div class="brand-sub">Continuing Medical Education Platform</div>
+        </div>
+      </div>
+
+      <!-- Explore Dropdown Container -->
+      <div class="explore-dropdown-container" *ngIf="!authService.isAdmin()">
+        <button class="btn-explore" (click)="toggleExploreMenu($event)">
+          Explore
+          <span class="chevron-down">&#9662;</span>
+        </button>
+
+        <!-- Coursera-style Mega Menu Dropdown -->
+        <div class="explore-mega-menu" *ngIf="showExploreMenu">
+          <div class="mega-menu-inner">
+            <!-- Left Sidebar -->
+            <div class="mega-sidebar">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'" (mouseenter)="activeSubMenu = 'specialties'">
+                Medical Specialties <span class="sidebar-arrow">&#8250;</span>
+              </button>
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'" (mouseenter)="activeSubMenu = 'degrees'">
+                Degrees & Fellowships <span class="sidebar-arrow">&#8250;</span>
+              </button>
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'" (mouseenter)="activeSubMenu = 'conferences'">
+                Live Conferences <span class="sidebar-arrow">&#8250;</span>
+              </button>
+            </div>
+
+            <!-- Right Details Panel -->
+            <div class="mega-details">
+              <!-- Specialties Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'specialties'">
+                <h4>Explore Medical Specialties</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Cardiology')">
+                    <h5>Cardiology</h5>
+                    <p>ECG, heart diseases, and coronary therapies.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Pediatrics')">
+                    <h5>Pediatrics</h5>
+                    <p>Child development, immunizations, and newborn care.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Neurology')">
+                    <h5>Neurology</h5>
+                    <p>Brain disorders, stroke management, and nerve blocks.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('Surgery')">
+                    <h5>Surgery</h5>
+                    <p>Surgical guidelines, wound closure, and suturing.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoSpecialty('General Medicine')">
+                    <h5>General Medicine</h5>
+                    <p>Primary care protocols and chronic management.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Degrees & Fellowships Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'degrees'">
+                <h4>Accredited Fellowships & Diplomas</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
+                    <h5>Fellowship in Clinical Cardiology</h5>
+                    <p>6-Month Advanced clinical diagnostics certification.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
+                    <h5>Postgraduate Diploma in Pediatrics</h5>
+                    <p>Accredited specialization in child health care.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
+                    <h5>Certificate in Emergency Medicine</h5>
+                    <p>Hands-on training for emergency rooms.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
+                    <h5>Master of Hospital Administration</h5>
+                    <p>Advanced healthcare management degree.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Conferences Content -->
+              <div class="details-content" *ngIf="activeSubMenu === 'conferences'">
+                <h4>Live CME Conferences</h4>
+                <div class="details-grid">
+                  <div class="details-item-card" (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
+                    <h5>National Health Summit 2026</h5>
+                    <p>Live offline event on healthcare policies.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Global Surgery Web-Congress', 'Surgery')">
+                    <h5>Global Surgery Web-Congress</h5>
+                    <p>Virtual live broadcasts of clinical surgeries.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Pediatric Cardiology Meet', 'Cardiology')">
+                    <h5>Pediatric Cardiology Meet</h5>
+                    <p>Live offline seminar on congenital defects.</p>
+                  </div>
+                  <div class="details-item-card" (click)="selectDemoEvent('Oncology Board Review', 'General Medicine')">
+                    <h5>Oncology Board Review</h5>
+                    <p>Accredited hybrid review program.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-link active">&#128197; CME Events</button>
+        <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button>
+        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">&#128214; My Learning</button>
+        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button>
+        <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
+        <button class="nav-link" (click)="navigateToProfile()">&#127891; My Profile</button>
+        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">&#9881; Admin Panel</button>
+      </nav>
+      <div class="nav-right">
+        <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;" title="Click to instantly switch between Doctor & Admin roles">
+          <div class="avatar">{{ (authService.currentUser()?.name || 'D')[3] || 'D' }}</div>
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="role-badge" [class.admin-badge]="authService.isAdmin()">
+            {{ authService.isAdmin() ? 'Admin 🔄' : 'Doctor 🔄' }}
+          </span>
+        </div>
+        <button class="btn-logout" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-main">
+
+    <!-- ADMIN Banner -->
+    <div *ngIf="authService.isAdmin()" class="admin-hero-banner">
+      <div class="admin-hero-left">
+        <div class="admin-tag">&#9881; ADMIN CONTROL CENTER</div>
+        <h2>Manage CME Events</h2>
+        <p>Create, publish and track attendance for all upcoming CME events on the platform.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <button class="btn-create-event" (click)="openCreateModal()">&#43; Create New Event</button>
+        <button class="btn-admin-dash" (click)="navigateToHostDashboard()">&#9632; Admin Dashboard</button>
+      </div>
+    </div>
+
+    <!-- Doctor Hero Banner -->
+    <div *ngIf="authService.isDoctor()" class="hero-banner">
+      <div class="hero-content">
+        <div class="cme-tag">&#127891; Accredited Continuing Medical Education</div>
+        <h1>Upcoming CME Events</h1>
+        <p>Register for accredited live and online CME events, earn credit points, and receive your certificate upon attendance.</p>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">{{ eventService.getUpcomingEvents().length }}</span>
+            <span class="stat-lbl">Live Events</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">Verified</span>
+            <span class="stat-lbl">Digital Certificates</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">100%</span>
+            <span class="stat-lbl">CME Accredited</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-badge">
+        <div class="gold-seal">
+          <span class="seal-icon">&#127891;</span>
+          <span class="seal-text">Official CME Accreditation</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctor KPIs & Pending Actions -->
+    <div *ngIf="authService.isDoctor()" class="doctor-kpis-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; margin-bottom: 1.5rem; text-align: left;">
+      <div style="background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; padding: 1.25rem; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(14,165,233,0.15);">
+        <div>
+          <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; opacity: 0.9;">🏆 Preserved CME Credits</span>
+          <h3 style="margin: 0.25rem 0 0 0; font-size: 1.8rem; font-weight: 800;">{{ authService.currentUser()?.creditPoints || 0 }}.0</h3>
+          <span style="font-size: 0.72rem; opacity: 0.8;">Earned points towards accreditation</span>
+        </div>
+        <div style="font-size: 2.2rem; opacity: 0.85;">⚡</div>
+      </div>
+      <div style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 1.25rem; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(16,185,129,0.15);">
+        <div>
+          <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; opacity: 0.9;">📜 Certificates Awarded</span>
+          <h3 style="margin: 0.25rem 0 0 0; font-size: 1.8rem; font-weight: 800;">{{ authService.getUserCertificates().length }}</h3>
+          <span style="font-size: 0.72rem; opacity: 0.8;">Downloadable official PDFs</span>
+        </div>
+        <div style="font-size: 2.2rem; opacity: 0.85;">🎓</div>
+      </div>
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+        <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #64748b; display: block; margin-bottom: 0.4rem;">⚠️ Pending Actions</span>
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.75rem;">
+          <div *ngIf="!authService.currentUser()?.dob" style="color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+            🔴 Complete Profile Setup (DOB/Gender missing)
+          </div>
+          <div *ngIf="authService.getUserCertificates().length === 0" style="color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+            🟡 Register for a live event to earn your first certificate
+          </div>
+          <div *ngIf="authService.currentUser()?.dob" style="color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+            ✓ Your credentials are in active standing
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Advanced Filters Section -->
+    <div *ngIf="authService.isDoctor()" class="advanced-search-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: left;">
+      <div style="display: flex; gap: 0.75rem;">
+        <div style="flex: 1; position: relative;">
+          <input type="text" [(ngModel)]="searchQuery" placeholder="🔍 Search events by title, category, keyword, or speaker..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 1rem; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.9rem; box-sizing: border-box;" />
+        </div>
+        <button (click)="showFiltersPanel = !showFiltersPanel" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 1.25rem; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s;">
+          ⚙️ Filters
+        </button>
+        <button (click)="resetAllFilters()" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0 1rem; font-size: 0.82rem; cursor: pointer;">
+          Reset
+        </button>
+      </div>
+
+      <!-- Collapsible Advanced Filters Panel -->
+      <div *ngIf="showFiltersPanel" class="filters-panel-content animate-in" style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+        <!-- Languages Checklist -->
+        <div>
+          <label style="font-weight: 700; font-size: 0.8rem; color: #475569; display: block; margin-bottom: 0.5rem;">🗣️ Language Options</label>
+          <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+            <label *ngFor="let lang of ['English', 'Hindi', 'Marathi']" style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #334155; cursor: pointer;">
+              <input type="checkbox" [checked]="isLanguageSelected(lang)" (change)="toggleLanguageFilter(lang)" />
+              {{ lang }}
+            </label>
+          </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div>
+          <label style="font-weight: 700; font-size: 0.8rem; color: #475569; display: block; margin-bottom: 0.4rem;">📅 Date Range</label>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <input type="date" [(ngModel)]="startDateFilter" placeholder="Start Date" style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.78rem; box-sizing: border-box;" />
+            <input type="date" [(ngModel)]="endDateFilter" placeholder="End Date" style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.78rem; box-sizing: border-box;" />
+          </div>
+        </div>
+
+        <!-- Credits Range Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <label style="font-weight: 700; font-size: 0.8rem; color: #475569; margin: 0;">⚡ CME Credits Range</label>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #0284c7;">{{ minCreditsFilter }} - {{ maxCreditsFilter }} pts</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="range" [(ngModel)]="minCreditsFilter" min="0" max="5" step="1" style="flex: 1;" />
+            <input type="range" [(ngModel)]="maxCreditsFilter" min="0" max="5" step="1" style="flex: 1;" />
+          </div>
+        </div>
+
+        <!-- Sorting Selection -->
+        <div>
+          <label style="font-weight: 700; font-size: 0.8rem; color: #475569; display: block; margin-bottom: 0.4rem;">🔀 Sort Events By</label>
+          <select [(ngModel)]="sortByFilter" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; color: #334155;">
+            <option value="Date">Event Date (Ascending)</option>
+            <option value="Newest">Newest Added (Descending)</option>
+            <option value="Price">Price (Low to High)</option>
+            <option value="Popularity">Most Popular (Seats Filled)</option>
+            <option value="Relevance">Match Specialty/Interests</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-section">
+      <div class="filter-tabs">
+        <button *ngFor="let f of filters"
+          class="filter-btn" [class.active]="activeFilter() === f"
+          (click)="setFilter(f)">
+          <span *ngIf="f === 'All'">&#127968;</span>
+          <span *ngIf="f === 'Online'">&#128187;</span>
+          <span *ngIf="f === 'Offline'">&#127979;</span>
+          <span *ngIf="f === 'Hybrid'">&#127760;</span>
+          <span *ngIf="f === 'Free'">&#127381;</span>
+          {{ f }}
+        </button>
+      </div>
+      <div class="event-count">
+        Showing <strong>{{ filteredEvents.length }}</strong> upcoming CME events
+      </div>
+    </div>
+
+    <!-- Active Category Status Badge -->
+    <div class="active-category-status" *ngIf="activeCategory() !== 'All'">
+      <span class="status-label">Active Specialty Filter:</span>
+      <span class="status-badge">
+        {{ activeCategory() }}
+        <button class="btn-clear-badge" (click)="clearCategoryFilter()">&#10005;</button>
+      </span>
+    </div>
+
+    <!-- Fast Filling Events Bar -->
+    <div class="fast-filling-container" *ngIf="authService.isDoctor() && fastFillingEvents.length > 0">
+      <div class="fast-filling-header">
+        <span class="fire-icon">🔥</span>
+        <div>
+          <h3>Fast Filling CME Events</h3>
+          <span class="warning-sub">Register immediately before seats run out!</span>
+        </div>
+      </div>
+      <div class="fast-filling-slider">
+        <div class="fast-event-item" *ngFor="let fe of fastFillingEvents" (click)="openDetailModal(fe)">
+          <div class="fe-tag-row">
+            <span class="fe-seats-badge">🚨 Only {{ seatsLeft(fe) }} seats left!</span>
+            <span class="fe-cat">{{ fe.category }}</span>
+          </div>
+          <h4 class="fe-title">{{ fe.title }}</h4>
+          <div class="fe-meta">📅 {{ formatDate(fe.date) }} &middot; {{ fe.time }}</div>
+          <div class="fe-footer">
+            <span class="fe-price" [class.free]="fe.price === 0">{{ fe.price === 0 ? 'FREE' : 'Rs. ' + fe.price }}</span>
+            <button class="fe-btn" (click)="$event.stopPropagation(); openRegisterModal(fe)">Register</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctor Grid: Stacking Recommended and Generic vertically in full-width grids -->
+    <div class="doctor-dashboard-layout" *ngIf="!authService.isAdmin(); else adminGrid">
+      <!-- Recommended Events Section -->
+      <div class="events-section" style="margin-bottom: 3rem;">
+        <div class="section-header-coursera" style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #eff6ff; padding-bottom: 0.75rem; margin-bottom: 1.5rem; text-align: left;">
+          <span style="font-size: 1.5rem; color: #f59e0b;">🌟</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Recommended CME For You</h3>
+            <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #64748b;">Based on your specialization and selected areas of interest</p>
+          </div>
+        </div>
+
+        <div class="events-grid" *ngIf="paginatedRelevantEvents.length > 0">
+          <div class="event-card-coursera" *ngFor="let event of paginatedRelevantEvents" (click)="openDetailModal(event)">
+            <!-- Thumbnail Image -->
+            <div class="card-thumbnail-coursera">
+              <img [src]="getCategoryImage(event.category)" [alt]="event.title" class="thumbnail-img" />
+              <div class="badge-overlay">
+                <span class="mode-badge-pill" [class]="event.mode.toLowerCase()">{{ event.mode }}</span>
+              </div>
+              <div class="credit-badge-overlay">
+                <span class="credits-count">⚡ {{ event.creditPoints }} CME Credits</span>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="card-content-coursera">
+              <div class="partner-row-coursera">
+                <span class="partner-logo">🏫</span>
+                <span class="partner-name">MedCME Academy &middot; {{ event.category }}</span>
+              </div>
+              <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
+              
+              <div class="instructor-row-coursera">
+                <div class="avatar-circle">{{ event.speaker[0] || 'D' }}</div>
+                <div class="inst-details">
+                  <span class="instructor-name">{{ event.speaker }}</span>
+                  <span class="inst-role-sub">{{ event.speakerRole }}</span>
+                </div>
+              </div>
+
+              <div class="rating-row-coursera">
+                <span class="rating-score">4.8</span>
+                <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                <span class="rating-count">(240 reviews)</span>
+              </div>
+
+              <div class="event-details-bar-coursera">
+                <div class="detail-item">🗓 {{ formatDate(event.date) }} &middot; {{ event.time }}</div>
+                <div class="detail-item-row">
+                  <span class="detail-item-left">📍 {{ event.venue }}</span>
+                  <span class="detail-item-right" [class.low-seats]="seatsLeft(event) < 20">
+                    {{ seatsLeft(event) }} Seats Left
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-bottom-row-coursera">
+                <div class="price-section-coursera">
+                  <span class="price-val" [class.free]="event.price === 0">
+                    {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
+                  </span>
+                  <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
+                </div>
+                <div class="actions-section-coursera" style="display: flex; gap: 0.4rem;">
+                  <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openRegisterModal(event)">
+                    Enroll
+                  </button>
+                  <button *ngIf="isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openLiveRoom(event)" style="background: #ef4444; border-color: #ef4444; color: #fff;">
+                    🔴 Join Live
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="relevantEvents.length > visibleCount" style="margin-top: 1.5rem; text-align: center; margin-bottom: 2rem;">
+          <button (click)="loadMore()" style="background: #0ea5e9; color: #fff; border: none; padding: 0.55rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s;">
+            Load More Recommended Events
+          </button>
+        </div>
+
+        <div class="no-recommendations-card" *ngIf="relevantEvents.length === 0">
+          <div class="no-rec-icon">🌟</div>
+          <h4>No personalized recommendations yet</h4>
+          <p>Update your interests or specialization in your profile to view tailored CME suggestions.</p>
+          <button class="btn-rec-interests" (click)="showInterestPopup = true">Select Interests</button>
+        </div>
+      </div>
+
+      <!-- Other CME Events Section -->
+      <div class="events-section">
+        <div class="section-header-coursera" style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #eff6ff; padding-bottom: 0.75rem; margin-bottom: 1.5rem; text-align: left;">
+          <span style="font-size: 1.5rem; color: #3b82f6;">🌐</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Other CME Events</h3>
+            <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #64748b;">Explore all generic medical education opportunities</p>
+          </div>
+        </div>
+
+        <div class="events-grid" *ngIf="paginatedGenericEvents.length > 0">
+          <div class="event-card-coursera" *ngFor="let event of paginatedGenericEvents" (click)="openDetailModal(event)">
+            <!-- Thumbnail Image -->
+            <div class="card-thumbnail-coursera">
+              <img [src]="getCategoryImage(event.category)" [alt]="event.title" class="thumbnail-img" />
+              <div class="badge-overlay">
+                <span class="mode-badge-pill" [class]="event.mode.toLowerCase()">{{ event.mode }}</span>
+              </div>
+              <div class="credit-badge-overlay">
+                <span class="credits-count">⚡ {{ event.creditPoints }} CME Credits</span>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="card-content-coursera">
+              <div class="partner-row-coursera">
+                <span class="partner-logo">🏫</span>
+                <span class="partner-name">MedCME Academy &middot; {{ event.category }}</span>
+              </div>
+              <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
+              
+              <div class="instructor-row-coursera">
+                <div class="avatar-circle">{{ event.speaker[0] || 'D' }}</div>
+                <div class="inst-details">
+                  <span class="instructor-name">{{ event.speaker }}</span>
+                  <span class="inst-role-sub">{{ event.speakerRole }}</span>
+                </div>
+              </div>
+
+              <div class="rating-row-coursera">
+                <span class="rating-score">4.8</span>
+                <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                <span class="rating-count">(240 reviews)</span>
+              </div>
+
+              <div class="event-details-bar-coursera">
+                <div class="detail-item">🗓 {{ formatDate(event.date) }} &middot; {{ event.time }}</div>
+                <div class="detail-item-row">
+                  <span class="detail-item-left">📍 {{ event.venue }}</span>
+                  <span class="detail-item-right" [class.low-seats]="seatsLeft(event) < 20">
+                    {{ seatsLeft(event) }} Seats Left
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-bottom-row-coursera">
+                <div class="price-section-coursera">
+                  <span class="price-val" [class.free]="event.price === 0">
+                    {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
+                  </span>
+                  <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
+                </div>
+                <div class="actions-section-coursera" style="display: flex; gap: 0.4rem;">
+                  <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openRegisterModal(event)">
+                    Enroll
+                  </button>
+                  <button *ngIf="isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openLiveRoom(event)" style="background: #ef4444; border-color: #ef4444; color: #fff;">
+                    🔴 Join Live
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="genericEvents.length > visibleCount" style="margin-top: 1.5rem; text-align: center; margin-bottom: 2rem;">
+          <button (click)="loadMore()" style="background: #0ea5e9; color: #fff; border: none; padding: 0.55rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s;">
+            Load More Events
+          </button>
+        </div>
+        
+        <div class="no-recommendations-card" *ngIf="genericEvents.length === 0">
+          <p>No generic events available.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Grid: Displays all events in a single grid layout -->
+    <ng-template #adminGrid>
+      <div class="split-grid" *ngIf="filteredEvents.length > 0">
+        <div class="event-card-coursera" *ngFor="let event of filteredEvents" (click)="openDetailModal(event)">
+          <!-- Thumbnail Image -->
+          <div class="card-thumbnail-coursera">
+            <img [src]="getCategoryImage(event.category)" [alt]="event.title" class="thumbnail-img" />
+            <div class="badge-overlay">
+              <span class="mode-badge-pill" [class]="event.mode.toLowerCase()">{{ event.mode }}</span>
+            </div>
+            <div class="credit-badge-overlay">
+              <span class="credits-count">⚡ {{ event.creditPoints }} CME Credits</span>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="card-content-coursera">
+            <div class="partner-row-coursera">
+              <span class="partner-logo">🏫</span>
+              <span class="partner-name">MedCME Academy &middot; {{ event.category }}</span>
+            </div>
+            <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
+            
+            <div class="instructor-row-coursera">
+              <div class="avatar-circle">{{ event.speaker[0] || 'D' }}</div>
+              <div class="inst-details">
+                <span class="instructor-name">{{ event.speaker }}</span>
+                <span class="inst-role-sub">{{ event.speakerRole }}</span>
+              </div>
+            </div>
+
+            <div class="rating-row-coursera">
+              <span class="rating-score">4.8</span>
+              <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+              <span class="rating-count">(240 reviews)</span>
+            </div>
+
+            <div class="event-details-bar-coursera">
+              <div class="detail-item">🗓 {{ formatDate(event.date) }} &middot; {{ event.time }}</div>
+              <div class="detail-item-row">
+                <span class="detail-item-left">📍 {{ event.venue }}</span>
+                <span class="detail-item-right" [class.low-seats]="seatsLeft(event) < 20">
+                  {{ seatsLeft(event) }} Seats Left
+                </span>
+              </div>
+            </div>
+
+            <div class="card-bottom-row-coursera">
+              <div class="price-section-coursera">
+                <span class="price-val" [class.free]="event.price === 0">
+                  {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
+                </span>
+                <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
+              </div>
+              <div class="actions-section-coursera">
+                <button class="btn-admin-delete-coursera" (click)="$event.stopPropagation(); deleteEvent(event.id, $event)">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredEvents.length === 0">
+      <div class="empty-icon">&#128197;</div>
+      <h3>No events match the selected filter</h3>
+      <p>Try a different filter or check back later for upcoming CME events.</p>
+      <button class="btn-secondary" (click)="setFilter('All')">View All Events</button>
+    </div>
+
+    <!-- Knowledge Bank & Resources Section -->
+    <div class="knowledge-bank-section" *ngIf="authService.isDoctor()">
+      <div class="kb-header">
+        <span class="kb-icon">📚</span>
+        <div>
+          <h2>MedCME Knowledge Bank</h2>
+          <p>Official clinical protocols, best practice guidelines, and free downloadable slide presentations</p>
+        </div>
+      </div>
+      
+      <div class="kb-grid">
+        <!-- Best Practice Guidelines -->
+        <div class="kb-card">
+          <h4>🏥 Clinical Protocols & Best Practices</h4>
+          <div class="protocol-list">
+            <div class="protocol-item" (click)="openProtocolModal('CLS')">
+              <span class="proto-badge red">CLS</span>
+              <div class="proto-info">
+                <h5>Cardiac Life Support Protocol</h5>
+                <p>Resuscitation rhythms, pharmacology doses, and algorithms.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+            
+            <div class="protocol-item" (click)="openProtocolModal('PLS')">
+              <span class="proto-badge purple">PLS</span>
+              <div class="proto-info">
+                <h5>Pediatric Life Support Protocol</h5>
+                <p>Neonatal and pediatric resuscitation, intubation dosages.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+            
+            <div class="protocol-item" (click)="openProtocolModal('ICU')">
+              <span class="proto-badge blue">ICU</span>
+              <div class="proto-info">
+                <h5>ICU Care & Ventilation Guidelines</h5>
+                <p>Weaning protocols, ARDS settings, and sepsis management.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+            
+            <div class="protocol-item" (click)="openProtocolModal('DRUGS')">
+              <span class="proto-badge green">DRUGS</span>
+              <div class="proto-info">
+                <h5>High-Risk Drugs Dosing Protocols</h5>
+                <p>CYP450 drug interactions, critical infusion rates.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+
+            <div class="protocol-item" (click)="openProtocolModal('OBGYN')">
+              <span class="proto-badge orange">OBGYN</span>
+              <div class="proto-info">
+                <h5>Obstetric Emergencies & PPH Protocol</h5>
+                <p>Postpartum hemorrhage (PPH) stages, MgSO4 dosage, and dystocia.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+
+            <div class="protocol-item" (click)="openProtocolModal('NEURO')">
+              <span class="proto-badge teal">NEURO</span>
+              <div class="proto-info">
+                <h5>Acute Ischemic Stroke & tPA</h5>
+                <p>FAST screening, thrombolytic timing, and blood pressure control.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+
+            <div class="protocol-item" (click)="openProtocolModal('TRAUMA')">
+              <span class="proto-badge pink">TRAUMA</span>
+              <div class="proto-info">
+                <h5>Advanced Trauma Life Support</h5>
+                <p>Primary survey ABCDEs, shock classification, and needle decompression.</p>
+              </div>
+              <span class="proto-arrow">&rarr;</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Free Downloads -->
+        <div class="kb-card">
+          <h4>📥 Free Slide Deck Downloads (.PPT)</h4>
+          <div class="ppt-list">
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>ACLS Guidelines & Practice Case Reviews 2026</h5>
+                <p>Full presentation slide deck & algorithm diagrams.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('ACLS_Guidelines_2026.ppt')">Download</button>
+            </div>
+            
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>Pediatric Advanced Life Support Resuscitation</h5>
+                <p>Case reviews, emergency airway, and shock protocols.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('PALS_Resuscitation_Deck.ppt')">Download</button>
+            </div>
+            
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>Critical Care Sepsis & ICU Ventilator Weaning</h5>
+                <p>ARDS management guide, lung protection strategies.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('Sepsis_ICU_Weaning.ppt')">Download</button>
+            </div>
+            
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>Clinical Pharmacology: Preventing Adverse Drug Events</h5>
+                <p>Major drug-drug interactions & pharmacokinetic dosing.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('Pharmacology_Drug_Interactions.ppt')">Download</button>
+            </div>
+
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>Obstetric Emergencies & PPH Management 2026</h5>
+                <p>Active stage 3 labor management, MgSO4 infusion checklists.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('OBGYN_Emergencies_2026.ppt')">Download</button>
+            </div>
+
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>Stroke Care: IV Thrombolysis & Thrombectomy</h5>
+                <p>Imaging assessments, tPA dose calculations, and vital signs flow.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('Stroke_tPA_Protocols_2026.ppt')">Download</button>
+            </div>
+
+            <div class="ppt-item">
+              <div class="ppt-icon">&#128187;</div>
+              <div class="ppt-info">
+                <h5>ATLS Principles & Pre-Hospital Triage Guide</h5>
+                <p>Primary/secondary trauma surveys and chest decompression needle sizes.</p>
+              </div>
+              <button class="btn-ppt-download" (click)="downloadPPT('ATLS_Trauma_Review_2026.ppt')">Download</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Register Confirmation Modal -->
+  <div *ngIf="showRegisterModal" class="modal-overlay" (click)="closeRegisterModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <ng-container *ngIf="!registrationSuccess && !showSimulatedRazorpay">
+        <div class="modal-icon">&#127979;</div>
+        <h2>Confirm Registration</h2>
+        <p class="modal-event-title">{{ selectedEvent?.title }}</p>
+        <div class="modal-details">
+          <div class="md-row">&#128197; {{ formatDate(selectedEvent?.date || '') }} at {{ selectedEvent?.time }}</div>
+          <div class="md-row">&#128205; {{ selectedEvent?.venue }}</div>
+          <div class="md-row">&#127891; {{ selectedEvent?.creditPoints }} CME Credit Point(s)</div>
+          <div class="md-row price-row" [class.free]="selectedEvent?.price === 0">
+            {{ selectedEvent?.price === 0 ? 'FREE Registration' : 'Rs. ' + selectedEvent?.price + ' — Payment link will be shared' }}
+          </div>
+        </div>
+        <div *ngIf="selectedEvent?.price === 0" class="free-note">
+          This is a free event. Joining details will be shared via email after registration.
+        </div>
+        <div *ngIf="(selectedEvent?.price || 0) > 0" class="paid-note">
+          <p *ngIf="!sponsorNameDetected" style="margin-bottom:0.5rem; line-height:1.4;">This is a paid event. Clicking confirm will open the Razorpay payment gateway to process the registration fee of Rs. {{ selectedEvent?.price | number }}.</p>
+          <p *ngIf="sponsorNameDetected" style="color:#059669; font-weight:700; margin-bottom:0.5rem;">✓ Sponsorship Verified: {{ sponsorNameDetected }} (Rs. {{ selectedEvent?.price | number }} fully waived)</p>
+
+          <!-- Toggle Link -->
+          <div class="mr-sponsor-toggle" style="margin-top: 0.5rem; text-align: left;">
+            <a href="javascript:void(0)" (click)="showSponsorInput = !showSponsorInput" style="font-size:0.82rem; font-weight:700; color:#2563eb; text-decoration:none;">
+              {{ showSponsorInput ? '✕ Hide Sponsor Code Option' : '🔑 Sponsored by an MR? Click here to enter code' }}
+            </a>
+          </div>
+
+          <!-- Sponsor Code Input Box -->
+          <div *ngIf="showSponsorInput" style="margin-top: 0.75rem; text-align: left; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.75rem;">
+            <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:0.25rem;">MR Sponsorship Code</label>
+            <div style="display:flex; gap:0.5rem;">
+              <input type="text" [(ngModel)]="sponsorCode" placeholder="Enter MR Code e.g. MR_FREE or MR_SUN" style="flex:1; padding:0.4rem 0.6rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" />
+              <button (click)="verifySponsorCode()" style="background:#2563eb; color:#fff; border:none; padding:0.4rem 1rem; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer;">Verify</button>
+            </div>
+            <div *ngIf="sponsorCodeError" style="color:#dc2626; font-size:0.75rem; font-weight:600; margin-top:0.4rem;">{{ sponsorCodeError }}</div>
+            <div *ngIf="sponsorNameDetected" style="color:#16a34a; font-size:0.75rem; font-weight:700; margin-top:0.4rem;">✓ Verified Sponsor: {{ sponsorNameDetected }}</div>
+            <div style="font-size:0.68rem; color:#64748b; margin-top:0.4rem; line-height:1.2;">* Available codes: <strong>MR_FREE</strong>, <strong>MR_SUN</strong>, <strong>MR_REDDY</strong>, <strong>MR_CIPLA</strong>, or <strong>MR_LUPIN</strong> (enter any one code).</div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="closeRegisterModal()">Cancel</button>
+          <button class="btn-confirm" (click)="confirmRegister()">
+            <span *ngIf="selectedEvent?.price === 0">Confirm Registration</span>
+            <span *ngIf="(selectedEvent?.price || 0) > 0">
+              {{ sponsorNameDetected ? 'Confirm Sponsored Registration' : 'Proceed to Pay Rs. ' + (selectedEvent?.price | number) }}
+            </span>
+          </button>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="registrationSuccess">
+        <div class="success-icon">&#9989;</div>
+        <h2>Registered Successfully!</h2>
+        <p>You are now registered for <strong>{{ selectedEvent?.title }}</strong>.</p>
+        <p class="success-sub">Attend the event in person — the admin will mark your attendance and issue your CME certificate.</p>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Admin: Create Event Modal -->
+  <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-box create-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Create New CME Event</h2>
+        <button class="close-btn" (click)="closeCreateModal()">&#10005;</button>
+      </div>
+      <div class="modal-form-grid">
+        <div class="form-group full-width">
+          <label>Event Title *</label>
+          <input type="text" [(ngModel)]="newTitle" placeholder="e.g. Advanced Cardiology CME Workshop 2026" />
+        </div>
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea [(ngModel)]="newDescription" rows="2" placeholder="Describe the event..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="newDate" />
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="text" [(ngModel)]="newTime" placeholder="10:00 AM IST" />
+        </div>
+        <div class="form-group full-width">
+          <label>Venue / Meeting Link *</label>
+          <input type="text" [(ngModel)]="newVenue" placeholder="e.g. AIIMS Delhi or https://zoom.us/..." />
+        </div>
+        <div class="form-group">
+          <label>Mode</label>
+          <select [(ngModel)]="newMode">
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newCategory">
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Speaker Name</label>
+          <input type="text" [(ngModel)]="newSpeaker" placeholder="Dr. Full Name" />
+        </div>
+        <div class="form-group">
+          <label>Speaker Role</label>
+          <input type="text" [(ngModel)]="newSpeakerRole" placeholder="Cardiologist, AIIMS Delhi" />
+        </div>
+        <div class="form-group">
+          <label>CME Credit Points</label>
+          <input type="number" [(ngModel)]="newCreditPoints" min="1" max="10" />
+        </div>
+        <div class="form-group">
+          <label>Registration Fee (Rs.) — 0 for Free</label>
+          <input type="number" [(ngModel)]="newPrice" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Max Seats</label>
+          <input type="number" [(ngModel)]="newMaxSeats" min="1" />
+        </div>
+        <div class="form-group full-width">
+          <label>Card Accent Color</label>
+          <div class="color-options">
+            <span *ngFor="let c of colorOptions" class="color-dot"
+              [style.background]="c"
+              [class.selected]="newBannerColor === c"
+              (click)="newBannerColor = c">
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+        <button class="btn-confirm" (click)="createEvent()" [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
+          Publish Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulated Razorpay Payment Gateway Overlay -->
+  <div class="modal-overlay" *ngIf="showSimulatedRazorpay">
+    <div class="razorpay-modal" (click)="$event.stopPropagation()">
+      <div class="rzp-header">
+        <div class="rzp-brand">
+          <span class="rzp-logo">&#128179;</span>
+          <div class="rzp-text">
+            <strong>Razorpay Payment Gateway</strong>
+            <span class="rzp-test-badge">TEST MODE</span>
+          </div>
+        </div>
+        <button class="close-rzp" (click)="showSimulatedRazorpay = false">&#10005;</button>
+      </div>
+
+      <div class="rzp-amount-bar">
+        <span>Order Amount:</span>
+        <strong class="rzp-amt">Rs. {{ selectedEvent?.price | number }}.00</strong>
+      </div>
+
+      <div class="rzp-methods">
+        <button [class.active]="selectedPaymentMethod === 'upi'" (click)="selectedPaymentMethod = 'upi'">
+          &#128241; UPI / QR (GPay, PhonePe)
+        </button>
+        <button [class.active]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">
+          &#128179; Credit / Debit Card
+        </button>
+        <button [class.active]="selectedPaymentMethod === 'netbanking'" (click)="selectedPaymentMethod = 'netbanking'">
+          &#127979; Net Banking
+        </button>
+      </div>
+
+      <div class="rzp-body" *ngIf="!paymentSuccess">
+        <!-- UPI Mode -->
+        <div *ngIf="selectedPaymentMethod === 'upi'" class="payment-method-box">
+          <label>VPA / UPI ID</label>
+          <input type="text" [(ngModel)]="upiId" placeholder="doctor@okicici" />
+          <div class="upi-apps">
+            <span class="upi-pill">GPay</span>
+            <span class="upi-pill">PhonePe</span>
+            <span class="upi-pill">Paytm</span>
+          </div>
+        </div>
+
+        <!-- Card Mode -->
+        <div *ngIf="selectedPaymentMethod === 'card'" class="payment-method-box">
+          <label>Card Number</label>
+          <input type="text" placeholder="4312 8894 2130 9940" />
+          <div class="form-grid-2" style="margin-top:0.75rem; display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div>
+              <label>Expiry Date</label>
+              <input type="text" placeholder="12/28" />
+            </div>
+            <div>
+              <label>CVV</label>
+              <input type="password" placeholder="***" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Netbanking Mode -->
+        <div *ngIf="selectedPaymentMethod === 'netbanking'" class="payment-method-box">
+          <label>Popular Banks</label>
+          <select class="bank-select">
+            <option>State Bank of India</option>
+            <option>HDFC Bank</option>
+            <option>ICICI Bank</option>
+            <option>Axis Bank</option>
+          </select>
+        </div>
+
+        <button class="btn-pay-now" (click)="confirmSimulatedPayment()" [disabled]="processingPayment" style="background:#2563eb; color:#fff; border:none; width:100%; padding:0.75rem; border-radius:10px; font-weight:700; margin-top:1.25rem; cursor:pointer;">
+          <span *ngIf="!processingPayment">Pay Rs. {{ selectedEvent?.price | number }} & Register Event</span>
+          <span *ngIf="processingPayment" class="spinner">Processing...</span>
+        </button>
+      </div>
+
+      <div class="rzp-success-view" *ngIf="paymentSuccess" style="text-align:center; padding:2rem 1rem;">
+        <div class="check-icon" style="font-size:3rem; color:#10b981; margin-bottom:0.75rem;">&#10003;</div>
+        <h3>Payment Successful!</h3>
+        <p style="font-size:0.85rem; color:#64748b; margin-top:0.25rem;">Transaction ID: {{ paymentTransactionId }}</p>
+        <span class="unlock-text" style="font-size:0.82rem; color:#2563eb; font-weight:600; display:block; margin-top:0.75rem;">Completing event registration...</span>
+      </div>
+    </div>
+  <!-- Interest Area Pop-up -->
+  <div class="modal-overlay interest-popup-overlay" *ngIf="showInterestPopup">
+    <div class="modal-box interest-box">
+      <h2>🎯 Area of Interest</h2>
+      <p class="interest-question">Do you have any specialist areas of interest?</p>
+      
+      <div class="interest-scroll-area">
+        <!-- Medical Domain -->
+        <div class="interest-group">
+          <h5>🏥 Medical Domains</h5>
+          <div class="interest-pills">
+            <span *ngFor="let interest of medicalInterests" 
+              class="interest-pill" 
+              [class.selected]="selectedInterests.includes(interest)"
+              (click)="toggleInterest(interest)">
+              {{ interest }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Tech Domain -->
+        <div class="interest-group">
+          <h5>💻 Medical Technology</h5>
+          <div class="interest-pills">
+            <span *ngFor="let interest of techInterests" 
+              class="interest-pill" 
+              [class.selected]="selectedInterests.includes(interest)"
+              (click)="toggleInterest(interest)">
+              {{ interest }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Charity Domain -->
+        <div class="interest-group">
+          <h5>❤️ Charity & Community Care</h5>
+          <div class="interest-pills">
+            <span *ngFor="let interest of charityInterests" 
+              class="interest-pill" 
+              [class.selected]="selectedInterests.includes(interest)"
+              (click)="toggleInterest(interest)">
+              {{ interest }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="interest-actions">
+        <button class="btn-interest-skip" (click)="skipInterests()">Skip for now</button>
+        <button class="btn-interest-save" (click)="saveInterests()">Save & Apply Recommendations</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CME Event Details Modal -->
+  <div class="modal-overlay cme-details-overlay" *ngIf="showDetailModal && selectedEventForDetail">
+    <div class="modal-box detail-modal-box">
+      <div class="detail-modal-header" [style.background]="'linear-gradient(135deg, ' + selectedEventForDetail.bannerColor + 'dd, ' + selectedEventForDetail.bannerColor + '88)'">
+        <span class="detail-modal-category">{{ selectedEventForDetail.category }}</span>
+        <h3>{{ selectedEventForDetail.title }}</h3>
+        <button class="close-detail-btn" (click)="closeDetailModal()">✕</button>
+      </div>
+
+      <div class="detail-modal-body">
+        <div class="detail-modal-scroll">
+          
+          <!-- Event Description -->
+          <div class="detail-section">
+            <h4>📝 Event Description</h4>
+            <p>{{ selectedEventForDetail.description }}</p>
+          </div>
+
+          <!-- Schedule & Location -->
+          <div class="detail-section grid-section">
+            <div>
+              <h5>📅 Date & Time</h5>
+              <p>{{ formatDate(selectedEventForDetail.date) }} &middot; {{ selectedEventForDetail.time }}</p>
+            </div>
+            <div>
+              <h5>📍 Venue / Meeting Info</h5>
+              <p>{{ selectedEventForDetail.venue }} ({{ selectedEventForDetail.mode }} Type)</p>
+            </div>
+          </div>
+
+          <!-- Language Preference & Pre-Reads -->
+          <div class="detail-section grid-section">
+            <div>
+              <h5>🗣️ Language Preference</h5>
+              <p>{{ selectedEventForDetail.language }}</p>
+            </div>
+            <div>
+              <h5>📚 Pre-Read Material</h5>
+              <p class="preread-link">📄 {{ selectedEventForDetail.preRead }}</p>
+            </div>
+          </div>
+
+          <!-- Speakers Profile -->
+          <div class="detail-section">
+            <h4>👤 Speaker Profile</h4>
+            <div class="modal-speaker-row">
+              <span class="modal-speaker-avatar">{{ selectedEventForDetail.speaker[0] }}</span>
+              <div>
+                <h5>{{ selectedEventForDetail.speaker }}</h5>
+                <p>{{ selectedEventForDetail.speakerRole }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Event Outline -->
+          <div class="detail-section">
+            <h4>📋 Event Outline & Schedule format</h4>
+            <div class="outline-list">
+              <div class="outline-step" *ngFor="let step of selectedEventForDetail.outline?.split('\n')">
+                {{ step }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Scope & Outcome -->
+          <div class="detail-section">
+            <h4>🎯 Scope & Learning Outcome</h4>
+            <div class="scope-box">
+              <p><strong>Scope:</strong> {{ selectedEventForDetail.scopeDetails }}</p>
+              <p style="margin-top: 0.5rem;"><strong>Outcome:</strong> {{ selectedEventForDetail.outcome }}</p>
+            </div>
+          </div>
+
+          <!-- Video Assistance Details -->
+          <div class="detail-section">
+            <h4>🎥 Video Assistance & Team Support</h4>
+            <div class="video-assistance-box">
+              <p>🗣️ {{ selectedEventForDetail.videoAssistance }}</p>
+            </div>
+          </div>
+
+          <!-- Attendees Registered Count -->
+          <div class="detail-section registration-stats">
+            <h5>👥 Registration Count</h5>
+            <p><strong>{{ selectedEventForDetail.registeredCount }} Attendees</strong> registered out of {{ selectedEventForDetail.maxSeats }} seats max capacity.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="detail-modal-footer">
+        <div class="detail-price-box">
+          <span class="dp-val" [class.free]="selectedEventForDetail.price === 0">
+            {{ selectedEventForDetail.price === 0 ? 'FREE' : 'Rs. ' + (selectedEventForDetail.price | number) }}
+          </span>
+          <span class="dp-sub" *ngIf="selectedEventForDetail.price > 0">incl. certificate</span>
+        </div>
+        
+        <div class="detail-actions">
+          <button class="btn-cancel" (click)="closeDetailModal()">Close Details</button>
+          
+          <!-- Enrolling options inside modal -->
+          <ng-container *ngIf="authService.isDoctor()">
+            <button *ngIf="!isRegistered(selectedEventForDetail.id)" class="btn-enroll-action" (click)="openRegisterModal(selectedEventForDetail); closeDetailModal()">
+              Register Event Now
+            </button>
+            <div *ngIf="isRegistered(selectedEventForDetail.id)" style="display: flex; gap: 0.5rem;">
+              <button class="btn-enrolled-action" disabled style="background: #cbd5e1; border-color: #cbd5e1; color: #475569;">
+                ✓ Enrolled
+              </button>
+              <button class="btn-enroll-action" (click)="openLiveRoom(selectedEventForDetail)" style="background: linear-gradient(135deg, #ef4444, #f43f5e); border: none; box-shadow: 0 4px 10px rgba(239,68,68,0.25);">
+                🔴 Join Live Room
+              </button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Protocol Detail Modal -->
+  <div class="modal-overlay protocol-overlay" *ngIf="showProtocolModal && selectedProtocolType">
+    <div class="modal-box protocol-box">
+      <div class="protocol-header">
+        <span class="p-header-badge" [class.red]="selectedProtocolType === 'CLS'" [class.purple]="selectedProtocolType === 'PLS'" [class.blue]="selectedProtocolType === 'ICU'" [class.green]="selectedProtocolType === 'DRUGS'" [class.orange]="selectedProtocolType === 'OBGYN'" [class.teal]="selectedProtocolType === 'NEURO'" [class.pink]="selectedProtocolType === 'TRAUMA'">
+          {{ selectedProtocolType }}
+        </span>
+        <h3>
+          <span *ngIf="selectedProtocolType === 'CLS'">Cardiac Life Support Protocol</span>
+          <span *ngIf="selectedProtocolType === 'PLS'">Pediatric Life Support Protocol</span>
+          <span *ngIf="selectedProtocolType === 'ICU'">ICU Care & Ventilation Protocols</span>
+          <span *ngIf="selectedProtocolType === 'DRUGS'">High-Risk Drugs Dosing Protocols</span>
+          <span *ngIf="selectedProtocolType === 'OBGYN'">Obstetric Emergencies & PPH Protocol</span>
+          <span *ngIf="selectedProtocolType === 'NEURO'">Acute Ischemic Stroke & tPA Guidelines</span>
+          <span *ngIf="selectedProtocolType === 'TRAUMA'">Advanced Trauma Life Support Guidelines</span>
+        </h3>
+        <button class="close-p-btn" (click)="closeProtocolModal()">✕</button>
+      </div>
+
+      <div class="protocol-body">
+        <div class="protocol-scroll">
+          <ng-container *ngIf="selectedProtocolType === 'CLS'">
+            <h5>1. VF/pVT (Vibrillating/Pulseless Ventricular Tachycardia)</h5>
+            <ul>
+              <li>Shock &rarr; CPR 2 min (IV/IO access) &rarr; Shock &rarr; CPR 2 min (Epinephrine 1mg Q3-5m) &rarr; Shock &rarr; CPR 2 min (Amiodarone 300mg or Lidocaine 1-1.5mg/kg).</li>
+            </ul>
+            <h5>2. PEA / Asystole</h5>
+            <ul>
+              <li>CPR 2 min &rarr; Epinephrine 1mg Q3-5m as soon as possible &rarr; Rhythm check (Shockable? If yes, go to VF/pVT, otherwise CPR 2m).</li>
+            </ul>
+            <h5>3. Post-Cardiac Arrest Care</h5>
+            <ul>
+              <li>Optimize ventilation (SpO2 92-98%, PaCO2 35-45 mmHg) &rarr; Maintain coronary perfusion (MAP &ge; 65 mmHg) &rarr; Targeted Temperature Management (32°C - 36°C for 24h).</li>
+            </ul>
+          </ng-container>
+
+          <ng-container *ngIf="selectedProtocolType === 'PLS'">
+            <h5>1. Neonatal Resuscitation Program (NRP) Guidelines</h5>
+            <ul>
+              <li>Warm, dry, stimulate &rarr; Assess breathing/HR (HR &lt; 100 or apnea: Positive Pressure Ventilation for 30s) &rarr; HR &lt; 60: Chest compressions (3:1 ratio, 90 compressions + 30 breaths/min).</li>
+            </ul>
+            <h5>2. Pediatric Septic Shock Protocol</h5>
+            <ul>
+              <li>First hour: 20mL/kg crystalloid boluses up to 60mL/kg &rarr; Start Epinephrine (cold shock) or Norepinephrine (warm shock) infusion &rarr; Add Stress dose Hydrocortisone (if fluid/vasopressor refractory).</li>
+            </ul>
+            <h5>3. Pediatric Airway Calculations</h5>
+            <ul>
+              <li>Uncuffed ETT Size: (Age / 4) + 4 mm &bull; Cuffed ETT Size: (Age / 4) + 3.5 mm.</li>
+            </ul>
+          </ng-container>
+
+          <ng-container *ngIf="selectedProtocolType === 'ICU'">
+            <h5>1. Ventilator Settings in ARDS (Lung Protective Ventilation)</h5>
+            <ul>
+              <li>Low Tidal Volume: 4 - 6 mL/kg Predicted Body Weight &bull; Plateau Pressure limit &le; 30 cmH2O &bull; High PEEP titration strategy &bull; Permissive Hypercapnia (maintain pH &ge; 7.20).</li>
+            </ul>
+            <h5>2. Ventilator Weaning Criteria</h5>
+            <ul>
+              <li>Cause of respiratory failure reversed &bull; Intact airway protective reflexes &bull; RSBI (Rapid Shallow Breathing Index) &lt; 105 &bull; Successful 30-120 min Spontaneous Breathing Trial (SBT) on T-piece or PSV.</li>
+            </ul>
+            <h5>3. Surviving Sepsis Hour-1 Bundle</h5>
+            <ul>
+              <li>Measure lactate &rarr; Obtain blood cultures prior to antibiotics &rarr; Administer broad-spectrum antibiotics &rarr; Fluid resuscitation (30mL/kg crystalloid for MAP &lt; 65 or lactate &ge; 4).</li>
+            </ul>
+          </ng-container>
+
+          <ng-container *ngIf="selectedProtocolType === 'DRUGS'">
+            <h5>1. Vasoactive Drug Infusions</h5>
+            <ul>
+              <li>Norepinephrine: 0.05 - 0.5 mcg/kg/min (first line for septic shock).</li>
+              <li>Dopamine: 2 - 20 mcg/kg/min (renal, inotropic, and pressor ranges).</li>
+              <li>Dobutamine: 2 - 20 mcg/kg/min (inodilator for cardiogenic shock).</li>
+            </ul>
+            <h5>2. Crucial CYP450 Drug Interactions</h5>
+            <ul>
+              <li><strong>CYP3A4 Inhibitors:</strong> Ketoconazole, Clarithromycin, Amiodarone (elevates levels of statins, calcium channel blockers).</li>
+              <li><strong>CYP3A4 Inducers:</strong> Rifampin, Phenytoin, Carbamazepine (reduces efficacy of oral anticoagulants, oral contraceptives).</li>
+            </ul>
+          </ng-container>
+
+          <ng-container *ngIf="selectedProtocolType === 'OBGYN'">
+            <h5>1. Postpartum Hemorrhage (PPH) Management</h5>
+            <ul>
+              <li>Uterine massage, early cord clamping, and Oxytocin (10 U IM or IV infusion).</li>
+              <li>Refractory bleeding: Tranexamic Acid (TXA) 1g IV over 10 min, Methylergonovine 0.2mg IM, Carboprost 250 mcg IM, and uterine balloon tamponade.</li>
+            </ul>
+            <h5>2. Hypertensive Crisis & Eclampsia</h5>
+            <ul>
+              <li>For severe hypertension (BP &ge; 160/110 mmHg): Labetalol 20mg IV over 2 min OR Hydralazine 5-10mg IV.</li>
+              <li>Seizure prophylaxis: Magnesium Sulfate (MgSO4) 4-6g IV bolus over 20 min, then 1-2g/h continuous infusion.</li>
+            </ul>
+            <h5>3. Shoulder Dystocia (ALERTM Steps)</h5>
+            <ul>
+              <li>Help &rarr; Leg flexion (McRoberts maneuver) &rarr; Suprapubic pressure &rarr; Enter (internal rotation maneuvers) &rarr; Remove posterior arm &rarr; Roll patient onto all fours.</li>
+            </ul>
+          </ng-container>
+
+          <ng-container *ngIf="selectedProtocolType === 'NEURO'">
+            <h5>1. Stroke Activation & Diagnostics</h5>
+            <ul>
+              <li>Rapid FAST screening & stroke team activation &rarr; Obtain non-contrast Head CT within 20 mins of arrival to rule out intracranial hemorrhage.</li>
+            </ul>
+            <h5>2. Thrombolytic Therapy (tPA / Tenecteplase)</h5>
+            <ul>
+              <li>Administer IV Alteplase (0.9 mg/kg, max 90mg; 10% bolus, 90% over 60 mins) within 4.5 hours of symptom onset.</li>
+              <li>Strict Blood Pressure Management: Keep BP &lt; 185/110 mmHg before thrombolysis and &lt; 180/105 mmHg for the first 24 hours.</li>
+            </ul>
+            <h5>3. Endovascular Thrombectomy</h5>
+            <ul>
+              <li>Large Vessel Occlusion (LVO) in anterior circulation &rarr; Perform mechanical thrombectomy within 24 hours based on CT perfusion mismatch.</li>
+            </ul>
+          </ng-container>
+
+          <ng-container *ngIf="selectedProtocolType === 'TRAUMA'">
+            <h5>1. Primary Trauma Survey (ABCDE)</h5>
+            <ul>
+              <li><strong>Airway:</strong> C-spine stabilization, jaw thrust/intubation.</li>
+              <li><strong>Breathing:</strong> Treat tension pneumothorax, open chest wounds, flail chest.</li>
+              <li><strong>Circulation:</strong> Hemorrhage control, 2 large-bore IVs, warm crystalloids, and early blood transfusion.</li>
+              <li><strong>Disability:</strong> Glasgow Coma Scale (GCS) and pupillary response.</li>
+              <li><strong>Exposure:</strong> Undress patient fully to inspect, but prevent hypothermia.</li>
+            </ul>
+            <h5>2. Hemorrhagic Shock Classification</h5>
+            <ul>
+              <li>Class I (&lt;15% blood loss, normal vitals) &bull; Class II (15-30% loss, tachycardia, normal BP) &bull; Class III (30-40% loss, hypotension, confusion) &bull; Class IV (&gt;40% loss, severe shock, anuria).</li>
+            </ul>
+            <h5>3. Needle Decompression</h5>
+            <ul>
+              <li>Immediate treatment of tension pneumothorax: insert 14G/16G needle into the 5th intercostal space at the anterior axillary line.</li>
+            </ul>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="protocol-footer">
+        <button class="btn-primary" (click)="closeProtocolModal()">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Live Conducting Room Modal -->
+  <div class="modal-overlay" *ngIf="showLiveRoomModal && activeLiveEvent">
+    <div class="modal-box live-room-box animate-in" (click)="$event.stopPropagation()">
+      <div class="live-room-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span class="live-badge-pulse">🔴 Live Session</span>
+          <h3>{{ activeLiveEvent.title }}</h3>
+        </div>
+        <button class="close-detail-btn" (click)="closeLiveRoom()" style="color: #cbd5e1; border: none; background: transparent; font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="live-room-body">
+        <!-- Left Panel: Video Stream & Outline -->
+        <div class="live-stream-panel">
+          <!-- Mock Video Player Feed -->
+          <div class="mock-video-container">
+            <div class="video-mock-feed">
+              <div class="video-speaker-anim">🎙️</div>
+              <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">{{ activeLiveEvent.speaker }}</h4>
+              <p style="margin: 0.15rem 0 0 0; color: #38bdf8; font-size: 0.75rem;">{{ activeLiveEvent.speakerRole }}</p>
+              
+              <p style="margin: 0.85rem 0 0 0; color: #94a3b8; font-size: 0.7rem; font-style: italic; max-width: 80%;">
+                "Next clinical guideline details will cover emergency administration sequences..."
+              </p>
+              
+              <div class="video-wave-bars">
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Assistance / Team Support Box -->
+          <div class="video-assist-team-box">
+            <h5>👥 Video Assistance & Support Active</h5>
+            <p><strong>Moderators:</strong> 2 Active &bull; <strong>Consultants:</strong> 1-2 Active (answering Q&A chat below)</p>
+          </div>
+
+          <!-- Event Conducting Format Timeline -->
+          <div class="conducting-outline-container">
+            <h4>📋 Event Conduct Format & Live Progress</h4>
+            
+            <div class="conducting-step-item completed">
+              <strong>1. Introduction & Panel Details (Completed)</strong>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #94a3b8;">Welcome address and faculty introductions.</p>
+            </div>
+
+            <!-- Basic MCQ interactive area -->
+            <div class="conducting-step-item active">
+              <strong>2. Basic MCQ (Pre-Test) - Interactive</strong>
+              
+              <!-- Quiz form -->
+              <div class="live-conducting-quiz-box" *ngIf="!basicMcqAnswered">
+                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
+                <button class="quiz-option-button" (click)="submitBasicMcq(0)">A. Amiodarone 300mg IV Bolus</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(1)">B. Epinephrine 1mg IV/IO every 3-5 mins</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(2)">C. Atropine 1mg IV every 5 mins</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(3)">D. Adenosine 6mg rapid IV push</button>
+              </div>
+
+              <!-- Quiz result -->
+              <div class="live-conducting-quiz-box" *ngIf="basicMcqAnswered">
+                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
+                <div class="quiz-result-msg success" *ngIf="basicMcqIsCorrect">
+                  ✓ Correct! Epinephrine 1mg is administered after the second shock, followed every 3-5 minutes.
+                </div>
+                <div class="quiz-result-msg error" *ngIf="!basicMcqIsCorrect">
+                  ✕ Incorrect. Epinephrine 1mg IV/IO (Option B) is correct after the second shock. Amiodarone is given after the third shock.
+                </div>
+              </div>
+            </div>
+
+            <div class="conducting-step-item">
+              <strong>3. Lecture Session 1 - Core Resuscitation masterclass (Ongoing)</strong>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #64748b;">Live streaming slides on ACLS algorithms.</p>
+            </div>
+
+            <!-- Mid MCQ interactive area -->
+            <div class="conducting-step-item active">
+              <strong>4. Mid-Session MCQ (Knowledge Check) - Interactive</strong>
+              
+              <div class="live-conducting-quiz-box" *ngIf="!midMcqAnswered">
+                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the correct compression-to-ventilation ratio for newborn resuscitation?</p>
+                <button class="quiz-option-button" (click)="submitMidMcq(0)">A. 15:2 ratio (15 compressions, 2 breaths)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(1)">B. 30:2 ratio (30 compressions, 2 breaths)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(2)">C. 3:1 ratio (90 compressions, 30 breaths/min)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(3)">D. 5:1 ratio (50 compressions, 10 breaths/min)</button>
+              </div>
+
+              <div class="live-conducting-quiz-box" *ngIf="midMcqAnswered">
+                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the correct compression-to-ventilation ratio for newborn resuscitation?</p>
+                <div class="quiz-result-msg success" *ngIf="midMcqIsCorrect">
+                  ✓ Correct! In NRP, a 3:1 ratio (90 compressions + 30 breaths per minute) is recommended.
+                </div>
+                <div class="quiz-result-msg error" *ngIf="!midMcqIsCorrect">
+                  ✕ Incorrect. NRP guidelines specify a 3:1 ratio (Option C) to ensure adequate ventilation.
+                </div>
+              </div>
+            </div>
+
+            <div class="conducting-step-item">
+              <strong>5. Lecture Session 2 - Specialized Dosing & Interactions (Upcoming)</strong>
+            </div>
+
+            <div class="conducting-step-item">
+              <strong>6. Live Q&A and Expert Panel Discussion (Upcoming)</strong>
+            </div>
+
+            <!-- Session Resource Center -->
+            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+              <h5 style="margin: 0 0 0.75rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📚 Resource Center (Downloads)</h5>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="#" (click)="$event.preventDefault(); downloadPPT('ACLS_Mastery_Presentation_2026.pptx')" style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
+                  <span>📊</span> ACLS Mastery Slides (PPTX)
+                </a>
+                <a href="#" (click)="$event.preventDefault(); downloadPPT('Resuscitation_Algorithms_Guide.pdf')" style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
+                  <span>📄</span> Resuscitation Algorithms Guide (PDF)
+                </a>
+              </div>
+            </div>
+
+            <!-- Personal Notes Panel -->
+            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                <h5 style="margin: 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📝 Personal Private Notes</h5>
+                <span style="font-size: 0.65rem; color: #94a3b8; font-style: italic;">Auto-saved locally</span>
+              </div>
+              <textarea [(ngModel)]="liveRoomNotes" (keyup)="saveNotes()" placeholder="Take private notes during the live lecture..." style="width: 100%; height: 100px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+              <button (click)="downloadNotes()" style="margin-top: 0.75rem; background: #0ea5e9; color: #fff; border: none; padding: 0.45rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.2s;">
+                ⬇️ Export Notes (.txt)
+              </button>
+            </div>
+
+            <!-- Feedback & Attendance Verification -->
+            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+
+              <!-- SUCCESS SCREEN -->
+              <div *ngIf="liveSessionCompleted" style="text-align: center; padding: 1.5rem 0.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎉</div>
+                <h4 style="margin: 0 0 0.4rem 0; color: #10b981; font-size: 1.05rem; font-weight: 800;">Session Completed!</h4>
+                <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Your attendance has been verified and CME credits recorded.</p>
+                <div style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; border-radius: 10px; padding: 0.85rem; margin: 1rem 0;">
+                  <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: block;">⚡ +{{ activeLiveEvent.creditPoints || 1 }} CME Credit(s) Earned</span>
+                  <span style="font-size: 0.72rem; color: #94a3b8;">📜 Certificate will appear in My Learning</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                  <button (click)="closeCompletedSession()" style="background: #0ea5e9; color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; width: 100%; transition: background 0.2s;">
+                    📜 Go to My Learning &amp; View Certificate
+                  </button>
+                  <button (click)="closeLiveRoom()" style="background: transparent; color: #64748b; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.78rem; cursor: pointer; width: 100%;">
+                    Close Session
+                  </button>
+                </div>
+              </div>
+
+              <!-- FEEDBACK FORM -->
+              <div *ngIf="!liveSessionCompleted">
+                <h5 style="margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">⭐ Session Feedback &amp; Attendance</h5>
+                <p style="margin: 0 0 0.75rem 0; font-size: 0.72rem; color: #94a3b8; line-height: 1.3;">Rate this event to verify attendance and unlock credits.</p>
+                
+                <div style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem;">
+                  <span *ngFor="let star of [1, 2, 3, 4, 5]" (click)="liveFeedbackRating = star" style="font-size: 1.4rem; cursor: pointer; transition: all 0.15s;" [style.color]="liveFeedbackRating >= star ? '#f59e0b' : '#64748b'">
+                    ★
+                  </span>
+                </div>
+
+                <textarea [(ngModel)]="liveFeedbackText" placeholder="Write feedback comments (optional)..." style="width: 100%; height: 60px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: inherit;"></textarea>
+                <button (click)="submitFeedback()" [disabled]="liveFeedbackSubmitted" style="margin-top: 0.75rem; background: #ef4444; color: #fff; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; width: 100%; transition: all 0.2s;" [style.opacity]="liveFeedbackSubmitted ? '0.6' : '1'">
+                  <span *ngIf="!liveFeedbackSubmitted">Submit Feedback &amp; Verify Attendance</span>
+                  <span *ngIf="liveFeedbackSubmitted">⏳ Verifying attendance...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Live Chat Q&A Board -->
+        <div class="live-chat-panel">
+          <div class="chat-panel-header">
+            <h4>💬 Live Q&A & Support Chat</h4>
+          </div>
+
+          <div class="chat-msg-history" id="chat-history-scroll">
+            <div class="chat-msg-row" *ngFor="let msg of liveChatMessages" [class.self]="msg.isUser" [class.other]="!msg.isUser">
+              <span class="chat-msg-sender">{{ msg.sender }}</span>
+              <div class="chat-msg-bubble">
+                {{ msg.text }}
+              </div>
+              <span class="chat-msg-time">{{ msg.time }}</span>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <input type="text" [(ngModel)]="newChatMessageText" (keyup.enter)="sendLiveChatMessage()" placeholder="Ask the consultants a question..." class="chat-text-input" />
+            <button class="btn-send-chat" (click)="sendLiveChatMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
