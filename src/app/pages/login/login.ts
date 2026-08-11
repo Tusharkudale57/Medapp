@@ -34,6 +34,38 @@ export class LoginComponent {
   regCity: string = '';
   regSuccessMsg: string = '';
 
+  // Expanded FRD Registration Fields
+  regEmail: string = '';
+  regPassword: string = '';
+  regConfirmPassword: string = '';
+  regGender: string = 'Male';
+  regDob: string = '';
+  regDepartment: string = '';
+  regSpecialty: string = 'Cardiology';
+  regSpecialtyOther: string = '';
+  regQualification: string = 'MBBS';
+  regMmcNo: string = '';
+  regHospital: string = '';
+  regExperience: number = 2;
+  regLanguage: string = 'English';
+  regEmailConsent: boolean = true;
+  regWhatsappConsent: boolean = true;
+  regTermsConsent: boolean = false;
+  regClinicAddress: string = '';
+  regPracticingInterest: string = '';
+
+  // Forgot Password / OTP State Variables
+  showForgotPassword = false;
+  forgotEmailOrMobile = '';
+  otpSent = false;
+  otpCode = '';
+  otpCountdown = 60;
+  otpInterval: any = null;
+  newPassword = '';
+  newPasswordConfirm = '';
+  forgotSuccessMsg = '';
+  forgotErrorMsg = '';
+
   constructor(
     public authService: AuthService,
     private router: Router
@@ -94,19 +126,57 @@ export class LoginComponent {
   }
 
   submitRegistration() {
-    if (!this.regFirstName.trim() || !this.regLastName.trim() || !this.regMobileNumber.trim()) {
-      alert('Please fill in all required fields (First Name, Last Name, and Mobile Number).');
+    // 1. Mandatory Field checks
+    if (!this.regFirstName.trim() || !this.regLastName.trim() || !this.regMobileNumber.trim() || !this.regEmail.trim()) {
+      alert('Please fill in all required fields: First Name, Last Name, Email, and Mobile.');
       return;
     }
 
-    // Register user in mock DB
-    this.authService.registerNewUser(
-      this.regDesignation,
-      this.regFirstName,
-      this.regLastName,
-      this.regMobileNumber,
-      this.regCity
-    );
+    if (!this.regPassword.trim() || this.regPassword !== this.regConfirmPassword) {
+      alert('Passwords do not match or are empty.');
+      return;
+    }
+
+    if (!this.regTermsConsent) {
+      alert('You must accept the Terms and Conditions to proceed.');
+      return;
+    }
+
+    // 2. Date of birth check (not in future)
+    if (this.regDob) {
+      const selected = new Date(this.regDob);
+      const today = new Date();
+      if (selected > today) {
+        alert('Date of Birth cannot be in the future.');
+        return;
+      }
+    }
+
+    // 3. Register user in mock DB
+    const registrationDetails = {
+      designation: this.regDesignation,
+      name: this.regFirstName,
+      sirName: this.regLastName,
+      email: this.regEmail.trim(),
+      phone: this.regMobileNumber.trim(),
+      city: this.regCity.trim(),
+      gender: this.regGender,
+      dob: this.regDob,
+      department: this.regDepartment.trim(),
+      specialty: this.regSpecialty === 'Other' ? this.regSpecialtyOther : this.regSpecialty,
+      specialtyOther: this.regSpecialtyOther.trim(),
+      qualification: this.regQualification,
+      registrationNo: this.regMmcNo.trim(),
+      hospital: this.regHospital.trim(),
+      experience: this.regExperience,
+      language: this.regLanguage,
+      emailConsent: this.regEmailConsent,
+      whatsappConsent: this.regWhatsappConsent,
+      clinicAddress: this.regClinicAddress.trim(),
+      practicingInterest: this.regPracticingInterest.trim()
+    };
+
+    this.authService.registerNewUser(registrationDetails);
 
     this.showRegistrationForm = false;
     this.regSuccessMsg = `Successfully registered Dr. ${this.regFirstName}! You are now logged in.`;
@@ -114,6 +184,60 @@ export class LoginComponent {
     setTimeout(() => {
       this.regSuccessMsg = '';
       this.router.navigate(['/dashboard']);
+    }, 2000);
+  }
+
+  // --- Password Recovery / OTP Simulation logic ---
+  openForgotPassword() {
+    this.showForgotPassword = true;
+    this.otpSent = false;
+    this.forgotSuccessMsg = '';
+    this.forgotErrorMsg = '';
+  }
+
+  closeForgotPassword() {
+    this.showForgotPassword = false;
+    if (this.otpInterval) {
+      clearInterval(this.otpInterval);
+    }
+  }
+
+  sendForgotOtp() {
+    if (!this.forgotEmailOrMobile.trim()) {
+      this.forgotErrorMsg = 'Please enter your Registered Email or Mobile Number.';
+      return;
+    }
+    this.forgotErrorMsg = '';
+    this.otpSent = true;
+    this.otpCountdown = 60;
+
+    // Start timer countdown
+    if (this.otpInterval) {
+      clearInterval(this.otpInterval);
+    }
+    this.otpInterval = setInterval(() => {
+      if (this.otpCountdown > 0) {
+        this.otpCountdown--;
+      } else {
+        clearInterval(this.otpInterval);
+      }
+    }, 1000);
+  }
+
+  verifyOtpAndReset() {
+    if (!this.otpCode || this.otpCode.length < 4) {
+      this.forgotErrorMsg = 'Please enter a valid 6-digit OTP code.';
+      return;
+    }
+    if (!this.newPassword || this.newPassword !== this.newPasswordConfirm) {
+      this.forgotErrorMsg = 'Passwords do not match or are empty.';
+      return;
+    }
+    this.forgotErrorMsg = '';
+    this.forgotSuccessMsg = 'Password successfully reset! You can now log in with your new password.';
+    
+    setTimeout(() => {
+      this.closeForgotPassword();
     }, 2000);
   }
 

@@ -73,6 +73,9 @@
           <span *ngIf="!loading && activeRole() === 'admin'">Sign In as Administrator → Manage Courses & Prices</span>
           <span *ngIf="loading" class="spinner"></span>
         </button>
+        <div style="text-align: right; margin-top: 0.75rem;">
+          <a href="#" (click)="$event.preventDefault(); openForgotPassword()" style="color: #2563eb; font-size: 0.85rem; font-weight: 600; text-decoration: none;">Forgot Password / Reset with OTP?</a>
+        </div>
       </form>
 
       <!-- Role Access Scope Notice -->
@@ -113,51 +116,218 @@
 
     <!-- New User Registration Form Modal -->
     <div class="modal-overlay" *ngIf="showRegistrationForm" (click)="closeRegistration()">
-      <div class="modal-box registration-modal" (click)="$event.stopPropagation()" style="max-width: 480px; width: 90%;">
-        <div class="modal-header">
-          <h3>📝 New Doctor Registration</h3>
-          <button class="close-btn" (click)="closeRegistration()">&#10005;</button>
+      <div class="modal-box registration-modal" (click)="$event.stopPropagation()" style="max-width: 650px; width: 95%; max-height: 85vh; overflow-y: auto; padding: 1.5rem; border-radius: 12px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <div class="modal-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1.2rem; color: #1e3a8a;">📝 New Doctor Profile Registration</h3>
+          <button class="close-btn" (click)="closeRegistration()" style="border: none; background: none; font-size: 1.25rem; cursor: pointer; color: #64748b;">&#10005;</button>
         </div>
         <form (ngSubmit)="submitRegistration()">
-          <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+          <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.95rem; margin-top: 1.25rem;">
             
-            <div style="display: flex; gap: 1rem;">
-              <div class="form-group" style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
-                <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Designation</label>
-                <select [(ngModel)]="regDesignation" name="regDesignation" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" required>
-                  <option value="Dr.">Dr.</option>
-                  <option value="Prof. Dr.">Prof. Dr.</option>
-                  <option value="Assoc. Prof. Dr.">Assoc. Prof. Dr.</option>
-                </select>
-              </div>
-              <div class="form-group" style="flex: 2; display: flex; flex-direction: column; gap: 0.25rem;">
-                <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Mobile Number *</label>
-                <input type="text" [(ngModel)]="regMobileNumber" name="regMobileNumber" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" required placeholder="e.g. 9876543210" />
-              </div>
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Designation *</label>
+              <select [(ngModel)]="regDesignation" name="regDesignation" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required>
+                <option value="Dr.">Dr.</option>
+                <option value="Prof. Dr.">Prof. Dr.</option>
+                <option value="Assoc. Prof. Dr.">Assoc. Prof. Dr.</option>
+              </select>
             </div>
 
-            <div style="display: flex; gap: 1rem;">
-              <div class="form-group" style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
-                <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">First Name *</label>
-                <input type="text" [(ngModel)]="regFirstName" name="regFirstName" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" required placeholder="First Name" />
-              </div>
-              <div class="form-group" style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
-                <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Last Name *</label>
-                <input type="text" [(ngModel)]="regLastName" name="regLastName" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" required placeholder="Last Name" />
-              </div>
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Mobile Number *</label>
+              <input type="text" [(ngModel)]="regMobileNumber" name="regMobileNumber" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="e.g. 9876543210" />
             </div>
 
-            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
-              <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">City</label>
-              <input type="text" [(ngModel)]="regCity" name="regCity" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" placeholder="e.g. Mumbai, New Delhi" />
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">First Name *</label>
+              <input type="text" [(ngModel)]="regFirstName" name="regFirstName" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="First Name" />
+            </div>
+            
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Last Name *</label>
+              <input type="text" [(ngModel)]="regLastName" name="regLastName" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="Last Name" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Email Address *</label>
+              <input type="email" [(ngModel)]="regEmail" name="regEmail" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="doctor@hospital.org" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Preferred Language</label>
+              <select [(ngModel)]="regLanguage" name="regLanguage" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Marathi">Marathi</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Password *</label>
+              <input type="password" [(ngModel)]="regPassword" name="regPassword" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="Password" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Confirm Password *</label>
+              <input type="password" [(ngModel)]="regConfirmPassword" name="regConfirmPassword" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="Retype password" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Gender</label>
+              <select [(ngModel)]="regGender" name="regGender" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Date of Birth</label>
+              <input type="date" [(ngModel)]="regDob" name="regDob" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">MMC / Medical Registration Number</label>
+              <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. MCI-2026-19349" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Specialty Category *</label>
+              <select [(ngModel)]="regSpecialty" name="regSpecialty" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+                <option value="Cardiology">Cardiology</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Surgery">Surgery</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Other">Other (Type below)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;" *ngIf="regSpecialty === 'Other'">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Specify Other Specialty *</label>
+              <input type="text" [(ngModel)]="regSpecialtyOther" name="regSpecialtyOther" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. Dermatology" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Hospital / Institution Name *</label>
+              <input type="text" [(ngModel)]="regHospital" name="regHospital" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. Kokilaben Hospital Mumbai" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Department Name</label>
+              <input type="text" [(ngModel)]="regDepartment" name="regDepartment" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. Cardiology OPD" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">City *</label>
+              <input type="text" [(ngModel)]="regCity" name="regCity" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required placeholder="e.g. Mumbai, Pune" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Professional Qualification *</label>
+              <input type="text" [(ngModel)]="regQualification" name="regQualification" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. MBBS, MD Cardiology" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Years of Experience</label>
+              <input type="number" [(ngModel)]="regExperience" name="regExperience" min="0" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Clinic Address</label>
+              <input type="text" [(ngModel)]="regClinicAddress" name="regClinicAddress" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. Shop 4, Sector 5, Vashi, Navi Mumbai" />
+            </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Practicing Interest</label>
+              <input type="text" [(ngModel)]="regPracticingInterest" name="regPracticingInterest" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" placeholder="e.g. Preventive Cardiology, Echo" />
+            </div>
+
+            <!-- Toggles and Privacy -->
+            <div style="grid-column: span 2; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer; color: #334155;">
+                <input type="checkbox" [(ngModel)]="regEmailConsent" name="regEmailConsent" style="width: 16px; height: 16px;" />
+                Get invitations, updates, and reminders via Email.
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer; color: #334155;">
+                <input type="checkbox" [(ngModel)]="regWhatsappConsent" name="regWhatsappConsent" style="width: 16px; height: 16px;" />
+                Get invitations, details, and PDF invoices via WhatsApp.
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer; color: #1e3a8a; font-weight: 700;">
+                <input type="checkbox" [(ngModel)]="regTermsConsent" name="regTermsConsent" style="width: 16px; height: 16px;" required />
+                I agree to the CME Platform Terms of Service and Privacy Policy. *
+              </label>
             </div>
 
           </div>
-          <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
-            <button type="button" class="btn-cancel" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;" (click)="closeRegistration()">Cancel</button>
-            <button type="submit" class="btn-primary" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: none; background: #2563eb; color: #fff; cursor: pointer; font-weight: 600;">Register & Login</button>
+          <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding-top: 0.75rem; margin-top: 1.25rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
+            <button type="button" class="btn-cancel" style="padding: 0.6rem 1.25rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;" (click)="closeRegistration()">Cancel</button>
+            <button type="submit" class="btn-primary" style="padding: 0.6rem 1.75rem; border-radius: 8px; border: none; background: #2563eb; color: #fff; cursor: pointer; font-weight: 700; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">Register &amp; Login</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Password Recovery / OTP Simulation Modal -->
+    <div class="modal-overlay" *ngIf="showForgotPassword" (click)="closeForgotPassword()">
+      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 440px; width: 90%; padding: 1.5rem; border-radius: 12px; background: #fff;">
+        <div class="modal-header">
+          <h3 style="margin: 0; color: #1e3a8a; display: flex; align-items: center; gap: 0.5rem;">🔑 Password Recovery</h3>
+          <button class="close-btn" (click)="closeForgotPassword()" style="border: none; background: none; font-size: 1.25rem; cursor: pointer; color: #64748b;">&#10005;</button>
+        </div>
+
+        <div *ngIf="forgotErrorMsg" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca; padding:0.6rem; border-radius:6px; font-size:0.82rem; margin-top:1rem;">
+          ⚠️ {{ forgotErrorMsg }}
+        </div>
+
+        <div *ngIf="forgotSuccessMsg" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:0.6rem; border-radius:6px; font-size:0.82rem; margin-top:1rem;">
+          ✓ {{ forgotSuccessMsg }}
+        </div>
+
+        <!-- STEP 1: Send OTP -->
+        <div *ngIf="!otpSent" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+          <p style="font-size: 0.84rem; color: #475569; margin: 0; line-height: 1.4;">
+            Enter your registered Email Address or Phone Number. We will simulate sending a 6-digit verification code.
+          </p>
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Email / Phone Number</label>
+            <input type="text" [(ngModel)]="forgotEmailOrMobile" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" placeholder="e.g. doctor@medcme.org" />
+          </div>
+          <button (click)="sendForgotOtp()" style="padding: 0.65rem; border: none; background: #2563eb; color: #fff; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            Send Recovery OTP Code
+          </button>
+        </div>
+
+        <!-- STEP 2: Verify OTP and setup new password -->
+        <div *ngIf="otpSent && !forgotSuccessMsg" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+          <div style="background: rgba(14,165,233,0.06); border: 1px solid rgba(14,165,233,0.2); border-radius: 8px; padding: 0.75rem; font-size: 0.8rem; color: #0284c7; line-height: 1.4;">
+            📟 Simulated verification message dispatched to <strong>{{ forgotEmailOrMobile }}</strong>. Enter verification code <strong>653099</strong>.
+          </div>
+
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Enter Verification Code</label>
+            <input type="text" [(ngModel)]="otpCode" maxlength="6" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; text-align: center; font-weight: 700; letter-spacing: 0.35em;" placeholder="653099" />
+            <span style="font-size: 0.72rem; color: #64748b; margin-top: 0.15rem; font-style: italic;">
+              <span *ngIf="otpCountdown > 0">Resend code in {{ otpCountdown }} seconds</span>
+              <span *ngIf="otpCountdown === 0" style="color: #2563eb; font-weight: 700; cursor: pointer;" (click)="sendForgotOtp()">Resend OTP</span>
+            </span>
+          </div>
+
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">New Password</label>
+            <input type="password" [(ngModel)]="newPassword" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" placeholder="Min 6 characters" />
+          </div>
+
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Confirm New Password</label>
+            <input type="password" [(ngModel)]="newPasswordConfirm" style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" placeholder="Retype password" />
+          </div>
+
+          <button (click)="verifyOtpAndReset()" style="padding: 0.65rem; border: none; background: #10b981; color: #fff; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            Verify OTP &amp; Reset Password
+          </button>
+        </div>
+
       </div>
     </div>
 

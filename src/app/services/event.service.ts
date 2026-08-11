@@ -440,9 +440,11 @@ export class EventService {
     this.isBrowser = isPlatformBrowser(platformId);
     this.loadFromStorage();
     
-    // Inject mock detail fields to all events
-    this.eventsSignal.update(events => events.map(e => ({
+    // Inject mock detail fields to all events and override bannerColor with silent Coursera-style colors
+    const silentColors = ['#0056D2', '#1e3a8a', '#2a4e8c', '#3c64b1', '#475569', '#1e293b'];
+    this.eventsSignal.update(events => events.map((e, index) => ({
       ...e,
+      bannerColor: silentColors[index % silentColors.length],
       language: e.language || 'English',
       preRead: e.preRead || 'ACLS Resuscitation Guidelines & Pre-Event Study Guide (PDF)',
       outline: e.outline || '1. Introduction & Panel Details\n2. Basic MCQ (Pre-Test)\n3. Lecture Session 1\n4. Mid-Session MCQ (Knowledge Check)\n5. Lecture Session 2\n6. Live Q&A and Expert Panel Discussion',
@@ -609,7 +611,8 @@ export class EventService {
       hostName,
       paymentLink: `https://medcme.org/pay/${id}`,
       status: 'upcoming',
-      bannerColor: partial.bannerColor || '#0ea5e9'
+      bannerColor: partial.bannerColor || '#0ea5e9',
+      preRead: partial.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'
     };
     this.eventsSignal.update(events => [newEvent, ...events]);
     this.saveEventsToStorage();

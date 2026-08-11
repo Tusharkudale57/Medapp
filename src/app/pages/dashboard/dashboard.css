@@ -1787,13 +1787,13 @@
   text-align: center;
 }
 
-.proto-badge.red { background-color: #ef4444; }
-.proto-badge.purple { background-color: #8b5cf6; }
-.proto-badge.blue { background-color: #3b82f6; }
-.proto-badge.green { background-color: #10b981; }
-.proto-badge.orange { background-color: #f97316; }
-.proto-badge.teal { background-color: #14b8a6; }
-.proto-badge.pink { background-color: #ec4899; }
+.proto-badge.red { background-color: #0056D2; }
+.proto-badge.purple { background-color: #1e293b; }
+.proto-badge.blue { background-color: #0284c7; }
+.proto-badge.green { background-color: #0f172a; }
+.proto-badge.orange { background-color: #3b82f6; }
+.proto-badge.teal { background-color: #475569; }
+.proto-badge.pink { background-color: #1e3a8a; }
 
 .proto-info, .ppt-info {
   flex: 1;

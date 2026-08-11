@@ -57,7 +57,7 @@
         <div>
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
             <!-- File Type Badge -->
-            <span [style.background]="asset.type === 'PDF' ? '#fee2e2' : asset.type === 'PPT' ? '#ffedd5' : asset.type === 'Video' ? '#dbeafe' : '#e0f2fe'" [style.color]="asset.type === 'PDF' ? '#991b1b' : asset.type === 'PPT' ? '#9a3412' : asset.type === 'Video' ? '#1e40af' : '#0369a1'" style="font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span [style.background]="asset.type === 'PDF' ? '#f1f5f9' : asset.type === 'PPT' ? '#e0f2fe' : asset.type === 'Video' ? '#dbeafe' : '#f8fafc'" [style.color]="asset.type === 'PDF' ? '#334155' : asset.type === 'PPT' ? '#0284c7' : asset.type === 'Video' ? '#1e40af' : '#1e293b'" style="font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.3rem;">
               <span *ngIf="asset.type === 'PDF'">📄 PDF</span>
               <span *ngIf="asset.type === 'PPT'">📊 PPT Presentation</span>
               <span *ngIf="asset.type === 'Video'">🎥 Video Stream</span>

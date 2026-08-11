@@ -55,6 +55,7 @@ export class DashboardComponent implements OnInit {
   showRegisterModal = false;
   selectedEvent: CmeEvent | null = null;
   registrationSuccess = false;
+  agreeTermsCheckout = false;
 
   // Razorpay simulated state
   showSimulatedRazorpay = false;
@@ -600,6 +601,7 @@ export class DashboardComponent implements OnInit {
     this.selectedEvent = event;
     this.registrationSuccess = false;
     this.showRegisterModal = true;
+    this.agreeTermsCheckout = false;
   }
 
   closeRegisterModal() {
@@ -609,6 +611,7 @@ export class DashboardComponent implements OnInit {
     this.sponsorCode = '';
     this.sponsorNameDetected = '';
     this.sponsorCodeError = '';
+    this.agreeTermsCheckout = false;
   }
 
   verifySponsorCode() {

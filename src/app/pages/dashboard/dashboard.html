@@ -743,9 +743,27 @@
           <div class="md-row">&#128205; {{ selectedEvent?.venue }}</div>
           <div class="md-row">&#127891; {{ selectedEvent?.creditPoints }} CME Credit Point(s)</div>
           <div class="md-row price-row" [class.free]="selectedEvent?.price === 0">
-            {{ selectedEvent?.price === 0 ? 'FREE Registration' : 'Rs. ' + selectedEvent?.price + ' — Payment link will be shared' }}
+            {{ selectedEvent?.price === 0 ? 'FREE Registration' : 'Total Amount: Rs. ' + (selectedEvent?.price | number) }}
           </div>
         </div>
+
+        <!-- Price Splits (Base + 18% GST) for Paid Events -->
+        <div *ngIf="(selectedEvent?.price || 0) > 0" style="margin-top: 1rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; text-align: left; font-size: 0.85rem; color: #475569;">
+          <h5 style="margin: 0 0 0.5rem 0; color: #0f172a; font-weight: 700;">💳 Tax Invoice Breakdown</h5>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+            <span>Base Course/Event Fee:</span>
+            <strong>Rs. {{ (selectedEvent?.price || 0) / 1.18 | number:'1.2-2' }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: #64748b;">
+            <span>GST (18% Goods &amp; Services Tax):</span>
+            <strong>Rs. {{ (selectedEvent?.price || 0) - ((selectedEvent?.price || 0) / 1.18) | number:'1.2-2' }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-weight: 700; border-top: 1px dotted #cbd5e1; padding-top: 0.25rem; margin-top: 0.25rem; color: #1e3a8a;">
+            <span>Total Payable (Net Price):</span>
+            <span>Rs. {{ selectedEvent?.price | number }}</span>
+          </div>
+        </div>
+
         <div *ngIf="selectedEvent?.price === 0" class="free-note">
           This is a free event. Joining details will be shared via email after registration.
         </div>
@@ -771,11 +789,21 @@
             <div *ngIf="sponsorNameDetected" style="color:#16a34a; font-size:0.75rem; font-weight:700; margin-top:0.4rem;">✓ Verified Sponsor: {{ sponsorNameDetected }}</div>
             <div style="font-size:0.68rem; color:#64748b; margin-top:0.4rem; line-height:1.2;">* Available codes: <strong>MR_FREE</strong>, <strong>MR_SUN</strong>, <strong>MR_REDDY</strong>, <strong>MR_CIPLA</strong>, or <strong>MR_LUPIN</strong> (enter any one code).</div>
           </div>
+
+          <!-- Terms Checkbox (Paid events only without MR waiving) -->
+          <div *ngIf="!sponsorNameDetected" style="margin-top: 1rem; text-align: left; border-top: 1px dotted #cbd5e1; padding-top: 0.75rem;">
+            <label style="display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.76rem; color: #475569; cursor: pointer; line-height: 1.45;">
+              <input type="checkbox" [(ngModel)]="agreeTermsCheckout" style="margin-top: 0.15rem; width: 14px; height: 14px; cursor: pointer; accent-color: #2563eb;" />
+              <span>I agree to the Accrevent Event Terms &amp; Refund Policy. I understand that cancellation refund requests must be filed at least 48 hours prior to the event. *</span>
+            </label>
+          </div>
         </div>
 
         <div class="modal-actions">
           <button class="btn-cancel" (click)="closeRegisterModal()">Cancel</button>
-          <button class="btn-confirm" (click)="confirmRegister()">
+          <button class="btn-confirm" (click)="confirmRegister()" 
+            [disabled]="(selectedEvent?.price || 0) > 0 && !sponsorNameDetected && !agreeTermsCheckout"
+            [style.opacity]="((selectedEvent?.price || 0) > 0 && !sponsorNameDetected && !agreeTermsCheckout) ? '0.6' : '1'">
             <span *ngIf="selectedEvent?.price === 0">Confirm Registration</span>
             <span *ngIf="(selectedEvent?.price || 0) > 0">
               {{ sponsorNameDetected ? 'Confirm Sponsored Registration' : 'Proceed to Pay Rs. ' + (selectedEvent?.price | number) }}

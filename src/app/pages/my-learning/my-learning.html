@@ -259,6 +259,19 @@
             <div class="progress-container text-only">
               <p class="status-msg">Event starts soon. Make sure to attend to claim credit points and get your certificate.</p>
             </div>
+
+             <!-- Mandatory Pre-Read Section displayed right after Registration -->
+             <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 8px; padding: 0.65rem; margin-bottom: 0.85rem; text-align: left;">
+               <span style="font-size: 0.73rem; color: #0284c7; font-weight: 700; display: block; margin-bottom: 0.25rem;">📚 MANDATORY PRE-READ MATERIAL:</span>
+               <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                 <span style="font-size: 0.78rem; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" [title]="event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'">
+                   📄 {{ event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf' }}
+                 </span>
+                 <button (click)="downloadPreRead(event)" style="border: none; background: #0ea5e9; color: #fff; padding: 0.35rem 0.65rem; border-radius: 5px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;">
+                   ⬇️ Download
+                 </button>
+               </div>
+             </div>
             <div style="display: flex; gap: 0.5rem;">
               <button class="btn-resume-learning btn-event-view" (click)="navigateToEvents()" style="flex: 1;">
                 View Event Details

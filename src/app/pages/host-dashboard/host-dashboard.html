@@ -64,6 +64,13 @@
       style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
       🎓 Manage CME Courses
     </button>
+    <button (click)="activeHostTab = 'users'" 
+      [style.background]="activeHostTab === 'users' ? '#1e3a8a' : '#fff'"
+      [style.color]="activeHostTab === 'users' ? '#fff' : '#475569'"
+      [style.border]="'1px solid ' + (activeHostTab === 'users' ? '#1e3a8a' : '#cbd5e1')"
+      style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+      👥 User Directory
+    </button>
   </div>
 
   <!-- Events List -->
@@ -209,6 +216,101 @@
             </button>
           </div>
         </div>
+      </div>
+    </ng-container>
+
+    <!-- View 3: CME User Database Directory -->
+    <ng-container *ngIf="activeHostTab === 'users'">
+      <div class="section-header" style="margin-bottom: 1rem;">
+        <div>
+          <h2>👥 Doctor Database & Registration Directory</h2>
+          <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.25rem;">Search and look up doctor credentials, MMC registration numbers, and total accumulated CME credits.</p>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.75rem;">
+        <input type="text" [(ngModel)]="searchUserQuery" placeholder="🔍 Search doctors by name, email, MMC registration number, or specialty..." 
+          style="flex: 1; padding: 0.65rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box;" />
+        <button (click)="searchUserQuery = ''" style="padding: 0.65rem 1.25rem; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; font-weight: 700; cursor: pointer; color: #475569;">Reset Search</button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredUsers.length === 0" class="empty-state" style="padding: 3rem 1.5rem; background: #fff; border: 1px dashed #cbd5e1; border-radius: 12px; text-align: center;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">👥</div>
+        <h3>No doctors found</h3>
+        <p style="color: #64748b; font-size: 0.9rem;">Try adjusting your keyword filter or search spelling.</p>
+      </div>
+
+      <!-- Users Grid Table -->
+      <div *ngIf="filteredUsers.length > 0" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+          <thead>
+            <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569; font-weight: 700;">
+              <th style="padding: 1rem;">Doctor Details</th>
+              <th style="padding: 1rem;">Specialty &amp; Qualification</th>
+              <th style="padding: 1rem;">Registration No. (MMC)</th>
+              <th style="padding: 1rem;">Hospital &amp; City</th>
+              <th style="padding: 1rem; text-align: center;">CME Credits</th>
+              <th style="padding: 1rem; text-align: center;">Account Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of filteredUsers" style="border-bottom: 1px solid #f1f5f9; hover:background-color:#f8fafc; transition: background 0.15s;">
+              
+              <!-- Doctor details -->
+              <td style="padding: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: #1e3a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">
+                    {{ u.name[4] || 'D' }}
+                  </div>
+                  <div>
+                    <div style="font-weight: 800; color: #0f172a;">{{ u.name }}</div>
+                    <div style="font-size: 0.76rem; color: #64748b;">{{ u.email }} &bull; {{ u.phone }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Specialty -->
+              <td style="padding: 1rem;">
+                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.55rem; border-radius: 12px; font-size: 0.76rem; font-weight: 700; display: inline-block; margin-bottom: 0.2rem;">
+                  {{ u.specialty }}
+                </span>
+                <div style="font-size: 0.76rem; color: #475569; font-weight: 600;">{{ u.qualification || 'MBBS' }}</div>
+                <div style="font-size: 0.72rem; color: #4b5563; font-style: italic; margin-top: 0.15rem;" *ngIf="u.practicingInterest">★ Focus: {{ u.practicingInterest }}</div>
+              </td>
+
+              <!-- Registration number -->
+              <td style="padding: 1rem; font-weight: 700; color: #334155; font-family: monospace; font-size: 0.9rem;">
+                {{ u.registrationNo || 'MCI-PENDING-UNVERIFIED' }}
+              </td>
+
+              <!-- Hospital & city -->
+              <td style="padding: 1rem;">
+                <div style="font-weight: 600; color: #475569;">{{ u.hospital || 'Private Clinic' }}</div>
+                <div style="font-size: 0.76rem; color: #64748b;">📍 {{ u.city || 'TBD' }}</div>
+                <div style="font-size: 0.72rem; color: #4b5563; margin-top: 0.15rem;" *ngIf="u.clinicAddress">🏡 Clinic: {{ u.clinicAddress }}</div>
+              </td>
+
+              <!-- Accumulated credits -->
+              <td style="padding: 1rem; text-align: center; font-weight: 800; color: #2563eb; font-size: 1.1rem;">
+                ⚡ {{ u.creditPoints }}
+              </td>
+
+              <!-- Account Status / Suspend Action -->
+              <td style="padding: 1rem; text-align: center;">
+                <button (click)="toggleUserStatus(u)" 
+                  [style.background]="u.isSuspended ? '#fecaca' : '#dcfce7'" 
+                  [style.color]="u.isSuspended ? '#991b1b' : '#166534'" 
+                  [style.border]="'1px solid ' + (u.isSuspended ? '#fca5a5' : '#bbf7d0')" 
+                  style="padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                  {{ u.isSuspended ? '🔴 Suspended' : '🟢 Verified' }}
+                </button>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
       </div>
     </ng-container>
   </main>
@@ -420,6 +522,10 @@
         <div class="form-group">
           <label>Max Seats</label>
           <input type="number" [(ngModel)]="newMaxSeats" min="1" />
+        </div>
+        <div class="form-group full-width">
+          <label>📚 Pre-Read Material / Guide Name (e.g. ACLS_Guidelines_2026.pdf)</label>
+          <input type="text" [(ngModel)]="newPreRead" placeholder="e.g. Neonatal_Resuscitation_Preread.pdf" style="width: 100%;" />
         </div>
         <div class="form-group full-width">
           <label>Card Accent Color</label>

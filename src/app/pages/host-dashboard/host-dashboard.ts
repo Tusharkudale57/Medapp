@@ -25,8 +25,9 @@ export class HostDashboardComponent implements OnInit {
   presentMsg = '';
 
   // Admin section views toggle
-  activeHostTab: 'events' | 'courses' = 'events';
+  activeHostTab: 'events' | 'courses' | 'users' = 'events';
   coursesList: Course[] = [];
+  searchUserQuery = '';
 
   // New Event Form
   newTitle = '';
@@ -42,9 +43,10 @@ export class HostDashboardComponent implements OnInit {
   newPrice = 0;
   newMaxSeats = 100;
   newBannerColor = '#0ea5e9';
+  newPreRead = '';
 
   readonly categories = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Endocrinology', 'Oncology', 'Psychiatry', 'General Medicine'];
-  readonly colorOptions = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#f97316', '#14b8a6', '#ef4444'];
+  readonly colorOptions = ['#0056D2', '#1e3a8a', '#2a4e8c', '#3c64b1', '#475569', '#0f172a', '#334155', '#4b5563'];
 
   constructor(
     public eventService: EventService,
@@ -59,6 +61,25 @@ export class HostDashboardComponent implements OnInit {
       return;
     }
     this.coursesList = this.courseService.getCourses();
+  }
+
+  get filteredUsers() {
+    const list = this.authService.users();
+    if (!this.searchUserQuery.trim()) return list;
+    const q = this.searchUserQuery.toLowerCase().trim();
+    return list.filter(u => 
+      u.name.toLowerCase().includes(q) || 
+      u.email.toLowerCase().includes(q) || 
+      (u.registrationNo && u.registrationNo.toLowerCase().includes(q)) ||
+      u.specialty.toLowerCase().includes(q) ||
+      (u.clinicAddress && u.clinicAddress.toLowerCase().includes(q)) ||
+      (u.practicingInterest && u.practicingInterest.toLowerCase().includes(q))
+    );
+  }
+
+  toggleUserStatus(user: any) {
+    user.isSuspended = !user.isSuspended;
+    alert(`Doctor "${user.name}" status updated successfully.`);
   }
 
   get hostEvents(): CmeEvent[] {
@@ -106,7 +127,8 @@ export class HostDashboardComponent implements OnInit {
       creditPoints: this.newCreditPoints,
       price: this.newPrice,
       maxSeats: this.newMaxSeats,
-      bannerColor: this.newBannerColor
+      bannerColor: this.newBannerColor,
+      preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
     }, user.id, user.name);
     this.showCreateModal = false;
   }
@@ -313,5 +335,6 @@ export class HostDashboardComponent implements OnInit {
     this.newPrice = 0;
     this.newMaxSeats = 100;
     this.newBannerColor = '#0ea5e9';
+    this.newPreRead = '';
   }
 }

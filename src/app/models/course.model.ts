@@ -75,6 +75,9 @@ export interface UserProfile {
   language?: string;
   emailConsent?: boolean;
   whatsappConsent?: boolean;
+  isSuspended?: boolean;
+  clinicAddress?: string;
+  practicingInterest?: string;
 }
 
 // ─── CME Events ────────────────────────────────────────────────────────────────

@@ -137,24 +137,38 @@ export class AuthService {
     return list.some(u => u.email.toLowerCase() === clean || u.phone === clean);
   }
 
-  registerNewUser(designation: string, firstName: string, lastName: string, mobileNumber: string, city: string): UserProfile {
+  registerNewUser(profile: Partial<UserProfile>): UserProfile {
     const newUser: UserProfile = {
       id: 'doc_' + Date.now(),
-      name: `${designation} ${firstName} ${lastName}`,
-      sirName: lastName,
-      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@medcme.org`,
-      phone: mobileNumber.trim(),
-      specialty: `General Medicine`,
-      registrationNo: 'MCI-2026-' + Math.floor(10000 + Math.random() * 90000),
+      name: `${profile.designation || 'Dr.'} ${profile.name || ''} ${profile.sirName || ''}`,
+      sirName: profile.sirName || '',
+      email: profile.email || '',
+      phone: (profile.phone || '').trim(),
+      specialty: profile.specialty || 'General Medicine',
+      specialtyOther: profile.specialtyOther || '',
+      registrationNo: profile.registrationNo || ('MCI-2026-' + Math.floor(10000 + Math.random() * 90000)),
       creditPoints: 0,
       purchasedCourseIds: [],
       completedCourseIds: [],
       certificates: [],
       role: 'doctor',
-      city: city,
-      interests: []
+      city: profile.city || '',
+      interests: profile.interests || [],
+      gender: profile.gender || 'Prefer not to say',
+      dob: profile.dob || '',
+      designation: profile.designation || 'Dr.',
+      department: profile.department || '',
+      qualification: profile.qualification || '',
+      hospital: profile.hospital || '',
+      experience: profile.experience || 0,
+      language: profile.language || 'English',
+      emailConsent: profile.emailConsent ?? true,
+      whatsappConsent: profile.whatsappConsent ?? true,
+      clinicAddress: profile.clinicAddress || '',
+      practicingInterest: profile.practicingInterest || ''
     };
 
+    // Also add to the users list in local memory to allow checking existence
     this.usersSignal.update(list => {
       const updated = [...list, newUser];
       if (this.isBrowser) {

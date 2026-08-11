@@ -360,6 +360,28 @@ export class MyLearningComponent implements OnInit {
     }
   }
 
+  downloadPreRead(event: any) {
+    const fileName = event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf';
+    if (typeof window !== 'undefined') {
+      const blob = new Blob([
+        `Accrevent Mandatory CME Pre-Read Material\n` +
+        `=========================================\n` +
+        `Event: ${event.title}\n` +
+        `Speaker: ${event.speaker}\n` +
+        `CME Credits: ${event.creditPoints}\n\n` +
+        `Please review this document carefully before attending the live session.\n` +
+        `Reference ID: PR-${event.id}`
+      ], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      alert(`Mandatory pre-read document "${fileName}" downloaded successfully! Please read it before joining.`);
+    }
+  }
+
   sendLiveChatMessage() {
     if (!this.newChatMessageText.trim()) return;
     
