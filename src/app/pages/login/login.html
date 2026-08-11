@@ -73,7 +73,9 @@
           <span *ngIf="!loading && activeRole() === 'admin'">Sign In as Administrator → Manage Courses & Prices</span>
           <span *ngIf="loading" class="spinner"></span>
         </button>
-        <div style="text-align: right; margin-top: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+          <a href="#" *ngIf="activeRole() === 'doctor'" (click)="$event.preventDefault(); openRegistration()" style="color: #0056D2; font-size: 0.85rem; font-weight: 700; text-decoration: none;">🆕 New Doctor? Register Here</a>
+          <div *ngIf="activeRole() !== 'doctor'" style="flex: 1;"></div>
           <a href="#" (click)="$event.preventDefault(); openForgotPassword()" style="color: #2563eb; font-size: 0.85rem; font-weight: 600; text-decoration: none;">Forgot Password / Reset with OTP?</a>
         </div>
       </form>

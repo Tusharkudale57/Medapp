@@ -245,7 +245,7 @@
           <div class="card-info-content">
             <div class="educator-row">
               <span class="educator-name">{{ event.speaker }}</span>
-              <span class="educator-sub">({{ event.speakerRole }})</span>
+              <span class="educator-sub" *ngIf="event.speakerRole">({{ event.speakerRole }})</span>
             </div>
             <h3 class="learning-title" (click)="navigateToEvents()">{{ event.title }}</h3>
             <div class="event-date-row">

@@ -46,7 +46,7 @@ export class HostDashboardComponent implements OnInit {
   newPreRead = '';
 
   readonly categories = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Endocrinology', 'Oncology', 'Psychiatry', 'General Medicine'];
-  readonly colorOptions = ['#0056D2', '#1e3a8a', '#2a4e8c', '#3c64b1', '#475569', '#0f172a', '#334155', '#4b5563'];
+  readonly colorOptions = ['#bae6fd', '#e0f2fe', '#dbeafe', '#93c5fd', '#a5f3fc', '#cbd5e1', '#c0e0de', '#f1f5f9'];
 
   constructor(
     public eventService: EventService,

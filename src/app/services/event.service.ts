@@ -440,8 +440,8 @@ export class EventService {
     this.isBrowser = isPlatformBrowser(platformId);
     this.loadFromStorage();
     
-    // Inject mock detail fields to all events and override bannerColor with silent Coursera-style colors
-    const silentColors = ['#0056D2', '#1e3a8a', '#2a4e8c', '#3c64b1', '#475569', '#1e293b'];
+    // Inject mock detail fields to all events and override bannerColor with soft, light blue shades
+    const silentColors = ['#bae6fd', '#e0f2fe', '#dbeafe', '#93c5fd', '#bae6fd', '#bae6fd'];
     this.eventsSignal.update(events => events.map((e, index) => ({
       ...e,
       bannerColor: silentColors[index % silentColors.length],

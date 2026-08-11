@@ -69,7 +69,7 @@ export class LoginComponent {
   constructor(
     public authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   switchRole(role: 'doctor' | 'admin') {
     this.activeRole.set(role);
@@ -235,7 +235,7 @@ export class LoginComponent {
     }
     this.forgotErrorMsg = '';
     this.forgotSuccessMsg = 'Password successfully reset! You can now log in with your new password.';
-    
+
     setTimeout(() => {
       this.closeForgotPassword();
     }, 2000);

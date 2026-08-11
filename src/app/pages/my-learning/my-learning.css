@@ -431,8 +431,8 @@
 /* ===== LEARNING CARDS GRID ===== */
 .learning-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+  gap: 1.25rem;
 }
 
 .learning-card {
@@ -440,7 +440,7 @@
   border: 1px solid #d1d5db;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -448,12 +448,12 @@
 
 .learning-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
 .card-thumb-wrapper {
   position: relative;
-  height: 160px;
+  height: 110px;
   cursor: pointer;
 }
 
@@ -465,12 +465,12 @@
 
 .card-category-tag {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
+  top: 0.5rem;
+  left: 0.5rem;
   background-color: rgba(255, 255, 255, 0.9);
-  padding: 0.25rem 0.6rem;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #0056D2;
 }
@@ -480,29 +480,31 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1rem;
-  color: #ffffff;
+  padding: 0.85rem;
+  color: #1e3a8a;
 }
 
 .event-type-badge {
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 0.25rem 0.6rem;
+  background-color: rgba(30, 58, 138, 0.08);
+  border: 1px solid rgba(30, 58, 138, 0.22);
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 700;
   align-self: flex-start;
+  color: #1e3a8a;
 }
 
 .event-mode {
   font-weight: 800;
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: #1e3a8a;
 }
 
 .card-info-content {
-  padding: 1.25rem;
+  padding: 0.95rem;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -522,11 +524,11 @@
 }
 
 .learning-title {
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: #1f1f1f;
-  margin-bottom: 0.75rem;
-  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
   cursor: pointer;
 }
 
