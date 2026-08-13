@@ -104,6 +104,60 @@ export class DashboardComponent implements OnInit {
   newPrice = 0;
   newMaxSeats = 100;
   newBannerColor = '#0ea5e9';
+  newPreRead = '';
+  uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
+
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      const newFileItem: { name: string; size: string; status: 'uploaded' | 'uploading' } = {
+        name: file.name,
+        size: `${sizeMB} MB`,
+        status: 'uploading'
+      };
+      
+      this.uploadedFiles.push(newFileItem);
+
+      // Read file content as DataURL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (typeof window !== 'undefined') {
+          if (!(window as any).medcme_uploaded_files) {
+            (window as any).medcme_uploaded_files = {};
+          }
+          (window as any).medcme_uploaded_files[file.name] = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // Simulate upload delay
+      setTimeout(() => {
+        newFileItem.status = 'uploaded';
+        if (!this.newPreRead) {
+          this.newPreRead = file.name;
+        }
+      }, 700);
+    }
+  }
+
+  removeUploadedFile(index: number) {
+    const fileName = this.uploadedFiles[index].name;
+    this.uploadedFiles.splice(index, 1);
+    
+    if (typeof window !== 'undefined' && (window as any).medcme_uploaded_files) {
+      delete (window as any).medcme_uploaded_files[fileName];
+    }
+
+    if (this.uploadedFiles.length === 0) {
+      this.newPreRead = '';
+    } else {
+      this.newPreRead = this.uploadedFiles[0].name;
+    }
+  }
 
   readonly categories = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Endocrinology', 'Oncology', 'Psychiatry', 'General Medicine'];
   readonly colorOptions = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#f97316', '#14b8a6', '#ef4444'];
@@ -404,10 +458,20 @@ export class DashboardComponent implements OnInit {
       alert('Please select a star rating first.');
       return;
     }
+    
     this.liveFeedbackSubmitted = true;
-    setTimeout(() => {
-      this.liveSessionCompleted = true;
-    }, 800);
+    this.liveSessionCompleted = true;
+
+    // Automatically issue the certificate to the doctor
+    const user = this.authService.currentUser();
+    if (user && this.activeLiveEvent) {
+      this.authService.issueEventCertificate(
+        user.id,
+        this.activeLiveEvent.id,
+        this.activeLiveEvent.title,
+        this.activeLiveEvent.creditPoints || 1
+      );
+    }
   }
 
   closeCompletedSession() {
@@ -777,7 +841,8 @@ export class DashboardComponent implements OnInit {
       creditPoints: this.newCreditPoints,
       price: this.newPrice,
       maxSeats: this.newMaxSeats,
-      bannerColor: this.newBannerColor
+      bannerColor: this.newBannerColor,
+      preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
     }, user.id, user.name);
     this.showCreateModal = false;
   }
@@ -846,5 +911,7 @@ export class DashboardComponent implements OnInit {
     this.newPrice = 0;
     this.newMaxSeats = 100;
     this.newBannerColor = '#0ea5e9';
+    this.newPreRead = '';
+    this.uploadedFiles = [];
   }
 }

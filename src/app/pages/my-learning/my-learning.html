@@ -3,8 +3,8 @@
   <!-- MedCME Brand Navbar styled for White/Light-Blue Theme -->
   <header class="dash-navbar">
     <div class="nav-inner">
-      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer;">
-        <span class="brand-icon">&#127973;</span>
+      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
+        <img src="assets/logo.png" alt="MedCME Logo" style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 5px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);" />
         <div>
           <div class="brand-name">MedCME Academy</div>
           <div class="brand-sub">Continuing Medical Education Platform</div>
@@ -273,7 +273,7 @@
                </div>
              </div>
             <div style="display: flex; gap: 0.5rem;">
-              <button class="btn-resume-learning btn-event-view" (click)="navigateToEvents()" style="flex: 1;">
+              <button class="btn-resume-learning btn-event-view" (click)="openEventDetail(event)" style="flex: 1;">
                 View Event Details
               </button>
               <button class="btn-resume-learning" (click)="openLiveRoom(event)" style="flex: 1; background: #ef4444; border-color: #ef4444; color: #fff;">
@@ -416,6 +416,86 @@
       </div>
     </section>
   </main>
+
+  <!-- Event Detail Modal -->
+  <div class="modal-overlay cme-details-overlay" *ngIf="showEventDetailModal && selectedEventForDetail" (click)="closeEventDetail()">
+    <div class="modal-box detail-modal-box" (click)="$event.stopPropagation()">
+      <div class="detail-modal-header" [style.background]="'linear-gradient(135deg, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + 'dd, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + '55)'">
+        <span class="detail-modal-category">{{ selectedEventForDetail.category }}</span>
+        <h3 style="color: #1e3a8a;">{{ selectedEventForDetail.title }}</h3>
+        <button class="close-detail-btn" (click)="closeEventDetail()">✕</button>
+      </div>
+
+      <div class="detail-modal-body">
+        <div class="detail-modal-scroll">
+
+          <!-- Event Description -->
+          <div class="detail-section">
+            <h4>📝 Event Description</h4>
+            <p>{{ selectedEventForDetail.description }}</p>
+          </div>
+
+          <!-- Schedule & Location -->
+          <div class="detail-section grid-section">
+            <div>
+              <h5>📅 Date &amp; Time</h5>
+              <p>{{ selectedEventForDetail.date }} &middot; {{ selectedEventForDetail.time }}</p>
+            </div>
+            <div>
+              <h5>📍 Venue / Meeting Info</h5>
+              <p>{{ selectedEventForDetail.venue }} ({{ selectedEventForDetail.mode }} Type)</p>
+            </div>
+          </div>
+
+          <!-- Language & Pre-Reads -->
+          <div class="detail-section grid-section">
+            <div>
+              <h5>🗣️ Language Preference</h5>
+              <p>{{ selectedEventForDetail.language }}</p>
+            </div>
+            <div>
+              <h5>📚 Pre-Read Material</h5>
+              <p class="preread-link">📄 {{ selectedEventForDetail.preRead }}</p>
+            </div>
+          </div>
+
+          <!-- Speaker Profile -->
+          <div class="detail-section">
+            <h4>👤 Speaker Profile</h4>
+            <div class="modal-speaker-row">
+              <span class="modal-speaker-avatar">{{ selectedEventForDetail.speaker[0] }}</span>
+              <div>
+                <h5>{{ selectedEventForDetail.speaker }}</h5>
+                <p *ngIf="selectedEventForDetail.speakerRole">{{ selectedEventForDetail.speakerRole }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- CME Credits -->
+          <div class="detail-section registration-stats">
+            <h5>⚡ CME Credits Awarded</h5>
+            <p><strong>{{ selectedEventForDetail.creditPoints }} CME Credit Point(s)</strong> upon attendance and assessment completion.</p>
+          </div>
+
+          <!-- Registration Info -->
+          <div class="detail-section registration-stats">
+            <h5>👥 Registration Status</h5>
+            <p>You are <strong>registered</strong> for this event. {{ selectedEventForDetail.registeredCount }} total attendees registered.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="detail-modal-footer">
+        <div class="detail-actions">
+          <button class="btn-cancel" (click)="closeEventDetail()">Close Details</button>
+          <button class="btn-resume-learning" (click)="openLiveRoom(selectedEventForDetail); closeEventDetail()" style="background: #ef4444; border-color: #ef4444; color: #fff; padding: 0.6rem 1.25rem;">
+            🔴 Join Live Room
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Goal Editing Modal -->
   <div class="modal-overlay" *ngIf="showGoalModal" (click)="closeGoalModal()">

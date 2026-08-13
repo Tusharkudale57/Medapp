@@ -244,14 +244,30 @@ export class AuthService {
 
   toggleUserRole() {
     const user = this.currentUserSignal();
-    if (user && user.role === 'admin') {
-      const doc = { ...this.staticDoctorAccount };
-      this.currentUserSignal.set(doc);
-      this.saveUserToStorage(doc);
-    } else {
+    if (user && user.role === 'doctor') {
+      if (this.isBrowser) {
+        localStorage.setItem('medcme_last_doctor', JSON.stringify(user));
+      }
       const admin = { ...this.staticAdminAccount };
       this.currentUserSignal.set(admin);
       this.saveUserToStorage(admin);
+    } else {
+      let doc = null;
+      if (this.isBrowser) {
+        const saved = localStorage.getItem('medcme_last_doctor');
+        if (saved) {
+          try {
+            doc = JSON.parse(saved);
+          } catch (e) {
+            doc = null;
+          }
+        }
+      }
+      if (!doc) {
+        doc = { ...this.staticDoctorAccount };
+      }
+      this.currentUserSignal.set(doc);
+      this.saveUserToStorage(doc);
     }
   }
 
@@ -379,7 +395,7 @@ export class AuthService {
         if (savedCerts) {
           const list: Array<{ userId: string; cert: Certificate }> = JSON.parse(savedCerts);
           for (const item of list) {
-            if (item.userId === user.id || item.cert.recipientName === user.name || user.role === 'doctor') {
+            if (item.userId === user.id || item.cert.recipientName === user.name) {
               if (!certs.some(c => c.id === item.cert.id || (c.courseId === item.cert.courseId && c.type === 'event'))) {
                 certs.unshift(item.cert);
               }
@@ -395,7 +411,7 @@ export class AuthService {
           const events: any[] = savedEvents ? JSON.parse(savedEvents) : [];
 
           for (const reg of regs) {
-            if (reg.certificateIssued && (reg.userId === user.id || reg.userName === user.name || user.role === 'doctor')) {
+            if (reg.certificateIssued && (reg.userId === user.id || reg.userName === user.name)) {
               const eventObj = events.find((e: any) => e.id === reg.eventId);
               const eventTitle = eventObj ? eventObj.title : 'CME Medical Conference & Clinical Seminar';
               const creditPoints = eventObj ? (eventObj.creditPoints || 2) : 2;

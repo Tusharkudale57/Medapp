@@ -44,6 +44,59 @@ export class HostDashboardComponent implements OnInit {
   newMaxSeats = 100;
   newBannerColor = '#0ea5e9';
   newPreRead = '';
+  uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
+
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      const newFileItem: { name: string; size: string; status: 'uploaded' | 'uploading' } = {
+        name: file.name,
+        size: `${sizeMB} MB`,
+        status: 'uploading'
+      };
+      
+      this.uploadedFiles.push(newFileItem);
+
+      // Read file content as DataURL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (typeof window !== 'undefined') {
+          if (!(window as any).medcme_uploaded_files) {
+            (window as any).medcme_uploaded_files = {};
+          }
+          (window as any).medcme_uploaded_files[file.name] = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // Simulate upload delay
+      setTimeout(() => {
+        newFileItem.status = 'uploaded';
+        if (!this.newPreRead) {
+          this.newPreRead = file.name;
+        }
+      }, 700);
+    }
+  }
+
+  removeUploadedFile(index: number) {
+    const fileName = this.uploadedFiles[index].name;
+    this.uploadedFiles.splice(index, 1);
+    
+    if (typeof window !== 'undefined' && (window as any).medcme_uploaded_files) {
+      delete (window as any).medcme_uploaded_files[fileName];
+    }
+
+    if (this.uploadedFiles.length === 0) {
+      this.newPreRead = '';
+    } else {
+      this.newPreRead = this.uploadedFiles[0].name;
+    }
+  }
 
   readonly categories = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Endocrinology', 'Oncology', 'Psychiatry', 'General Medicine'];
   readonly colorOptions = ['#bae6fd', '#e0f2fe', '#dbeafe', '#93c5fd', '#a5f3fc', '#cbd5e1', '#c0e0de', '#f1f5f9'];
@@ -336,5 +389,6 @@ export class HostDashboardComponent implements OnInit {
     this.newMaxSeats = 100;
     this.newBannerColor = '#0ea5e9';
     this.newPreRead = '';
+    this.uploadedFiles = [];
   }
 }

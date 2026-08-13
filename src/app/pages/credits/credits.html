@@ -10,7 +10,10 @@
           &#128214; My Learning
         </button>
       </div>
-      <div class="nav-title">Accredited CME Credit Ledger</div>
+      <div class="nav-title" style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="assets/logo.png" alt="MedCME Logo" style="width: 26px; height: 26px; border-radius: 6px; object-fit: contain; background: #ffffff; padding: 1px;" />
+        Accredited CME Credit Ledger
+      </div>
     </div>
   </div>
 
@@ -34,7 +37,7 @@
       </div>
 
       <!-- Pending Credits Card -->
-      <div class="kpi-card pending" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(245,158,11,0.15); display: flex; align-items: center; justify-content: space-between; text-align: left;">
+      <div class="kpi-card pending" style="background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(14,165,233,0.15); display: flex; align-items: center; justify-content: space-between; text-align: left;">
         <div>
           <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.9;">Credits Under Review</span>
           <h3 style="margin: 0.35rem 0 0 0; font-size: 2.2rem; font-weight: 800;">{{ pendingCredits }}.0</h3>
@@ -44,7 +47,7 @@
       </div>
 
       <!-- Adjusted Credits Card -->
-      <div class="kpi-card adjusted" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(139,92,246,0.15); display: flex; align-items: center; justify-content: space-between; text-align: left;">
+      <div class="kpi-card adjusted" style="background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(14,165,233,0.15); display: flex; align-items: center; justify-content: space-between; text-align: left;">
         <div>
           <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.9;">Manual Adjustments</span>
           <h3 style="margin: 0.35rem 0 0 0; font-size: 2.2rem; font-weight: 800;">+{{ adjustedCredits }}.0</h3>

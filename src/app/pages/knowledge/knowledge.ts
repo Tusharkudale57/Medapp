@@ -156,24 +156,46 @@ export class KnowledgeBaseComponent implements OnInit {
       });
       localStorage.setItem('medcme_kb_downloads', JSON.stringify(counts));
       
-      // Simulate file download
-      const blob = new Blob([
-        `Accrevent Knowledge Base Resource File\n` +
-        `Title: ${asset.title}\n` +
-        `Filename: ${asset.fileName}\n` +
-        `Category: ${asset.category}\n` +
-        `Access Restriction: ${asset.visibility}\n\n` +
-        `This file contains official continuing medical education resources.`
-      ], { type: 'text/plain' });
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = asset.fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      
-      alert(`Resource "${asset.title}" downloaded successfully!`);
+      const globalStore = (window as any).medcme_uploaded_files;
+      const uploadedFileBase64 = globalStore ? globalStore[asset.fileName] : null;
+
+      if (uploadedFileBase64) {
+        const fetchAndDownload = async () => {
+          try {
+            const res = await fetch(uploadedFileBase64);
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = asset.fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            alert(`Resource "${asset.title}" downloaded successfully!`);
+          } catch (err) {
+            console.error('Error downloading uploaded asset', err);
+          }
+        };
+        fetchAndDownload();
+      } else {
+        const finalFileName = asset.fileName.toLowerCase().endsWith('.txt') ? asset.fileName : asset.fileName + '.txt';
+        const blob = new Blob([
+          `Accrevent Knowledge Base Resource File\n` +
+          `Title: ${asset.title}\n` +
+          `Filename: ${asset.fileName}\n` +
+          `Category: ${asset.category}\n` +
+          `Access Restriction: ${asset.visibility}\n\n` +
+          `This file contains official continuing medical education resources.`
+        ], { type: 'text/plain' });
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = finalFileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        alert(`Resource "${asset.title}" downloaded as text file "${finalFileName}" successfully!`);
+      }
     }
   }
 

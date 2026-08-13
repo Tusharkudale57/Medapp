@@ -18,6 +18,31 @@ export class LoginComponent {
   // Form Fields
   userId: string = 'doctor@medcme.org';
   userPass: string = 'doctor123';
+  showPassword: boolean = false;
+  loginStep: number = 1; // 1: Identifier, 2: Credentials
+
+  // Left Panel Interactive Carousel Slides
+  activeSlideIndex: number = 0;
+  slides = [
+    {
+      icon: '🏆',
+      tag: 'Accredited CME Platform',
+      title: 'Earn & Track CME Credit Points',
+      desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions and track your official credit ledger in real time.'
+    },
+    {
+      icon: '📜',
+      tag: 'Verified Digital Credentials',
+      title: 'Instant Gold-Stamped Certificates',
+      desc: 'Earn verifiable digital certificates upon completing live sessions and passing interactive medical assessment quizzes.'
+    },
+    {
+      icon: '🩺',
+      tag: 'Clinical Knowledge Bank',
+      title: 'Live Webinars & Pre-Read Guides',
+      desc: 'Access specialized clinical protocols, downloadable slide decks, and interact directly with premier medical faculty.'
+    }
+  ];
 
   errorMessage: string = '';
   loading: boolean = false;
@@ -83,16 +108,42 @@ export class LoginComponent {
     }
   }
 
+  setSlide(index: number) {
+    this.activeSlideIndex = index;
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  goToStep(step: number) {
+    this.loginStep = step;
+  }
+
+  nextStep() {
+    if (!this.userId.trim()) {
+      this.errorMessage = 'Please enter your Registered Email or Mobile Number.';
+      return;
+    }
+    this.errorMessage = '';
+    this.checkNumberPresent();
+    if (!this.showNotRegisteredModal) {
+      this.loginStep = 2;
+    }
+  }
+
   fillDoctorDemo() {
     this.activeRole.set('doctor');
     this.userId = 'doctor@medcme.org';
     this.userPass = 'doctor123';
+    this.loginStep = 1;
   }
 
   fillAdminDemo() {
     this.activeRole.set('admin');
     this.userId = 'admin@medcme.org';
     this.userPass = 'admin123';
+    this.loginStep = 1;
   }
 
   // Focus out (blur) check on Username/Mobile number field

@@ -14,6 +14,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html:has(.login-page), body:has(.login-page) {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Custom Scrollbar styled for Light Theme */
 ::-webkit-scrollbar {
   width: 8px;

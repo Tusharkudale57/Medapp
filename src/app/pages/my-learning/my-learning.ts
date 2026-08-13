@@ -32,6 +32,10 @@ export class MyLearningComponent implements OnInit {
   showGoalModal = false;
   userCareerGoal = 'IT Project Manager'; // Default matching screenshot
 
+  // Event Detail Modal state
+  showEventDetailModal = false;
+  selectedEventForDetail: CmeEvent | null = null;
+
   // Live Room State
   showLiveRoomModal = false;
   activeLiveEvent: CmeEvent | null = null;
@@ -178,6 +182,16 @@ export class MyLearningComponent implements OnInit {
   }
 
   // --- Navigation Header Links ---
+  openEventDetail(event: CmeEvent) {
+    this.selectedEventForDetail = event;
+    this.showEventDetailModal = true;
+  }
+
+  closeEventDetail() {
+    this.showEventDetailModal = false;
+    this.selectedEventForDetail = null;
+  }
+
   navigateToEvents() {
     this.router.navigate(['/dashboard']);
   }
@@ -323,16 +337,27 @@ export class MyLearningComponent implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
+
+
   submitFeedback() {
     if (this.liveFeedbackRating === 0) {
       alert('Please select a star rating first.');
       return;
     }
+    
     this.liveFeedbackSubmitted = true;
-    // Show the completion success screen after a short delay
-    setTimeout(() => {
-      this.liveSessionCompleted = true;
-    }, 800);
+    this.liveSessionCompleted = true;
+
+    // Automatically issue the certificate to the doctor
+    const user = this.authService.currentUser();
+    if (user && this.activeLiveEvent) {
+      this.authService.issueEventCertificate(
+        user.id,
+        this.activeLiveEvent.id,
+        this.activeLiveEvent.title,
+        this.activeLiveEvent.creditPoints || 1
+      );
+    }
   }
 
   closeCompletedSession() {
@@ -349,36 +374,82 @@ export class MyLearningComponent implements OnInit {
 
   downloadPPT(fileName: string) {
     if (typeof window !== 'undefined') {
-      const blob = new Blob(['MedCME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      alert(`Slide deck "${fileName}" downloaded successfully!`);
+      const globalStore = (window as any).medcme_uploaded_files;
+      const uploadedFileBase64 = globalStore ? globalStore[fileName] : null;
+
+      if (uploadedFileBase64) {
+        const fetchAndDownload = async () => {
+          try {
+            const res = await fetch(uploadedFileBase64);
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            alert(`Slide deck "${fileName}" downloaded successfully!`);
+          } catch (err) {
+            console.error('Error downloading uploaded slide binary', err);
+          }
+        };
+        fetchAndDownload();
+      } else {
+        const finalFileName = fileName.toLowerCase().endsWith('.txt') ? fileName : fileName + '.txt';
+        const blob = new Blob(['MedCME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = finalFileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        alert(`Slide deck downloaded as text file "${finalFileName}" successfully!`);
+      }
     }
   }
 
   downloadPreRead(event: any) {
     const fileName = event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf';
     if (typeof window !== 'undefined') {
-      const blob = new Blob([
-        `Accrevent Mandatory CME Pre-Read Material\n` +
-        `=========================================\n` +
-        `Event: ${event.title}\n` +
-        `Speaker: ${event.speaker}\n` +
-        `CME Credits: ${event.creditPoints}\n\n` +
-        `Please review this document carefully before attending the live session.\n` +
-        `Reference ID: PR-${event.id}`
-      ], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      alert(`Mandatory pre-read document "${fileName}" downloaded successfully! Please read it before joining.`);
+      const globalStore = (window as any).medcme_uploaded_files;
+      const uploadedFileBase64 = globalStore ? globalStore[fileName] : null;
+
+      if (uploadedFileBase64) {
+        const fetchAndDownload = async () => {
+          try {
+            const res = await fetch(uploadedFileBase64);
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            alert(`Document "${fileName}" downloaded successfully!`);
+          } catch (err) {
+            console.error('Error downloading uploaded file binary', err);
+          }
+        };
+        fetchAndDownload();
+      } else {
+        const finalFileName = fileName.toLowerCase().endsWith('.txt') ? fileName : fileName + '.txt';
+        const blob = new Blob([
+          `Accrevent Mandatory CME Pre-Read Material\n` +
+          `=========================================\n` +
+          `Event: ${event.title}\n` +
+          `Speaker: ${event.speaker}\n` +
+          `CME Credits: ${event.creditPoints}\n\n` +
+          `Please review this document carefully before attending the live session.\n` +
+          `Reference ID: PR-${event.id}`
+        ], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = finalFileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        alert(`Mandatory pre-read document downloaded as text file "${finalFileName}" successfully! Please read it before joining.`);
+      }
     }
   }
 
@@ -485,135 +556,272 @@ export class MyLearningComponent implements OnInit {
     if (!ctx) return;
 
     const cert = this.selectedCertificate;
-    const width = 1000;
-    const height = 700;
-    canvas.width = width;
-    canvas.height = height;
+    const W = 1050;
+    const H = 740;
+    canvas.width = W;
+    canvas.height = H;
 
-    // Background Gradient & Border
-    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#ffffff');
-    bgGrad.addColorStop(1, '#f8fafc');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, width, height);
+    // ── 1. Cream/Ivory background ──────────────────────────────────
+    ctx.fillStyle = '#fdfaf4';
+    ctx.fillRect(0, 0, W, H);
 
-    // Decorative Borders
-    ctx.strokeStyle = '#0f172a';
-    ctx.lineWidth = 12;
-    ctx.strokeRect(20, 20, width - 40, height - 40);
+    // ── 2. Subtle watermark diagonal lines ─────────────────────────
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = 1;
+    for (let x = -H; x < W + H; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + H, H);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
 
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(32, 32, width - 64, height - 64);
+    // ── 3. Outer dark navy border ───────────────────────────────────
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = 14;
+    ctx.strokeRect(18, 18, W - 36, H - 36);
 
-    // Corner Ornaments
-    ctx.fillStyle = '#f59e0b';
-    ctx.fillRect(32, 32, 24, 24);
-    ctx.fillRect(width - 56, 32, 24, 24);
-    ctx.fillRect(32, height - 56, 24, 24);
-    ctx.fillRect(width - 56, height - 56, 24, 24);
+    // ── 4. Inner gold double-line border ───────────────────────────
+    ctx.strokeStyle = '#b8860b';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(34, 34, W - 68, H - 68);
+    ctx.strokeStyle = '#d4a017';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(40, 40, W - 80, H - 80);
 
-    // Header Text
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 24px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('NATIONAL BOARD OF CONTINUING MEDICAL EDUCATION', width / 2, 90);
+    // ── 5. Corner ornament diamonds ────────────────────────────────
+    const drawCornerDiamond = (cx: number, cy: number) => {
+      ctx.save();
+      ctx.fillStyle = '#b8860b';
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-10, -10, 20, 20);
+      ctx.restore();
+    };
+    drawCornerDiamond(48, 48);
+    drawCornerDiamond(W - 48, 48);
+    drawCornerDiamond(48, H - 48);
+    drawCornerDiamond(W - 48, H - 48);
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 13px system-ui, sans-serif';
-    ctx.fillText('ACCREDITED CME CERTIFICATE OF CLINICAL EXCELLENCE', width / 2, 115);
+    // ── 6. Navy top header band ─────────────────────────────────────
+    const headerH = 110;
+    const headerGrad = ctx.createLinearGradient(0, 48, 0, 48 + headerH);
+    headerGrad.addColorStop(0, '#0f2167');
+    headerGrad.addColorStop(1, '#1e3a8a');
+    ctx.fillStyle = headerGrad;
+    ctx.fillRect(48, 48, W - 96, headerH);
 
-    // Divider Line
-    ctx.strokeStyle = '#cbd5e1';
+    // Gold accent line at bottom of header
+    ctx.fillStyle = '#d4a017';
+    ctx.fillRect(48, 48 + headerH - 4, W - 96, 4);
+
+    // Left emblem circle
+    const embX = 118, embY = 48 + headerH / 2;
+    ctx.fillStyle = '#d4a017';
+    ctx.beginPath();
+    ctx.arc(embX, embY, 30, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Inner circle
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(150, 135);
-    ctx.lineTo(width - 150, 135);
+    ctx.arc(embX, embY, 22, 0, 2 * Math.PI);
+    ctx.stroke();
+    // Star symbol
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 22px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚕', embX, embY);
+
+    // Right emblem circle (mirror)
+    const embX2 = W - 118;
+    ctx.fillStyle = '#d4a017';
+    ctx.beginPath();
+    ctx.arc(embX2, embY, 30, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(embX2, embY, 22, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 22px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚕', embX2, embY);
+
+    // Header title text — centred between emblems
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NATIONAL BOARD OF CONTINUING MEDICAL EDUCATION', W / 2, embY - 10);
+
+    ctx.fillStyle = '#d4a017';
+    ctx.font = '11px Georgia, serif';
+    ctx.fillText('ACCREDITED CME CERTIFICATE OF CLINICAL EXCELLENCE  ·  INDIA', W / 2, embY + 14);
+
+    // ── 7. Thin gold rule below header ─────────────────────────────
+    ctx.strokeStyle = '#d4a017';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(100, 48 + headerH + 14);
+    ctx.lineTo(W - 100, 48 + headerH + 14);
     ctx.stroke();
 
-    // Certification Statement
-    ctx.fillStyle = '#475569';
-    ctx.font = 'italic 18px Georgia, serif';
-    ctx.fillText('This is to officially certify that', width / 2, 185);
+    // ── 8. "This is to certify" italic line ────────────────────────
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'italic 15px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('This is to officially certify that', W / 2, 200);
 
-    // Doctor Name
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 36px system-ui, serif';
-    ctx.fillText(cert.recipientName.toUpperCase(), width / 2, 235);
+    // ── 9. Recipient name ──────────────────────────────────────────
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 38px Georgia, serif';
+    ctx.fillText(cert.recipientName.toUpperCase(), W / 2, 255);
 
-    // Reg Info
+    // Name underline
+    const nameWidth = ctx.measureText(cert.recipientName.toUpperCase()).width;
+    ctx.strokeStyle = '#d4a017';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - nameWidth / 2, 264);
+    ctx.lineTo(W / 2 + nameWidth / 2, 264);
+    ctx.stroke();
+
+    // ── 10. Reg number ─────────────────────────────────────────────
     const currentUserObj = this.authService.currentUser();
     if (currentUserObj?.registrationNo) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '14px system-ui, sans-serif';
-      ctx.fillText(`Medical Reg No: ${currentUserObj.registrationNo}`, width / 2, 265);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '13px Georgia, serif';
+      ctx.fillText(`Medical Reg. No: ${currentUserObj.registrationNo}`, W / 2, 288);
     }
 
-    // Completion Statement
+    // ── 11. Completion statement ───────────────────────────────────
     ctx.fillStyle = '#475569';
-    ctx.font = '16px Georgia, serif';
+    ctx.font = '15px Georgia, serif';
     const completionText = cert.type === 'event'
       ? 'has successfully attended the accredited continuing medical education event'
       : 'has successfully completed the accredited medical continuing education course';
-    ctx.fillText(completionText, width / 2, 310);
+    ctx.fillText(completionText, W / 2, 326);
 
-    // Course Title
-    ctx.fillStyle = '#0284c7';
-    ctx.font = 'bold 24px system-ui, sans-serif';
-    ctx.fillText(`"${cert.courseTitle}"`, width / 2, 355);
+    // ── 12. Course/event title ─────────────────────────────────────
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 22px Georgia, serif';
+    ctx.fillText(`" ${cert.courseTitle} "`, W / 2, 368);
 
-    // Credit Award Pill Background
-    ctx.fillStyle = '#fef3c7';
+    // ── 13. Credits award pill ─────────────────────────────────────
+    const pillW = 400, pillH = 42, pillX = W / 2 - pillW / 2, pillY = 392;
+    const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX + pillW, pillY);
+    pillGrad.addColorStop(0, '#1e3a8a');
+    pillGrad.addColorStop(1, '#1d4ed8');
+    ctx.fillStyle = pillGrad;
     ctx.beginPath();
-    ctx.roundRect(width / 2 - 180, 390, 360, 44, 22);
+    (ctx as any).roundRect(pillX, pillY, pillW, pillH, 21);
     ctx.fill();
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#b45309';
-    ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.fillText(`AWARDED ${cert.creditPoints}.0 PRESERVED CME CREDIT POINT${cert.creditPoints > 1 ? 'S' : ''}`, width / 2, 418);
-
-    // Dates and Verification
-    ctx.fillStyle = '#334155';
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`Issue Date: ${cert.issueDate}`, 80, 520);
-    ctx.fillText(`Verification Code: ${cert.verificationCode}`, 80, 545);
-
-    // Gold Medal Seal Circle
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.arc(width / 2, 530, 42, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.strokeStyle = '#b45309';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('VERIFIED', width / 2, 525);
-    ctx.fillText('CME 2026', width / 2, 542);
+    ctx.font = 'bold 14px Georgia, serif';
+    ctx.fillText(`⚡  AWARDED ${cert.creditPoints} PRESERVED CME CREDIT POINT${cert.creditPoints > 1 ? 'S' : ''}`, W / 2, pillY + 27);
 
-    // Signature Area
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'italic bold 20px cursive, Georgia, serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('Dr. V. K. Malhotra', width - 80, 515);
-
-    ctx.strokeStyle = '#475569';
+    // ── 14. Gold divider before footer ────────────────────────────
+    ctx.strokeStyle = '#d4a017';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(width - 240, 525);
-    ctx.lineTo(width - 60, 525);
+    ctx.moveTo(100, 456);
+    ctx.lineTo(W - 100, 456);
+    ctx.stroke();
+
+    // ── 15. Seal stamp (center) ────────────────────────────────────
+    const sealX = W / 2, sealY = 548;
+    // Outer ring
+    ctx.fillStyle = '#b8860b';
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 52, 0, 2 * Math.PI);
+    ctx.fill();
+    // Middle ring
+    ctx.fillStyle = '#d4a017';
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 44, 0, 2 * Math.PI);
+    ctx.fill();
+    // Inner fill
+    const sealGrad = ctx.createRadialGradient(sealX - 8, sealY - 8, 4, sealX, sealY, 40);
+    sealGrad.addColorStop(0, '#fbbf24');
+    sealGrad.addColorStop(1, '#b8860b');
+    ctx.fillStyle = sealGrad;
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 40, 0, 2 * Math.PI);
+    ctx.fill();
+    // Seal text
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 11px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('VERIFIED', sealX, sealY - 5);
+    ctx.fillText('CME 2026', sealX, sealY + 10);
+    // Deco ring
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 36, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // ── 16. Issue date & verification (left) ──────────────────────
+    ctx.fillStyle = '#475569';
+    ctx.font = '13px Georgia, serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Issue Date:`, 90, 490);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 13px Georgia, serif';
+    ctx.fillText(cert.issueDate, 175, 490);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '13px Georgia, serif';
+    ctx.fillText(`Verification:`, 90, 512);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 12px Georgia, serif';
+    ctx.fillText(cert.verificationCode, 175, 512);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px Georgia, serif';
+    ctx.fillText(`Issuer: ${cert.issuer || 'ICCME – India'}`, 90, 534);
+
+    // ── 17. Signature (right) ──────────────────────────────────────
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'italic bold 22px cursive, Georgia, serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Dr. V. K. Malhotra', W - 90, 500);
+
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(W - 280, 508);
+    ctx.lineTo(W - 78, 508);
     ctx.stroke();
 
     ctx.fillStyle = '#64748b';
-    ctx.font = '13px system-ui, sans-serif';
-    ctx.fillText('Director of Medical Education', width - 80, 545);
+    ctx.font = '12px Georgia, serif';
+    ctx.fillText('Director of Medical Education', W - 90, 524);
+    ctx.fillText('National Board of CME, India', W - 90, 540);
+
+    // ── 18. Issuer info line ───────────────────────────────────────
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('This certificate is digitally verifiable. Scan or visit medcme.org/verify to confirm authenticity.', W / 2, 620);
+    ctx.fillText(`Certificate ID: ${cert.id || cert.verificationCode}`, W / 2, 638);
   }
+
+
+
 
   downloadCertificate() {
     if (!this.isBrowser || !this.certCanvas || !this.selectedCertificate) return;

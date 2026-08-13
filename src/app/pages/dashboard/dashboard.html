@@ -3,8 +3,8 @@
   <!-- Navbar -->
   <header class="dash-navbar">
     <div class="nav-inner">
-      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer;">
-        <span class="brand-icon">&#127973;</span>
+      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
+        <img src="assets/logo.png" alt="MedCME Logo" style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 5px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);" />
         <div>
           <div class="brand-name">MedCME Academy</div>
           <div class="brand-sub">Continuing Medical Education Platform</div>
@@ -882,6 +882,48 @@
           <label>Max Seats</label>
           <input type="number" [(ngModel)]="newMaxSeats" min="1" />
         </div>
+        <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="font-weight: 700; color: #1e293b;">📚 Pre-Read Study Material &amp; Documents</label>
+          
+          <!-- Beautiful File Dropzone/Uploader -->
+          <div style="border: 2px dashed #cbd5e1; border-radius: 10px; padding: 1.5rem 1rem; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s; position: relative;"
+               onclick="document.getElementById('dashboard-file-upload-input').click()"
+               onmouseover="this.style.borderColor='#0056D2'; this.style.background='#eff6ff'"
+               onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'">
+            
+            <input type="file" id="dashboard-file-upload-input" (change)="onFileSelected($event)" multiple style="display: none;" />
+            <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📁</span>
+            <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: block;">Drag &amp; Drop files here or <span style="color: #0056D2; text-decoration: underline;">Browse</span></span>
+            <span style="font-size: 0.72rem; color: #64748b; margin-top: 0.25rem; display: block;">Supports PDF, PPTX, DOCX up to 15MB</span>
+          </div>
+
+          <!-- Uploaded File Lists -->
+          <div *ngIf="uploadedFiles.length > 0" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+            <div *ngFor="let file of uploadedFiles; let idx = index" 
+                 style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.8rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); animation: fadeInUp 0.25s ease;">
+              
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span *ngIf="file.name.toLowerCase().endsWith('.pdf')">📄</span>
+                <span *ngIf="file.name.toLowerCase().endsWith('.pptx') || file.name.toLowerCase().endsWith('.ppt')">📊</span>
+                <span *ngIf="!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.pptx') && !file.name.toLowerCase().endsWith('.ppt')">📁</span>
+                
+                <div style="text-align: left;">
+                  <span style="font-weight: 600; color: #1e293b; display: block; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ file.name }}</span>
+                  <span style="font-size: 0.7rem; color: #64748b;">{{ file.size }} &bull; 
+                    <span *ngIf="file.status === 'uploading'" style="color: #3b82f6; font-weight: 600; animation: pulse 1s infinite;">Uploading...</span>
+                    <span *ngIf="file.status === 'uploaded'" style="color: #10b981; font-weight: 600;">✓ Ready</span>
+                  </span>
+                </div>
+              </div>
+
+              <button (click)="removeUploadedFile(idx); $event.stopPropagation()" style="background: none; border: none; font-size: 1.1rem; color: #ef4444; cursor: pointer; padding: 0.25rem;">&times;</button>
+            </div>
+          </div>
+
+          <!-- Hidden binding back to the original input value for seamless integration -->
+          <input type="hidden" [(ngModel)]="newPreRead" name="newPreRead" />
+        </div>
+
         <div class="form-group full-width">
           <label>Card Accent Color</label>
           <div class="color-options">

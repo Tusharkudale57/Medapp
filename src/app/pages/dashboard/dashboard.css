@@ -700,6 +700,7 @@
   position: absolute;
   top: 100%;
   left: 0;
+  right: auto;
   margin-top: 0.5rem;
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
@@ -707,6 +708,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
   z-index: 1000;
   width: 750px;
+  max-width: calc(100vw - 2rem);
   padding: 0;
   overflow: hidden;
   animation: dropdownSlide 0.2s ease-out;
@@ -1939,6 +1941,9 @@
 .live-room-box {
   max-width: 1050px !important;
   width: 95vw !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
   padding: 0 !important;
   overflow: hidden;
   text-align: left !important;
@@ -1985,7 +1990,10 @@
 .live-room-body {
   display: grid;
   grid-template-columns: 1fr;
-  height: 600px;
+  flex: 1;
+  min-height: 0;
+  height: calc(90vh - 65px);
+  max-height: 600px;
 }
 
 @media (min-width: 768px) {
