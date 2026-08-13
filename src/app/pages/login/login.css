@@ -52,7 +52,8 @@
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap:50px;
   position: relative;
   overflow: hidden;
   height: 100vh;
@@ -226,7 +227,7 @@
   padding: 3rem 3.5rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   background: #ffffff;
   height: 100vh;
   box-sizing: border-box;
@@ -237,13 +238,13 @@
 .auth-panel-middle {
   width: 100%;
   max-width: 480px;
-  margin: 0 auto;
+  margin: 20px auto;
 }
 
 .auth-panel-bottom {
   width: 100%;
   max-width: 480px;
-  margin: auto auto 0;
+  margin:  20px auto;
 }
 
 /* Role Selector Tabs */
