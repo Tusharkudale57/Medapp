@@ -238,13 +238,13 @@
 .auth-panel-middle {
   width: 100%;
   max-width: 480px;
-  margin: 20px auto;
+  margin: 10px auto;
 }
 
 .auth-panel-bottom {
   width: 100%;
   max-width: 480px;
-  margin:  20px auto;
+  margin:  10px auto;
 }
 
 /* Role Selector Tabs */
