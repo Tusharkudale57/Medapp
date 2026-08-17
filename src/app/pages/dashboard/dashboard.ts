@@ -437,7 +437,7 @@ export class DashboardComponent implements OnInit {
   downloadNotes() {
     if (!this.activeLiveEvent) return;
     const blob = new Blob([
-      `Accrevent Private Session Notes\n` +
+      `MedCME Private Session Notes\n` +
       `Event: ${this.activeLiveEvent.title}\n` +
       `Speaker: ${this.activeLiveEvent.speaker}\n` +
       `Date: ${this.activeLiveEvent.date}\n\n` +

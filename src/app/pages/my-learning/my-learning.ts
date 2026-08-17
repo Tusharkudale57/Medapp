@@ -321,7 +321,7 @@ export class MyLearningComponent implements OnInit {
   downloadNotes() {
     if (!this.activeLiveEvent) return;
     const blob = new Blob([
-      `Accrevent Private Session Notes\n` +
+      `MedCME Private Session Notes\n` +
       `Event: ${this.activeLiveEvent.title}\n` +
       `Speaker: ${this.activeLiveEvent.speaker}\n` +
       `Date: ${this.activeLiveEvent.date}\n\n` +
@@ -434,7 +434,7 @@ export class MyLearningComponent implements OnInit {
       } else {
         const finalFileName = fileName.toLowerCase().endsWith('.txt') ? fileName : fileName + '.txt';
         const blob = new Blob([
-          `Accrevent Mandatory CME Pre-Read Material\n` +
+          `MedCME Mandatory CME Pre-Read Material\n` +
           `=========================================\n` +
           `Event: ${event.title}\n` +
           `Speaker: ${event.speaker}\n` +
