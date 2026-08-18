@@ -700,13 +700,16 @@ export class DashboardComponent implements OnInit {
       } else if (code.includes('LUPIN')) {
         this.sponsorNameDetected = 'Lupin Limited';
         return;
+      } else if (code.includes('COUPON') || code.includes('DISCOUNT')) {
+        this.sponsorNameDetected = 'Promo Coupon Applied (100% waver)';
+        return;
       } else if (code.includes('FREE') || code.includes('SPONSOR') || code.startsWith('MR')) {
         this.sponsorNameDetected = 'Special MR Sponsor';
         return;
       }
     }
 
-    this.sponsorCodeError = 'Invalid MR Sponsorship Code. Try codes like MR_SUN, MR_REDDY, or MR_FREE.';
+    this.sponsorCodeError = 'Invalid MR Sponsorship / Coupon Code. Try codes like MR_SUN, COUPON_100, or MR_FREE.';
   }
 
   async confirmRegister() {

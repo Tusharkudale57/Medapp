@@ -98,8 +98,25 @@
               </button>
             </div>
 
-            <div class="form-group">
-              <label>Security Password / OTP Code</label>
+            <!-- Login Method Toggle Tabs -->
+            <div class="login-method-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+              <button type="button" (click)="loginMethod = 'password'" 
+                [style.background]="loginMethod === 'password' ? '#2563eb' : '#f1f5f9'"
+                [style.color]="loginMethod === 'password' ? '#fff' : '#475569'"
+                style="flex: 1; border: none; padding: 0.55rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
+                🔑 Password Login
+              </button>
+              <button type="button" (click)="loginMethod = 'otp'" 
+                [style.background]="loginMethod === 'otp' ? '#2563eb' : '#f1f5f9'"
+                [style.color]="loginMethod === 'otp' ? '#fff' : '#475569'"
+                style="flex: 1; border: none; padding: 0.55rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
+                📱 OTP Login
+              </button>
+            </div>
+
+            <!-- PASSWORD METHOD -->
+            <div class="form-group" *ngIf="loginMethod === 'password'">
+              <label>Security Password</label>
               <div class="input-icon-wrapper">
                 <span class="field-icon">🔒</span>
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass"
@@ -111,9 +128,52 @@
               </div>
             </div>
 
-            <button type="submit" class="btn-submit-main" [disabled]="loading">
-              <span *ngIf="!loading && activeRole() === 'doctor'">Sign In as Doctor → Access Dashboard</span>
-              <span *ngIf="!loading && activeRole() === 'admin'">Sign In as Administrator → Manage Portal</span>
+            <!-- OTP METHOD -->
+            <div *ngIf="loginMethod === 'otp'">
+              <div *ngIf="!otpSentForLogin" style="text-align: center; margin-bottom: 1.25rem; padding: 0.5rem 0;">
+                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 1rem; line-height: 1.4;">
+                  We will send a 6-digit verification code to: <strong style="color: #0f172a;">{{ userId }}</strong>
+                </p>
+                <button type="button" class="btn-submit-main" (click)="sendLoginOtp()" style="background: #10b981; border-color: #059669; box-shadow: 0 4px 10px rgba(16,185,129,0.25);">
+                  📩 Send OTP Verification Code
+                </button>
+              </div>
+
+              <div *ngIf="otpSentForLogin">
+                <div class="form-group">
+                  <label>Enter 6-Digit OTP Code</label>
+                  <div class="input-icon-wrapper">
+                    <span class="field-icon">🔢</span>
+                    <input type="text" [(ngModel)]="userPass" name="userPass"
+                      placeholder="e.g. 123456" maxlength="6" required />
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.78rem;">
+                    <span style="color: #10b981; font-weight: 600;">✓ OTP Code Sent!</span>
+                    <button type="button" (click)="sendLoginOtp()" [disabled]="loginOtpCountdown > 0" 
+                      style="background: transparent; border: none; color: #2563eb; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
+                      {{ loginOtpCountdown > 0 ? 'Resend in ' + loginOtpCountdown + 's' : 'Resend OTP' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Remember Device Checkbox (Fulfills A-02 Checkbox) -->
+            <div style="margin-top: 1rem; text-align: left; padding: 0 0.1rem;">
+              <label style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" name="rememberDevice" style="width: 15px; height: 15px; cursor: pointer; accent-color: #2563eb;" />
+                <span>Keep me signed in on this device (Remember device)</span>
+              </label>
+            </div>
+
+            <!-- SUBMIT BUTTON -->
+            <button type="submit" class="btn-submit-main" [disabled]="loading || (loginMethod === 'otp' && !otpSentForLogin)" style="margin-top: 1rem;">
+              <span *ngIf="!loading && activeRole() === 'doctor'">
+                {{ loginMethod === 'otp' ? 'Verify & Sign In as Doctor' : 'Sign In as Doctor → Access Dashboard' }}
+              </span>
+              <span *ngIf="!loading && activeRole() === 'admin'">
+                {{ loginMethod === 'otp' ? 'Verify & Sign In as Admin' : 'Sign In as Administrator → Manage Portal' }}
+              </span>
               <span *ngIf="loading" class="spinner"></span>
             </button>
           </div>
@@ -292,6 +352,13 @@
             <input type="text" [(ngModel)]="regHospital" name="regHospital"
               style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
               placeholder="e.g. Kokilaben Hospital Mumbai" />
+          </div>
+
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Organization Name</label>
+            <input type="text" [(ngModel)]="regOrganization" name="regOrganization"
+              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
+              placeholder="e.g. MedCME Academy Group" />
           </div>
 
           <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">

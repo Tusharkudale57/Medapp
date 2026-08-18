@@ -28,6 +28,15 @@ export class CourseDetailComponent implements OnInit {
   paymentSuccess = false;
   paymentTransactionId = '';
 
+  // Checkout registration modal state
+  showRegisterModal = false;
+  agreeTermsCheckout = false;
+  showSponsorInput = false;
+  sponsorCode = '';
+  sponsorCodeError = '';
+  sponsorNameDetected = '';
+  registrationSuccess = false;
+
   // Quiz state
   userAnswers: { [key: string]: number } = {};
   quizSubmitted = false;
@@ -66,30 +75,89 @@ export class CourseDetailComponent implements OnInit {
     return this.course ? this.authService.isCourseCompleted(this.course.id) : false;
   }
 
-  async initiatePurchase() {
+  initiatePurchase() {
     if (!this.course) return;
     const user = this.authService.currentUser();
     if (!user) {
       this.router.navigate(['/login']);
       return;
     }
+    this.showRegisterModal = true;
+    this.agreeTermsCheckout = false;
+    this.showSponsorInput = false;
+    this.sponsorCode = '';
+    this.sponsorCodeError = '';
+    this.sponsorNameDetected = '';
+    this.registrationSuccess = false;
+  }
 
-    const details = {
-      courseId: this.course.id,
-      courseTitle: this.course.title,
-      amount: this.course.price,
-      userName: user.name,
-      userEmail: user.email,
-      userPhone: user.phone
-    };
+  closeRegisterModal() {
+    this.showRegisterModal = false;
+  }
 
-    const res = await this.razorpayService.openPaymentGateway(details);
+  verifySponsorCode() {
+    this.sponsorCodeError = '';
+    this.sponsorNameDetected = '';
+    const raw = this.sponsorCode.trim().toUpperCase();
+    if (!raw) return;
 
-    if (res.success && res.paymentId && res.paymentId !== 'FALLBACK_TRIGGER') {
-      this.finalizePurchase(res.paymentId);
+    const tokens = raw.split(/[\s,]+/).filter(t => t.length > 0);
+
+    for (const code of tokens) {
+      if (code.includes('SUN')) {
+        this.sponsorNameDetected = 'Sun Pharma Representative';
+        return;
+      } else if (code.includes('REDDY')) {
+        this.sponsorNameDetected = "Dr. Reddy's Laboratories";
+        return;
+      } else if (code.includes('CIPLA')) {
+        this.sponsorNameDetected = 'Cipla Pharmaceuticals';
+        return;
+      } else if (code.includes('LUPIN')) {
+        this.sponsorNameDetected = 'Lupin Limited';
+        return;
+      } else if (code.includes('COUPON') || code.includes('DISCOUNT')) {
+        this.sponsorNameDetected = 'Promo Coupon Applied (100% waver)';
+        return;
+      } else if (code.includes('FREE') || code.includes('SPONSOR') || code.startsWith('MR')) {
+        this.sponsorNameDetected = 'Special MR Sponsor';
+        return;
+      }
+    }
+
+    this.sponsorCodeError = 'Invalid MR Sponsorship / Coupon Code. Try codes like MR_SUN, COUPON_100, or MR_FREE.';
+  }
+
+  async confirmRegister() {
+    if (!this.course) return;
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    if (this.course.price === 0 || this.sponsorNameDetected) {
+      // Free or fully waived sponsored checkout
+      this.authService.purchaseCourse(this.course.id);
+      this.registrationSuccess = true;
+      setTimeout(() => {
+        this.closeRegisterModal();
+        this.activeTab.set('modules');
+      }, 2200);
     } else {
-      // Show interactive Razorpay modal fallback
-      this.showSimulatedRazorpay = true;
+      // Paid checkout - trigger Razorpay
+      const details = {
+        courseId: this.course.id,
+        courseTitle: this.course.title,
+        amount: this.course.price,
+        userName: user.name,
+        userEmail: user.email,
+        userPhone: user.phone || '9876543210'
+      };
+
+      const res = await this.razorpayService.openPaymentGateway(details);
+      if (res.success && res.paymentId && res.paymentId !== 'FALLBACK_TRIGGER') {
+        this.finalizePurchase(res.paymentId);
+      } else {
+        this.showSimulatedRazorpay = true;
+      }
     }
   }
 
@@ -98,7 +166,7 @@ export class CourseDetailComponent implements OnInit {
     setTimeout(() => {
       this.processingPayment = false;
       this.paymentSuccess = true;
-      this.paymentTransactionId = 'pay_rzp_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+      this.paymentTransactionId = 'pay_rzp_evt_' + Math.random().toString(36).substring(2, 10).toUpperCase();
 
       setTimeout(() => {
         this.showSimulatedRazorpay = false;
@@ -113,7 +181,11 @@ export class CourseDetailComponent implements OnInit {
   finalizePurchase(transactionId: string) {
     if (!this.course) return;
     this.authService.purchaseCourse(this.course.id);
-    this.activeTab.set('modules');
+    this.registrationSuccess = true;
+    setTimeout(() => {
+      this.closeRegisterModal();
+      this.activeTab.set('modules');
+    }, 2200);
   }
 
   selectModule(mod: CourseModule) {

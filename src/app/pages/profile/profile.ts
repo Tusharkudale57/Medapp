@@ -36,6 +36,9 @@ export class ProfileComponent implements OnInit {
   editDepartment = '';
   editQualification = '';
   editHospital = '';
+  editOrganization = '';
+  editClinicAddress = '';
+  editPracticingInterest = '';
   editExperience = 0;
   editLanguage = 'English';
   editEmailConsent = true;
@@ -99,6 +102,9 @@ export class ProfileComponent implements OnInit {
       this.editDepartment = this.user.department || '';
       this.editQualification = this.user.qualification || '';
       this.editHospital = this.user.hospital || '';
+      this.editOrganization = this.user.organization || '';
+      this.editClinicAddress = this.user.clinicAddress || '';
+      this.editPracticingInterest = this.user.practicingInterest || '';
       this.editExperience = this.user.experience || 0;
       this.editLanguage = this.user.language || 'English';
       this.editEmailConsent = this.user.emailConsent !== false;
@@ -194,6 +200,9 @@ export class ProfileComponent implements OnInit {
       department: this.editDepartment,
       qualification: this.editQualification,
       hospital: this.editHospital,
+      organization: this.editOrganization,
+      clinicAddress: this.editClinicAddress,
+      practicingInterest: this.editPracticingInterest,
       experience: this.editExperience,
       language: this.editLanguage,
       interests: this.selectedInterests,

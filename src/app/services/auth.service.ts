@@ -160,6 +160,7 @@ export class AuthService {
       department: profile.department || '',
       qualification: profile.qualification || '',
       hospital: profile.hospital || '',
+      organization: profile.organization || '',
       experience: profile.experience || 0,
       language: profile.language || 'English',
       emailConsent: profile.emailConsent ?? true,

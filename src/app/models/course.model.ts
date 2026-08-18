@@ -71,6 +71,7 @@ export interface UserProfile {
   department?: string;
   qualification?: string;
   hospital?: string;
+  organization?: string;
   experience?: number;
   language?: string;
   emailConsent?: boolean;

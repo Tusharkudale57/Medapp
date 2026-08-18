@@ -20,6 +20,10 @@ export class LoginComponent {
   userPass: string = 'doctor123';
   showPassword: boolean = false;
   loginStep: number = 1; // 1: Identifier, 2: Credentials
+  loginMethod: 'password' | 'otp' = 'password';
+  otpSentForLogin = false;
+  loginOtpCountdown = 60;
+  loginOtpInterval: any = null;
 
   // Left Panel Interactive Carousel Slides
   activeSlideIndex: number = 0;
@@ -71,6 +75,7 @@ export class LoginComponent {
   regQualification: string = 'MBBS';
   regMmcNo: string = '';
   regHospital: string = '';
+  regOrganization: string = '';
   regExperience: number = 2;
   regLanguage: string = 'English';
   regEmailConsent: boolean = true;
@@ -99,6 +104,11 @@ export class LoginComponent {
   switchRole(role: 'doctor' | 'admin') {
     this.activeRole.set(role);
     this.errorMessage = '';
+    this.loginMethod = 'password';
+    this.otpSentForLogin = false;
+    if (this.loginOtpInterval) {
+      clearInterval(this.loginOtpInterval);
+    }
     if (role === 'doctor') {
       this.userId = 'doctor@medcme.org';
       this.userPass = 'doctor123';
@@ -118,6 +128,13 @@ export class LoginComponent {
 
   goToStep(step: number) {
     this.loginStep = step;
+    if (step === 1) {
+      this.loginMethod = 'password';
+      this.otpSentForLogin = false;
+      if (this.loginOtpInterval) {
+        clearInterval(this.loginOtpInterval);
+      }
+    }
   }
 
   nextStep() {
@@ -219,6 +236,7 @@ export class LoginComponent {
       qualification: this.regQualification,
       registrationNo: this.regMmcNo.trim(),
       hospital: this.regHospital.trim(),
+      organization: this.regOrganization.trim(),
       experience: this.regExperience,
       language: this.regLanguage,
       emailConsent: this.regEmailConsent,
@@ -290,6 +308,28 @@ export class LoginComponent {
     setTimeout(() => {
       this.closeForgotPassword();
     }, 2000);
+  }
+
+  sendLoginOtp() {
+    if (!this.userId.trim()) return;
+    this.otpSentForLogin = true;
+    this.loginOtpCountdown = 60;
+    this.errorMessage = '';
+
+    // Alert the simulated code (e.g. 123456)
+    alert(`[Simulated SMS/Email] Your MedCME login OTP is: 123456`);
+    this.userPass = '123456';
+
+    if (this.loginOtpInterval) {
+      clearInterval(this.loginOtpInterval);
+    }
+    this.loginOtpInterval = setInterval(() => {
+      if (this.loginOtpCountdown > 0) {
+        this.loginOtpCountdown--;
+      } else {
+        clearInterval(this.loginOtpInterval);
+      }
+    }, 1000);
   }
 
   onLogin() {

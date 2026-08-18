@@ -750,6 +750,19 @@
           </div>
         </div>
 
+        <!-- Attendee Summary Block (Fulfills A-07 Checkbox) -->
+        <div class="checkout-attendee-summary" style="margin-top: 1rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; text-align: left; font-size: 0.85rem; color: #475569;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h5 style="margin: 0; color: #0f172a; font-weight: 700;">🧑 Registrant Profile Details</h5>
+            <a href="javascript:void(0)" (click)="closeRegisterModal(); navigateToProfile()" style="font-size: 0.76rem; font-weight: 700; color: #2563eb; text-decoration: underline;">Edit Profile</a>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.78rem;">
+            <div><strong>Name:</strong> {{ authService.currentUser()?.name }}</div>
+            <div><strong>Email:</strong> {{ authService.currentUser()?.email }} &bull; <strong>Mobile:</strong> {{ authService.currentUser()?.phone }}</div>
+            <div><strong>Specialty:</strong> {{ authService.currentUser()?.specialty }}</div>
+          </div>
+        </div>
+
         <!-- Price Splits (Base + 18% GST) for Paid Events -->
         <div *ngIf="(selectedEvent?.price || 0) > 0" style="margin-top: 1rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; text-align: left; font-size: 0.85rem; color: #475569;">
           <h5 style="margin: 0 0 0.5rem 0; color: #0f172a; font-weight: 700;">💳 Tax Invoice Breakdown</h5>
@@ -772,29 +785,29 @@
         </div>
         <div *ngIf="(selectedEvent?.price || 0) > 0" class="paid-note">
           <p *ngIf="!sponsorNameDetected" style="margin-bottom:0.5rem; line-height:1.4;">This is a paid event. Clicking confirm will open the Razorpay payment gateway to process the registration fee of Rs. {{ selectedEvent?.price | number }}.</p>
-          <p *ngIf="sponsorNameDetected" style="color:#059669; font-weight:700; margin-bottom:0.5rem;">✓ Sponsorship Verified: {{ sponsorNameDetected }} (Rs. {{ selectedEvent?.price | number }} fully waived)</p>
+          <p *ngIf="sponsorNameDetected" style="color:#059669; font-weight:700; margin-bottom:0.5rem;">✓ Sponsorship/Coupon Verified: {{ sponsorNameDetected }} (Rs. {{ selectedEvent?.price | number }} fully waived)</p>
 
           <!-- Toggle Link -->
           <div class="mr-sponsor-toggle" style="margin-top: 0.5rem; text-align: left;">
             <a href="javascript:void(0)" (click)="showSponsorInput = !showSponsorInput" style="font-size:0.82rem; font-weight:700; color:#2563eb; text-decoration:none;">
-              {{ showSponsorInput ? '✕ Hide Sponsor Code Option' : '🔑 Sponsored by an MR? Click here to enter code' }}
+              {{ showSponsorInput ? '✕ Hide Sponsor Code Option' : '🔑 Sponsored by an MR / Coupon Code? Click here' }}
             </a>
           </div>
 
           <!-- Sponsor Code Input Box -->
           <div *ngIf="showSponsorInput" style="margin-top: 0.75rem; text-align: left; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.75rem;">
-            <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:0.25rem;">MR Sponsorship Code</label>
+            <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:0.25rem;">MR Sponsorship / Coupon Code</label>
             <div style="display:flex; gap:0.5rem;">
-              <input type="text" [(ngModel)]="sponsorCode" placeholder="Enter MR Code e.g. MR_FREE or MR_SUN" style="flex:1; padding:0.4rem 0.6rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" />
+              <input type="text" [(ngModel)]="sponsorCode" placeholder="Enter MR Code or Coupon e.g. COUPON_100 or MR_SUN" style="flex:1; padding:0.4rem 0.6rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" />
               <button (click)="verifySponsorCode()" style="background:#2563eb; color:#fff; border:none; padding:0.4rem 1rem; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer;">Verify</button>
             </div>
             <div *ngIf="sponsorCodeError" style="color:#dc2626; font-size:0.75rem; font-weight:600; margin-top:0.4rem;">{{ sponsorCodeError }}</div>
-            <div *ngIf="sponsorNameDetected" style="color:#16a34a; font-size:0.75rem; font-weight:700; margin-top:0.4rem;">✓ Verified Sponsor: {{ sponsorNameDetected }}</div>
-            <div style="font-size:0.68rem; color:#64748b; margin-top:0.4rem; line-height:1.2;">* Available codes: <strong>MR_FREE</strong>, <strong>MR_SUN</strong>, <strong>MR_REDDY</strong>, <strong>MR_CIPLA</strong>, or <strong>MR_LUPIN</strong> (enter any one code).</div>
+            <div *ngIf="sponsorNameDetected" style="color:#16a34a; font-size:0.75rem; font-weight:700; margin-top:0.4rem;">✓ Verified Sponsor/Coupon: {{ sponsorNameDetected }}</div>
+            <div style="font-size:0.68rem; color:#64748b; margin-top:0.4rem; line-height:1.2;">* Available codes: <strong>COUPON_100</strong>, <strong>MR_FREE</strong>, <strong>MR_SUN</strong>, <strong>MR_REDDY</strong>, or <strong>MR_CIPLA</strong>.</div>
           </div>
 
-          <!-- Terms Checkbox (Paid events only without MR waiving) -->
-          <div *ngIf="!sponsorNameDetected" style="margin-top: 1rem; text-align: left; border-top: 1px dotted #cbd5e1; padding-top: 0.75rem;">
+          <!-- Terms Checkbox (Paid/Sponsored events) -->
+          <div style="margin-top: 1rem; text-align: left; border-top: 1px dotted #cbd5e1; padding-top: 0.75rem;">
             <label style="display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.76rem; color: #475569; cursor: pointer; line-height: 1.45;">
               <input type="checkbox" [(ngModel)]="agreeTermsCheckout" style="margin-top: 0.15rem; width: 14px; height: 14px; cursor: pointer; accent-color: #2563eb;" />
               <span>I agree to the MedCME Event Terms &amp; Refund Policy. I understand that cancellation refund requests must be filed at least 48 hours prior to the event. *</span>
@@ -805,8 +818,8 @@
         <div class="modal-actions">
           <button class="btn-cancel" (click)="closeRegisterModal()">Cancel</button>
           <button class="btn-confirm" (click)="confirmRegister()" 
-            [disabled]="(selectedEvent?.price || 0) > 0 && !sponsorNameDetected && !agreeTermsCheckout"
-            [style.opacity]="((selectedEvent?.price || 0) > 0 && !sponsorNameDetected && !agreeTermsCheckout) ? '0.6' : '1'">
+            [disabled]="(selectedEvent?.price || 0) > 0 && !agreeTermsCheckout"
+            [style.opacity]="((selectedEvent?.price || 0) > 0 && !agreeTermsCheckout) ? '0.6' : '1'">
             <span *ngIf="selectedEvent?.price === 0">Confirm Registration</span>
             <span *ngIf="(selectedEvent?.price || 0) > 0">
               {{ sponsorNameDetected ? 'Confirm Sponsored Registration' : 'Proceed to Pay Rs. ' + (selectedEvent?.price | number) }}

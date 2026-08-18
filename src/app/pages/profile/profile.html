@@ -57,8 +57,14 @@
         <div class="contact-strip" style="margin-top: 0.3rem; color: #475569; font-size: 0.8rem;">
           <span>🎓 Qualification: {{ user.qualification || 'MD, DM Cardiology' }}</span>
           <span>🏢 Hospital: {{ user.hospital || 'Fortis Hospital Mumbai' }}</span>
+          <span>🏫 Org: {{ user.organization || 'N/A' }}</span>
           <span>⏳ Exp: {{ user.experience || 8 }} Years</span>
           <span>🗣️ Language: {{ user.language || 'English' }}</span>
+        </div>
+
+        <div class="contact-strip" style="margin-top: 0.3rem; color: #475569; font-size: 0.8rem; border-top: 1px dashed #e2e8f0; padding-top: 0.3rem;">
+          <span>🏥 Clinic: {{ user.clinicAddress || 'N/A' }}</span>
+          <span>🎯 Practicing Interest: {{ user.practicingInterest || 'N/A' }}</span>
         </div>
 
         <div class="interests-strip" style="margin-top: 0.65rem; text-align: left;" *ngIf="user.interests && user.interests.length > 0">
@@ -139,6 +145,18 @@
             <div>
               <label>Hospital/Institution</label>
               <input type="text" [(ngModel)]="editHospital" placeholder="e.g. Fortis Hospital" />
+            </div>
+            <div>
+              <label>Organization Name</label>
+              <input type="text" [(ngModel)]="editOrganization" placeholder="e.g. MedCME Academy Group" />
+            </div>
+            <div>
+              <label>Clinic Address</label>
+              <input type="text" [(ngModel)]="editClinicAddress" placeholder="e.g. Shop 4, Sector 5, Vashi" />
+            </div>
+            <div>
+              <label>Practicing Interest</label>
+              <input type="text" [(ngModel)]="editPracticingInterest" placeholder="e.g. Echo, Preventive Cardiology" />
             </div>
             <div>
               <label>Years of Experience</label>
