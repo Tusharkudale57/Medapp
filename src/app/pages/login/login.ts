@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { EmailService } from '../../services/email.service';
 
 @Component({
   selector: 'app-login',
@@ -24,6 +25,8 @@ export class LoginComponent {
   otpSentForLogin = false;
   loginOtpCountdown = 60;
   loginOtpInterval: any = null;
+  loginOtpCode = '123456';
+  forgotOtpCode = '654321';
 
   // Left Panel Interactive Carousel Slides
   activeSlideIndex: number = 0;
@@ -98,6 +101,7 @@ export class LoginComponent {
 
   constructor(
     public authService: AuthService,
+    public emailService: EmailService,
     private router: Router
   ) { }
 
@@ -280,6 +284,19 @@ export class LoginComponent {
     this.otpSent = true;
     this.otpCountdown = 60;
 
+    // Generate random 6-digit code
+    this.forgotOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Send OTP via EmailService
+    this.emailService.sendOtpEmail(this.forgotEmailOrMobile.trim(), this.forgotOtpCode).then(res => {
+      if (!this.emailService.publicKey) {
+        alert(`[Simulated Dispatch] Your Password Recovery OTP is: ${this.forgotOtpCode}`);
+        this.otpCode = this.forgotOtpCode;
+      } else {
+        alert(res.message);
+      }
+    });
+
     // Start timer countdown
     if (this.otpInterval) {
       clearInterval(this.otpInterval);
@@ -294,8 +311,8 @@ export class LoginComponent {
   }
 
   verifyOtpAndReset() {
-    if (!this.otpCode || this.otpCode.length < 4) {
-      this.forgotErrorMsg = 'Please enter a valid 6-digit OTP code.';
+    if (!this.otpCode || this.otpCode !== this.forgotOtpCode) {
+      this.forgotErrorMsg = 'Please enter the correct 6-digit OTP code.';
       return;
     }
     if (!this.newPassword || this.newPassword !== this.newPasswordConfirm) {
@@ -316,9 +333,18 @@ export class LoginComponent {
     this.loginOtpCountdown = 60;
     this.errorMessage = '';
 
-    // Alert the simulated code (e.g. 123456)
-    alert(`[Simulated SMS/Email] Your MedCME login OTP is: 123456`);
-    this.userPass = '123456';
+    // Generate random 6-digit code
+    this.loginOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Send OTP via EmailService
+    this.emailService.sendOtpEmail(this.userId.trim(), this.loginOtpCode).then(res => {
+      if (!this.emailService.publicKey) {
+        alert(`[Simulated SMS/Email] Your MedCME login OTP is: ${this.loginOtpCode}`);
+        this.userPass = this.loginOtpCode;
+      } else {
+        alert(res.message);
+      }
+    });
 
     if (this.loginOtpInterval) {
       clearInterval(this.loginOtpInterval);
@@ -335,6 +361,13 @@ export class LoginComponent {
   onLogin() {
     this.errorMessage = '';
     this.loading = true;
+
+    // Verify OTP code if using OTP login method
+    if (this.loginMethod === 'otp' && this.userPass.trim() !== this.loginOtpCode) {
+      this.loading = false;
+      this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
+      return;
+    }
 
     setTimeout(() => {
       this.loading = false;

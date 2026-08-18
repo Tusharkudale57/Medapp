@@ -71,6 +71,13 @@
       style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
       👥 User Directory
     </button>
+    <button (click)="activeHostTab = 'settings'" 
+      [style.background]="activeHostTab === 'settings' ? '#1e3a8a' : '#fff'"
+      [style.color]="activeHostTab === 'settings' ? '#fff' : '#475569'"
+      [style.border]="'1px solid ' + (activeHostTab === 'settings' ? '#1e3a8a' : '#cbd5e1')"
+      style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+      ⚙️ Settings &amp; API Config
+    </button>
   </div>
 
   <!-- Events List -->
@@ -314,6 +321,54 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </ng-container>
+
+    <!-- EmailJS Settings Tab Content (Fulfills AD-12 System Configuration and Integrations) -->
+    <ng-container *ngIf="activeHostTab === 'settings'">
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.04); max-width: 800px; margin: 1rem auto 2rem; animation: fadeInUp 0.3s ease;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #eff6ff; padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+          <span style="font-size: 1.8rem;">⚙️</span>
+          <div>
+            <h3 style="margin: 0; color: #0f172a; font-size: 1.25rem; font-weight: 800;">System Configuration &amp; Integrations</h3>
+            <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #64748b;">Configure external email gateway provider (EmailJS) parameters</p>
+          </div>
+        </div>
+        
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.75rem; color: #1e3a8a; font-size: 0.8rem; margin-bottom: 1.5rem; line-height: 1.45;">
+          <strong>💡 EmailJS Provider Setup:</strong> Integrating EmailJS allows the platform to dispatch real verification email messages. If left blank, MedCME runs in local <strong>Simulation Mode</strong> where OTP verification codes are automatically populated and displayed in on-screen dialog popups.
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 0.4rem;">EmailJS Public Key (User ID)</label>
+            <input type="text" [(ngModel)]="emailService.publicKey" placeholder="e.g. user_abc123XYZ..." 
+                   style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box;" />
+            <span style="font-size: 0.72rem; color: #64748b; margin-top: 0.2rem; display: block;">Obtained from your Account > API Keys tab in the EmailJS Dashboard.</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 0.4rem;">EmailJS Service ID</label>
+              <input type="text" [(ngModel)]="emailService.serviceId" placeholder="e.g. service_medcme" 
+                     style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box;" />
+              <span style="font-size: 0.72rem; color: #64748b; margin-top: 0.2rem; display: block;">The ID of your configured email service connection.</span>
+            </div>
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 0.4rem;">EmailJS Template ID</label>
+              <input type="text" [(ngModel)]="emailService.templateId" placeholder="e.g. template_otp" 
+                     style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box;" />
+              <span style="font-size: 0.72rem; color: #64748b; margin-top: 0.2rem; display: block;">The email template with variables <code>to_email</code> and <code>otp_code</code>.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.25rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button (click)="saveEmailSettings()" 
+            style="padding: 0.6rem 1.75rem; border-radius: 8px; border: none; background: #2563eb; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+            Save &amp; Initialize Integration
+          </button>
+        </div>
       </div>
     </ng-container>
   </main>

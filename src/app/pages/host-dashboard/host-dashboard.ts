@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { CourseService } from '../../services/course.service';
+import { EmailService } from '../../services/email.service';
 import { CmeEvent, EventRegistration, Course } from '../../models/course.model';
 
 @Component({
@@ -26,7 +27,7 @@ export class HostDashboardComponent implements OnInit {
   presentMsg = '';
 
   // Admin section views toggle
-  activeHostTab: 'events' | 'courses' | 'users' = 'events';
+  activeHostTab: 'events' | 'courses' | 'users' | 'settings' = 'events';
   coursesList: Course[] = [];
   searchUserQuery = '';
 
@@ -106,8 +107,18 @@ export class HostDashboardComponent implements OnInit {
     public eventService: EventService,
     public authService: AuthService,
     public courseService: CourseService,
+    public emailService: EmailService,
     private router: Router
   ) {}
+
+  saveEmailSettings() {
+    this.emailService.saveConfig(
+      this.emailService.publicKey,
+      this.emailService.serviceId,
+      this.emailService.templateId
+    );
+    alert('EmailJS settings updated and saved to system registry!');
+  }
 
   ngOnInit() {
     if (!this.authService.isAdmin()) {

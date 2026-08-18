@@ -70,7 +70,6 @@ export class ProfileComponent implements OnInit {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
-
   ngOnInit() {
     this.user = this.authService.currentUser();
     if (this.user) {
