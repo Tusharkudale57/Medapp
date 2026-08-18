@@ -201,8 +201,8 @@
 
           <!-- ADMIN CONTROLS -->
           <div *ngIf="authService.isAdmin()" class="admin-card-actions">
-            <button class="btn-admin-edit" (click)="openEditPriceModal(course, $event)">
-              Edit Price (Rs. {{ course.price | number }})
+            <button class="btn-admin-edit" (click)="openEditCourseModal(course, $event)">
+              ✏️ Edit Course
             </button>
             <button class="btn-admin-delete" (click)="deleteCourse(course.id, $event)">
               Delete
@@ -251,12 +251,12 @@
 
   </main>
 
-  <!-- ADMIN MODAL 1: Create New Course -->
+  <!-- ADMIN MODAL 1: Create/Edit Course -->
   <div class="modal-overlay" *ngIf="showCreateCourseModal">
     <div class="admin-modal">
       <div class="modal-header">
-        <h3>Create New CME Medical Course</h3>
-        <button class="close-btn" (click)="showCreateCourseModal = false">&#10005;</button>
+        <h3>{{ editingCourseId ? 'Edit CME Medical Course' : 'Create New CME Medical Course' }}</h3>
+        <button class="close-btn" (click)="closeCreateCourseModal()">&#10005;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -296,31 +296,12 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" (click)="showCreateCourseModal = false">Cancel</button>
-        <button class="btn-primary" (click)="saveNewCourse()">Publish New Course</button>
+        <button class="btn-secondary" (click)="closeCreateCourseModal()">Cancel</button>
+        <button class="btn-primary" (click)="saveCourse()">{{ editingCourseId ? 'Save Changes' : 'Publish New Course' }}</button>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN MODAL 2: Edit Course Price -->
-  <div class="modal-overlay" *ngIf="showEditPriceModal && selectedCourseForPrice">
-    <div class="admin-modal small-modal">
-      <div class="modal-header">
-        <h3>Edit Course Price</h3>
-        <button class="close-btn" (click)="showEditPriceModal = false">&#10005;</button>
-      </div>
-      <div class="modal-body">
-        <p>Course: <strong>{{ selectedCourseForPrice.title }}</strong></p>
-        <div class="form-group" style="margin-top:0.75rem;">
-          <label>New Price (INR)</label>
-          <input type="number" [(ngModel)]="newCoursePrice" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="showEditPriceModal = false">Cancel</button>
-        <button class="btn-primary" (click)="saveUpdatedPrice()">Save New Price</button>
-      </div>
-    </div>
-  </div>
+
 
 </div>

@@ -91,6 +91,7 @@ export class DashboardComponent implements OnInit {
 
   // Admin: create event modal
   showCreateModal = false;
+  editingEventId: string | null = null;
   newTitle = '';
   newDescription = '';
   newDate = '';
@@ -816,34 +817,86 @@ export class DashboardComponent implements OnInit {
 
   // Admin create event
   openCreateModal() {
+    this.editingEventId = null;
     this.resetForm();
+    this.showCreateModal = true;
+  }
+
+  openEditModal(event: CmeEvent, ev: Event) {
+    ev.stopPropagation();
+    this.editingEventId = event.id;
+    this.newTitle = event.title;
+    this.newDescription = event.description || '';
+    this.newDate = event.date;
+    this.newTime = event.time || '10:00 AM IST';
+    this.newVenue = event.venue || '';
+    this.newMode = event.mode || 'Online';
+    this.newSpeaker = event.speaker || '';
+    this.newSpeakerRole = event.speakerRole || '';
+    this.newCategory = event.category || 'Cardiology';
+    this.newCreditPoints = event.creditPoints || 1;
+    this.newPrice = event.price || 0;
+    this.newMaxSeats = event.maxSeats || 100;
+    this.newBannerColor = event.bannerColor || '#0ea5e9';
+    this.newPreRead = event.preRead || '';
+    if (event.preRead) {
+      this.uploadedFiles = [{ name: event.preRead, size: 'N/A', status: 'uploaded' }];
+    } else {
+      this.uploadedFiles = [];
+    }
     this.showCreateModal = true;
   }
 
   closeCreateModal() {
     this.showCreateModal = false;
+    this.editingEventId = null;
   }
 
-  createEvent() {
+  saveEvent() {
     if (!this.newTitle.trim() || !this.newDate || !this.newVenue.trim()) return;
     const user = this.authService.currentUser();
     if (!user) return;
-    this.eventService.addEvent({
-      title: this.newTitle,
-      description: this.newDescription,
-      date: this.newDate,
-      time: this.newTime,
-      venue: this.newVenue,
-      mode: this.newMode,
-      speaker: this.newSpeaker,
-      speakerRole: this.newSpeakerRole,
-      category: this.newCategory,
-      creditPoints: this.newCreditPoints,
-      price: this.newPrice,
-      maxSeats: this.newMaxSeats,
-      bannerColor: this.newBannerColor,
-      preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
-    }, user.id, user.name);
+
+    if (this.editingEventId) {
+      const existing = this.eventService.getEventById(this.editingEventId);
+      if (existing) {
+        this.eventService.updateEvent({
+          ...existing,
+          title: this.newTitle,
+          description: this.newDescription,
+          date: this.newDate,
+          time: this.newTime,
+          venue: this.newVenue,
+          mode: this.newMode,
+          speaker: this.newSpeaker,
+          speakerRole: this.newSpeakerRole,
+          category: this.newCategory,
+          creditPoints: this.newCreditPoints,
+          price: this.newPrice,
+          maxSeats: this.newMaxSeats,
+          bannerColor: this.newBannerColor,
+          preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
+        });
+      }
+      this.editingEventId = null;
+    } else {
+      this.eventService.addEvent({
+        title: this.newTitle,
+        description: this.newDescription,
+        date: this.newDate,
+        time: this.newTime,
+        venue: this.newVenue,
+        mode: this.newMode,
+        speaker: this.newSpeaker,
+        speakerRole: this.newSpeakerRole,
+        category: this.newCategory,
+        creditPoints: this.newCreditPoints,
+        price: this.newPrice,
+        maxSeats: this.newMaxSeats,
+        bannerColor: this.newBannerColor,
+        preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
+      }, user.id, user.name);
+    }
     this.showCreateModal = false;
   }
 

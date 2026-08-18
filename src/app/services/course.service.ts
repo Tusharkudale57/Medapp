@@ -273,6 +273,16 @@ export class CourseService {
     return false;
   }
 
+  updateCourse(courseId: string, updatedFields: Partial<Course>): boolean {
+    const course = this.courses.find(c => c.id === courseId);
+    if (course) {
+      Object.assign(course, updatedFields);
+      this.saveCoursesToStorage();
+      return true;
+    }
+    return false;
+  }
+
   deleteCourse(courseId: string): boolean {
     const initialLen = this.courses.length;
     this.courses = this.courses.filter(c => c.id !== courseId);

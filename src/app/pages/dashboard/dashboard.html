@@ -560,7 +560,10 @@
                 </span>
                 <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
               </div>
-              <div class="actions-section-coursera">
+              <div class="actions-section-coursera" style="display: flex; gap: 0.5rem;">
+                <button class="btn-enroll-coursera" (click)="$event.stopPropagation(); openEditModal(event, $event)" style="background: #f0f9ff; border: 1px solid #bae6fd; color: #0284c7; min-width: 70px;">
+                  Edit
+                </button>
                 <button class="btn-admin-delete-coursera" (click)="$event.stopPropagation(); deleteEvent(event.id, $event)">
                   Delete
                 </button>
@@ -824,7 +827,7 @@
   <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
     <div class="modal-box create-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Create New CME Event</h2>
+        <h2>{{ editingEventId ? 'Edit CME Event' : 'Create New CME Event' }}</h2>
         <button class="close-btn" (click)="closeCreateModal()">&#10005;</button>
       </div>
       <div class="modal-form-grid">
@@ -937,8 +940,8 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
-        <button class="btn-confirm" (click)="createEvent()" [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
-          Publish Event
+        <button class="btn-confirm" (click)="saveEvent()" [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
+          {{ editingEventId ? 'Save Changes' : 'Publish Event' }}
         </button>
       </div>
     </div>

@@ -624,6 +624,13 @@ export class EventService {
     this.saveEventsToStorage();
   }
 
+  updateEvent(updated: CmeEvent): void {
+    this.eventsSignal.update(events =>
+      events.map(e => e.id === updated.id ? { ...e, ...updated } : e)
+    );
+    this.saveEventsToStorage();
+  }
+
   getWhatsAppShareUrl(event: CmeEvent): string {
     const text = encodeURIComponent(
       `CME Event Invitation\n\n` +

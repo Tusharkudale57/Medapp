@@ -24,9 +24,7 @@ export class EventsComponent implements OnInit {
 
   // Admin modals
   showCreateCourseModal = false;
-  showEditPriceModal = false;
-  selectedCourseForPrice: Course | null = null;
-  newCoursePrice: number = 1499;
+  editingCourseId: string | null = null;
 
   newCourseTitle: string = '';
   newCourseCategory: string = 'Cardiology';
@@ -115,19 +113,46 @@ export class EventsComponent implements OnInit {
 
   // --- Admin Actions ---
   openCreateCourseModal() {
+    this.editingCourseId = null;
+    this.resetNewCourseForm();
     this.showCreateCourseModal = true;
   }
 
-  saveNewCourse() {
+  openEditCourseModal(course: Course, event: Event) {
+    event.stopPropagation();
+    this.editingCourseId = course.id;
+    this.newCourseTitle = course.title;
+    this.newCourseCategory = course.category;
+    this.newCoursePriceInput = course.price;
+    this.newCourseDuration = course.duration;
+    this.newCourseInstructor = course.instructor;
+    this.newCourseDescription = course.shortDescription;
+    this.showCreateCourseModal = true;
+  }
+
+  closeCreateCourseModal() {
+    this.showCreateCourseModal = false;
+    this.editingCourseId = null;
+  }
+
+  saveCourse() {
     if (!this.newCourseTitle.trim()) return;
-    this.courseService.addCourse({
+
+    const coursePayload = {
       title: this.newCourseTitle,
       category: this.newCourseCategory,
       price: this.newCoursePriceInput,
       duration: this.newCourseDuration,
       instructor: this.newCourseInstructor,
       shortDescription: this.newCourseDescription
-    });
+    };
+
+    if (this.editingCourseId) {
+      this.courseService.updateCourse(this.editingCourseId, coursePayload);
+      this.editingCourseId = null;
+    } else {
+      this.courseService.addCourse(coursePayload);
+    }
     this.showCreateCourseModal = false;
     this.loadCourses();
     this.resetNewCourseForm();
@@ -140,22 +165,6 @@ export class EventsComponent implements OnInit {
     this.newCourseDuration = '4.0 Hours';
     this.newCourseInstructor = 'Dr. Healthcare Director';
     this.newCourseDescription = 'Comprehensive clinical guidelines and emergency protocols.';
-  }
-
-  openEditPriceModal(course: Course, event: Event) {
-    event.stopPropagation();
-    this.selectedCourseForPrice = course;
-    this.newCoursePrice = course.price;
-    this.showEditPriceModal = true;
-  }
-
-  saveUpdatedPrice() {
-    if (this.selectedCourseForPrice && this.newCoursePrice > 0) {
-      this.courseService.updateCoursePrice(this.selectedCourseForPrice.id, this.newCoursePrice);
-      this.showEditPriceModal = false;
-      this.selectedCourseForPrice = null;
-      this.loadCourses();
-    }
   }
 
   deleteCourse(courseId: string, event: Event) {

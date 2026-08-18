@@ -177,6 +177,9 @@
               </svg>
               Share WhatsApp
             </button>
+            <button class="action-btn edit-btn" (click)="openEditModal(event)">
+              ✏️ Edit Event
+            </button>
             <button class="action-btn delete-btn" (click)="deleteEvent(event.id)">
               &#128465; Remove Event
             </button>
@@ -464,7 +467,7 @@
   <div *ngIf="showCreateModal" class="modal-backdrop" (click)="closeCreateModal()">
     <div class="modal-box create-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Create New CME Event</h2>
+        <h2>{{ editingEventId ? 'Edit CME Event' : 'Create New CME Event' }}</h2>
         <button class="close-btn" (click)="closeCreateModal()">&#10005;</button>
       </div>
 
@@ -582,9 +585,9 @@
         </div>
         <div class="modal-actions">
           <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
-          <button class="btn-create-submit" (click)="createEvent()"
+          <button class="btn-create-submit" (click)="saveEvent()"
             [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
-            Create Event & Generate Payment Link
+            {{ editingEventId ? 'Update Event Details' : 'Create Event & Generate Payment Link' }}
           </button>
         </div>
       </div>
