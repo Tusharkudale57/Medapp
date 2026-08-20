@@ -115,7 +115,7 @@
 
       <nav class="nav-links">
         <button class="nav-link" (click)="navigateToEvents()">&#128197; CME Events</button>
-        <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button>
+        <!-- <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button> -->
         <button *ngIf="!authService.isAdmin()" class="nav-link active">&#128214; My Learning</button>
         <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button>
         <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
@@ -296,7 +296,7 @@
         <p>Explore our catalog of accredited medical conferences, live events, or self-paced courses to start earning CME points.</p>
         <div class="empty-actions">
           <button class="btn-empty-primary" (click)="navigateToEvents()">Browse CME Events</button>
-          <button class="btn-empty-secondary" (click)="navigateToCourses()">Browse Online Courses</button>
+          <!-- <button class="btn-empty-secondary" (click)="navigateToCourses()">Browse Online Courses</button> -->
         </div>
       </div>
     </section>

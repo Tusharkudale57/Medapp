@@ -1,9 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { EmailService } from '../../services/email.service';
+import { CourseService } from '../../services/course.service';
+import { EventService } from '../../services/event.service';
+import { RazorpayService } from '../../services/razorpay.service';
+import { Course, CmeEvent } from '../../models/course.model';
 
 @Component({
   selector: 'app-login',
@@ -12,9 +16,44 @@ import { EmailService } from '../../services/email.service';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   // Touch to refresh IDE diagnostics
   activeRole = signal<'doctor' | 'admin'>('doctor'); // Default is Doctor Login!
+
+  // Landing Page dynamic browse, filter & search
+  searchQuery = '';
+  selectedSpecialty = 'All';
+  selectedFormat = 'All';
+  eventsLimit = 4;
+  coursesLimit = 3;
+  showExploreDropdown = false;
+
+  // Selected event details modal
+  selectedEventForDetail: CmeEvent | null = null;
+  showEventDetailModal = false;
+
+  // Checkout states for Event Registration
+  selectedEvent: CmeEvent | null = null;
+  showRegisterModal = false;
+  agreeTermsCheckout = false;
+  showSponsorInput = false;
+  sponsorCode = '';
+  sponsorNameDetected = '';
+  sponsorCodeError = '';
+  registrationSuccess = false;
+  processingPayment = false;
+  paymentSuccess = false;
+  paymentTransactionId = '';
+  showSimulatedRazorpay = false;
+  selectedPaymentMethod: 'upi' | 'card' | 'netbanking' = 'upi';
+  upiId = 'doctor@okicici';
+  cardNumber = '4532 •••• •••• 8892';
+
+  // Modal toggles
+  showLoginModal = false;
+
+  // Pending guest actions
+  pendingEventForCheckout: CmeEvent | null = null;
 
   // Form Fields
   userId: string = 'doctor@medcme.org';
@@ -86,6 +125,13 @@ export class LoginComponent {
   regTermsConsent: boolean = false;
   regClinicAddress: string = '';
   regPracticingInterest: string = '';
+  regInterests: { [key: string]: boolean } = {
+    Cardiology: false,
+    Pediatrics: false,
+    Neurology: false,
+    Surgery: false,
+    'General Medicine': false
+  };
 
   // Forgot Password / OTP State Variables
   showForgotPassword = false;
@@ -102,8 +148,17 @@ export class LoginComponent {
   constructor(
     public authService: AuthService,
     public emailService: EmailService,
+    public courseService: CourseService,
+    public eventService: EventService,
+    private razorpayService: RazorpayService,
     private router: Router
   ) { }
+
+  ngOnInit() {
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  }
 
   switchRole(role: 'doctor' | 'admin') {
     this.activeRole.set(role);
@@ -224,7 +279,10 @@ export class LoginComponent {
       }
     }
 
-    // 3. Register user in mock DB
+    // 3. Collect selected interests
+    const selectedInterests = Object.keys(this.regInterests).filter(k => this.regInterests[k]);
+
+    // 4. Register user in mock DB
     const registrationDetails = {
       designation: this.regDesignation,
       name: this.regFirstName,
@@ -246,18 +304,31 @@ export class LoginComponent {
       emailConsent: this.regEmailConsent,
       whatsappConsent: this.regWhatsappConsent,
       clinicAddress: this.regClinicAddress.trim(),
-      practicingInterest: this.regPracticingInterest.trim()
+      practicingInterest: this.regPracticingInterest.trim(),
+      interests: selectedInterests
     };
 
-    this.authService.registerNewUser(registrationDetails);
+    this.authService.registerNewUser(registrationDetails, false);
 
     this.showRegistrationForm = false;
-    this.regSuccessMsg = `Successfully registered Dr. ${this.regFirstName}! You are now logged in.`;
+    this.regSuccessMsg = `Successfully registered Dr. ${this.regFirstName}! Please verify via OTP on the login page to proceed.`;
 
     setTimeout(() => {
       this.regSuccessMsg = '';
-      this.router.navigate(['/dashboard']);
-    }, 2000);
+      this.showRegistrationForm = false;
+      this.showNotRegisteredModal = false;
+
+      // Bring user to Login modal configured in OTP mode with their registered account ID
+      this.userId = registrationDetails.email || registrationDetails.phone;
+      this.userPass = '';
+      this.activeRole.set('doctor');
+      this.loginStep = 2;
+      this.loginMethod = 'otp';
+      this.showLoginModal = true;
+
+      // Send OTP to user for verification
+      this.sendLoginOtp();
+    }, 1500);
   }
 
   // --- Password Recovery / OTP Simulation logic ---
@@ -340,7 +411,6 @@ export class LoginComponent {
     this.emailService.sendOtpEmail(this.userId.trim(), this.loginOtpCode).then(res => {
       if (!this.emailService.publicKey) {
         alert(`[Simulated SMS/Email] Your MedCME login OTP is: ${this.loginOtpCode}`);
-        this.userPass = this.loginOtpCode;
       } else {
         alert(res.message);
       }
@@ -375,18 +445,311 @@ export class LoginComponent {
       if (this.activeRole() === 'doctor') {
         const res = this.authService.authenticateDoctor(this.userId, this.userPass);
         if (res.success) {
-          this.router.navigate(['/dashboard']);
+          // If guest was trying to register for an event, open checkout modal
+          if (this.pendingEventForCheckout) {
+            this.showLoginModal = false;
+            this.openRegisterModal(this.pendingEventForCheckout);
+            this.pendingEventForCheckout = null;
+          } else {
+            this.showLoginModal = false;
+            this.router.navigate(['/dashboard']);
+          }
         } else {
           this.errorMessage = res.message || 'Invalid Doctor Login Credentials';
         }
       } else {
         const res = this.authService.authenticateAdmin(this.userId, this.userPass);
         if (res.success) {
+          this.showLoginModal = false;
           this.router.navigate(['/dashboard']);
         } else {
           this.errorMessage = res.message || 'Invalid Administrator Login Credentials';
         }
       }
     }, 500);
+  }
+
+  // --- Dynamic Search, Filters & Checkout Helpers ---
+  get filteredEvents(): CmeEvent[] {
+    let list = this.eventService.getUpcomingEvents();
+    if (this.selectedSpecialty !== 'All') {
+      list = list.filter(e => e.category.toLowerCase() === this.selectedSpecialty.toLowerCase());
+    }
+    if (this.selectedFormat !== 'All') {
+      list = list.filter(e => e.mode === this.selectedFormat);
+    }
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      list = list.filter(e =>
+        (e.title || '').toLowerCase().includes(q) ||
+        (e.description || '').toLowerCase().includes(q) ||
+        (e.speaker || '').toLowerCase().includes(q) ||
+        (e.category || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  get visibleEvents(): CmeEvent[] {
+    return this.filteredEvents.slice(0, this.eventsLimit);
+  }
+
+  showMoreEvents() {
+    this.eventsLimit = this.filteredEvents.length;
+  }
+
+  showLessEvents() {
+    this.eventsLimit = 4;
+  }
+
+  get visibleCourses() {
+    return this.filteredCourses.slice(0, this.coursesLimit);
+  }
+
+  showMoreCourses() {
+    this.coursesLimit = this.filteredCourses.length;
+  }
+
+  showLessCourses() {
+    this.coursesLimit = 3;
+  }
+
+  get filteredCourses(): Course[] {
+    let list = this.courseService.getCourses();
+    if (this.selectedSpecialty !== 'All') {
+      list = list.filter(c => c.category.toLowerCase() === this.selectedSpecialty.toLowerCase());
+    }
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      list = list.filter(c =>
+        (c.title || '').toLowerCase().includes(q) ||
+        (c.shortDescription || '').toLowerCase().includes(q) ||
+        (c.category || '').toLowerCase().includes(q) ||
+        (c.instructor || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  toggleExploreDropdown(event: MouseEvent) {
+    event.stopPropagation();
+    this.showExploreDropdown = !this.showExploreDropdown;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.explore-dropdown-container')) {
+      this.showExploreDropdown = false;
+    }
+  }
+
+  selectExploreOption(option: 'Online' | 'Offline' | 'Hybrid' | 'Courses' | 'All') {
+    this.showExploreDropdown = false;
+    if (option === 'Courses') {
+      const element = document.getElementById('courses-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      if (option === 'All') {
+        this.selectedFormat = 'All';
+      } else {
+        this.selectedFormat = option;
+      }
+      const element = document.getElementById('events-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }
+
+  selectSpecialtyBadge(specialty: string) {
+    this.selectedSpecialty = specialty;
+  }
+
+  viewCourse(courseId: string) {
+    this.router.navigate(['/course', courseId]);
+  }
+
+  openEventDetail(event: CmeEvent) {
+    this.selectedEventForDetail = event;
+    this.showEventDetailModal = true;
+  }
+
+  closeEventDetail() {
+    this.selectedEventForDetail = null;
+    this.showEventDetailModal = false;
+  }
+
+  registerForEventFromDetail() {
+    if (!this.selectedEventForDetail) return;
+    const event = this.selectedEventForDetail;
+    this.closeEventDetail();
+
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.pendingEventForCheckout = event;
+      this.showLoginModal = true;
+    } else {
+      this.openRegisterModal(event);
+    }
+  }
+
+  openRegisterModal(event: CmeEvent) {
+    this.selectedEvent = event;
+    this.registrationSuccess = false;
+    this.showRegisterModal = true;
+    this.agreeTermsCheckout = false;
+    this.showSponsorInput = false;
+    this.sponsorCode = '';
+    this.sponsorNameDetected = '';
+    this.sponsorCodeError = '';
+  }
+
+  closeRegisterModal() {
+    this.showRegisterModal = false;
+    this.selectedEvent = null;
+  }
+
+  verifySponsorCode() {
+    this.sponsorCodeError = '';
+    this.sponsorNameDetected = '';
+    const raw = this.sponsorCode.trim().toUpperCase();
+    if (!raw) return;
+
+    const tokens = raw.split(/[\s,]+/).filter(t => t.length > 0);
+
+    for (const code of tokens) {
+      if (code.includes('SUN')) {
+        this.sponsorNameDetected = 'Sun Pharma Representative';
+        return;
+      } else if (code.includes('REDDY')) {
+        this.sponsorNameDetected = "Dr. Reddy's Laboratories";
+        return;
+      } else if (code.includes('CIPLA')) {
+        this.sponsorNameDetected = 'Cipla Pharmaceuticals';
+        return;
+      } else if (code.includes('LUPIN')) {
+        this.sponsorNameDetected = 'Lupin Limited';
+        return;
+      } else if (code.includes('COUPON') || code.includes('DISCOUNT')) {
+        this.sponsorNameDetected = 'Promo Coupon Applied (100% waver)';
+        return;
+      } else if (code.includes('FREE') || code.includes('SPONSOR') || code.startsWith('MR')) {
+        this.sponsorNameDetected = 'Special MR Sponsor';
+        return;
+      }
+    }
+
+    this.sponsorCodeError = 'Invalid MR Sponsorship / Coupon Code. Try codes like MR_SUN, COUPON_100, or MR_FREE.';
+  }
+
+  async confirmRegister() {
+    const user = this.authService.currentUser();
+    if (!user || !this.selectedEvent) return;
+
+    if (this.selectedEvent.price === 0) {
+      const success = this.eventService.registerForEvent(
+        this.selectedEvent.id,
+        user.id,
+        user.name,
+        user.email,
+        user.phone || '9876543210',
+        'free'
+      );
+      if (success) {
+        this.registrationSuccess = true;
+        setTimeout(() => this.closeRegisterModal(), 2200);
+      }
+    } else if (this.sponsorNameDetected) {
+      const success = this.eventService.registerForEvent(
+        this.selectedEvent.id,
+        user.id,
+        user.name,
+        user.email,
+        user.phone || '9876543210',
+        'sponsored',
+        this.sponsorNameDetected
+      );
+      if (success) {
+        this.registrationSuccess = true;
+        setTimeout(() => this.closeRegisterModal(), 2200);
+      }
+    } else {
+      const details = {
+        courseId: this.selectedEvent.id,
+        courseTitle: this.selectedEvent.title,
+        amount: this.selectedEvent.price,
+        userName: user.name,
+        userEmail: user.email,
+        userPhone: user.phone || '9876543210'
+      };
+
+      const res = await this.razorpayService.openPaymentGateway(details);
+      if (res.success && res.paymentId && res.paymentId !== 'FALLBACK_TRIGGER') {
+        this.finalizeEventPurchase(res.paymentId);
+      } else {
+        this.showSimulatedRazorpay = true;
+      }
+    }
+  }
+
+  confirmSimulatedPayment() {
+    this.processingPayment = true;
+    setTimeout(() => {
+      this.processingPayment = false;
+      this.paymentSuccess = true;
+      this.paymentTransactionId = 'pay_rzp_evt_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      setTimeout(() => {
+        this.showSimulatedRazorpay = false;
+        this.paymentSuccess = false;
+        if (this.selectedEvent) {
+          this.finalizeEventPurchase(this.paymentTransactionId);
+        }
+      }, 1200);
+    }, 1500);
+  }
+
+  finalizeEventPurchase(transactionId: string) {
+    const user = this.authService.currentUser();
+    if (!user || !this.selectedEvent) return;
+
+    this.eventService.registerForEvent(
+      this.selectedEvent.id,
+      user.id,
+      user.name,
+      user.email,
+      user.phone || '9876543210',
+      'paid',
+      transactionId
+    );
+    this.registrationSuccess = true;
+    setTimeout(() => this.closeRegisterModal(), 2200);
+  }
+
+  isRegistered(eventId: string): boolean {
+    const user = this.authService.currentUser();
+    return user ? this.eventService.isRegistered(eventId, user.id) : false;
+  }
+
+  openLoginModalDirect() {
+    this.activeRole.set('doctor');
+    this.userId = 'doctor@medcme.org';
+    this.userPass = 'doctor123';
+    this.loginStep = 1;
+    this.showLoginModal = true;
+  }
+
+  openSignupModalDirect() {
+    this.activeRole.set('doctor');
+    this.regMobileNumber = '';
+    this.regFirstName = '';
+    this.regLastName = '';
+    this.regEmail = '';
+    this.regPassword = '';
+    this.regConfirmPassword = '';
+    this.showRegistrationForm = true;
   }
 }

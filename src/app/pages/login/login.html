@@ -1,521 +1,756 @@
-<div class="login-page">
-  <div class="login-split-container">
+<div class="landing-page-container">
 
-    <!-- PART 1: LEFT SIDE - Brand Showcase Hero -->
-    <div class="left-showcase-panel">
-
-      <!-- Prominent Central Hero Logo Showcase -->
-      <div class="hero-logo-showcase" style="text-align: center; margin: 0; padding: 0;">
-        <div style="display: inline-block; margin-bottom: 1rem;">
-          <img src="assets/logo.png" alt="MedCME Academy Official Logo"
-            style="width: 250px; height: 250px; object-fit: contain; display: block; filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.3));" />
-        </div>
-        <h2
-          style="font-size: 1.55rem; font-weight: 800; color: #ffffff; margin: 0 0 0.25rem 0; text-shadow: 0 2px 10px rgba(0,0,0,0.15); letter-spacing: -0.02em;">
-          MedCME Academy</h2>
-        <p style="font-size: 0.85rem; color: #e0f2fe; margin: 0; font-weight: 500; line-height: 1.35;">Official MMC &amp;
-          NMC Accredited CME Sessions, Courses &amp; Real-Time Credit Tracking</p>
+  <!-- ==================== HEADER ==================== -->
+  <header class="main-header">
+    <div class="header-inner">
+      
+      <!-- Logo -->
+      <div class="logo-wrapper" (click)="selectExploreOption('All')">
+        <img src="assets/logo.png" alt="MedCME Academy Logo" class="header-logo" />
+        <span class="logo-text">MedCME Academy</span>
       </div>
 
-      <!-- Real-Time Metrics Badges -->
-      <div class="metrics-grid">
-        <div class="metric-item">
-          <span class="metric-val">50,000+</span>
-          <span class="metric-lbl">Verified Doctors</span>
+      <!-- Explore Dropdown -->
+      <div class="explore-dropdown-container">
+        <button class="btn-explore" (click)="toggleExploreDropdown($event)">
+          Explore CME
+          <span class="chevron-down" [class.rotated]="showExploreDropdown">&#9662;</span>
+        </button>
+        <div class="explore-dropdown-menu" *ngIf="showExploreDropdown">
+          <button (click)="selectExploreOption('Online')">🌐 Online / Virtual CME</button>
+          <button (click)="selectExploreOption('Offline')">🏢 Offline / In-Person CME</button>
+          <button (click)="selectExploreOption('Hybrid')">💻 Hybrid (Online + In-Person)</button>
+          <button (click)="selectExploreOption('Courses')">📚 Self-Paced Courses</button>
+          <button (click)="selectExploreOption('All')">🎓 Browse All CME</button>
         </div>
-        <div class="metric-item">
-          <span class="metric-val">100%</span>
-          <span class="metric-lbl">MMC Accredited</span>
+      </div>
+
+      <!-- Global Search Bar -->
+      <div class="search-bar-wrapper">
+        <div class="search-input-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search CME events, topics, speakers..." />
+          <button class="btn-search-trigger">Search</button>
         </div>
-        <div class="metric-item">
-          <span class="metric-val">250+</span>
-          <span class="metric-lbl">Live Workshops</span>
+      </div>
+
+      <!-- Header Navigation Actions -->
+      <div class="header-actions">
+        <ng-container *ngIf="!authService.currentUser()">
+          <button class="btn-login-header" (click)="openLoginModalDirect()">Log In</button>
+          <button class="btn-signup-header" (click)="openSignupModalDirect()">Sign Up</button>
+        </ng-container>
+        <ng-container *ngIf="authService.currentUser()">
+          <span class="user-greeting">Welcome, <strong>{{ authService.currentUser()?.name }}</strong></span>
+          <button class="btn-dashboard-header" routerLink="/dashboard">Go to Dashboard</button>
+          <button class="btn-logout-header" (click)="authService.logout()">Log Out</button>
+        </ng-container>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="hero-section">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-badge">LEARN. EARN. GROW.</span>
+        <h1 class="hero-title">Advance Your Medical <br />Career with <span class="highlight-blue">CME</span></h1>
+        <p class="hero-subtitle">Join accredited CME events, earn credits, and stay up-to-date with the latest advancements in healthcare.</p>
+        
+        <div class="hero-metrics">
+          <div class="metric-card">
+            <span class="metric-icon">👥</span>
+            <div>
+              <h3>500+</h3>
+              <p>CME Events</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">🎓</span>
+            <div>
+              <h3>50,000+</h3>
+              <p>Healthcare Professionals</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">📜</span>
+            <div>
+              <h3>Recognized</h3>
+              <p>Accredited CME</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn-primary-hero" (click)="selectExploreOption('All')">Browse CME Events &rarr;</button>
+        </div>
+      </div>
+      <div class="hero-graphic">
+        <div class="graphic-bg-circle"></div>
+        <img src="assets/hero-doctor.jpg" alt="Professional Doctor" class="doctor-img" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== UPCOMING EVENTS SECTION ==================== -->
+  <section class="events-section" id="events-section">
+    <div class="section-container">
+      <div class="section-header-row">
+        <h2 class="section-title">Upcoming CME Events</h2>
+        <span class="view-all-link" (click)="selectSpecialtyBadge('All')">View All Events &rarr;</span>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="events-filter-bar">
+        <div class="filter-search-box" style="flex: 2;">
+          <span class="box-icon">🔍</span>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search events by title, topic, or speaker..." />
+        </div>
+        <div class="filter-dropdowns">
+          <select [(ngModel)]="selectedFormat">
+            <option value="All">All Formats</option>
+            <option value="Online">Online / Virtual</option>
+            <option value="Offline">Offline / Live</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+          <button class="btn-filter-action" (click)="searchQuery = ''; selectedSpecialty = 'All'; selectedFormat = 'All'">Reset Filter</button>
+        </div>
+      </div>
+
+      <!-- Specialty Pills Row (under the search bar!) -->
+      <div class="specialty-pills-row">
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'All'" (click)="selectSpecialtyBadge('All')">View All</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Cardiology'" (click)="selectSpecialtyBadge('Cardiology')">Cardiology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Oncology'" (click)="selectSpecialtyBadge('Oncology')">Oncology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Neurology'" (click)="selectSpecialtyBadge('Neurology')">Neurology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Pediatrics'" (click)="selectSpecialtyBadge('Pediatrics')">Pediatrics</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Surgery'" (click)="selectSpecialtyBadge('Surgery')">Surgery</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'General Medicine'" (click)="selectSpecialtyBadge('General Medicine')">General Medicine</button>
+      </div>
+
+      <!-- Events Grid -->
+      <div class="events-grid">
+        <div class="event-card animate-fade-in" *ngFor="let event of visibleEvents">
+          <div class="card-image-wrapper">
+            <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'" [class.hybrid]="event.mode === 'Hybrid'">
+              {{ event.mode === 'Offline' ? 'LIVE EVENT' : event.mode === 'Online' ? 'VIRTUAL' : 'HYBRID' }}
+            </span>
+            <!-- Dynamically style based on event banner or thumbnail placeholder -->
+            <div class="thumbnail-placeholder" [style.background]="event.bannerColor || '#2563eb'">
+              <span class="thumb-icon" *ngIf="event.category === 'Cardiology'">❤️</span>
+              <span class="thumb-icon" *ngIf="event.category === 'Pediatrics'">👶</span>
+              <span class="thumb-icon" *ngIf="event.category === 'Neurology'">🧠</span>
+              <span class="thumb-icon" *ngIf="event.category === 'Surgery'">🦴</span>
+              <span class="thumb-icon" *ngIf="event.category !== 'Cardiology' && event.category !== 'Pediatrics' && event.category !== 'Neurology' && event.category !== 'Surgery'">🩺</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-date-badge">
+              <span class="date-day">{{ event.date | date:'dd' }}</span>
+              <span class="date-month">{{ event.date | date:'MMM' | uppercase }}</span>
+            </div>
+            <div class="card-main-content">
+              <h3 class="card-title">{{ event.title }}</h3>
+              <div class="card-meta">
+                <span>👤 {{ event.speaker }}</span>
+                <span>🕒 {{ event.time }}</span>
+                <span>📍 {{ event.venue }}</span>
+              </div>
+              <div class="card-footer-row">
+                <span class="credits-badge">{{ event.creditPoints }} CME Credits</span>
+                <span class="card-price" [class.free-green]="event.price === 0">{{ event.price === 0 ? 'FREE' : '₹' + event.price }}</span>
+              </div>
+              <button class="btn-view-details" (click)="openEventDetail(event)">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="filteredEvents.length === 0">
+          <span class="empty-icon">📂</span>
+          <h3>No events found</h3>
+          <p>Try resetting the search terms or filters above.</p>
+        </div>
+      </div>
+
+      <!-- Show More / Show Less Button -->
+      <div class="show-more-events-container" *ngIf="filteredEvents.length > 4" style="text-align: center; margin-top: 2rem;">
+        <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()" style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+          Show More ({{ filteredEvents.length - eventsLimit }} remaining) 📂
+        </button>
+        <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()" style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Show Less ↩️
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== ACCREDITED COURSES SECTION ==================== -->
+  <section class="courses-section" id="courses-section">
+    <div class="section-container">
+      <div class="section-header-row">
+        <h2 class="section-title">Self-Paced CME Courses</h2>
+      </div>
+
+      <div class="courses-grid">
+        <div class="course-card" *ngFor="let course of visibleCourses">
+          <div class="course-thumb-wrapper">
+            <img [src]="course.thumbnail" [alt]="course.title" class="course-thumbnail" />
+            <span class="course-category-tag">{{ course.category }}</span>
+          </div>
+          <div class="course-body">
+            <h3 class="course-title">{{ course.title }}</h3>
+            <p class="course-desc">{{ course.shortDescription }}</p>
+            <div class="course-instructor-info">
+              <img [src]="course.instructorImage" [alt]="course.instructor" class="inst-avatar" />
+              <div>
+                <span class="inst-name">{{ course.instructor }}</span>
+                <span class="inst-role">{{ course.instructorRole }}</span>
+              </div>
+            </div>
+            <div class="course-stats-row">
+              <span class="stat-item">⭐ {{ course.rating }} ({{ course.reviewsCount }} reviews)</span>
+              <span class="stat-item">⏱️ {{ course.duration }}</span>
+            </div>
+            <div class="course-footer-row">
+              <span class="credits-badge blue-credits">{{ course.creditPoints }} CME Credit</span>
+              <span class="course-price">₹{{ course.price }}</span>
+            </div>
+            <button class="btn-enroll-course" (click)="viewCourse(course.id)">View Course Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show More / Show Less Button for Courses -->
+      <div *ngIf="filteredCourses.length > 3" style="text-align: center; margin-top: 2rem;">
+        <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()" style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+          Show More ({{ filteredCourses.length - coursesLimit }} remaining) 📚
+        </button>
+        <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()" style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Show Less ↩️
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BENEFITS BANNER ==================== -->
+  <section class="benefits-banner">
+    <div class="section-container">
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <div class="benefit-icon">📅</div>
+          <h3>Stay Updated</h3>
+          <p>Never miss an important CME event or certificate submission deadline.</p>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">🏅</div>
+          <h3>Earn CME Credits</h3>
+          <p>Enhance your medical knowledge and officially log verified state board credits.</p>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">🎓</div>
+          <h3>Get Certified</h3>
+          <p>Receive digital gold-stamped certificates instantly upon completing courses.</p>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">🚀</div>
+          <h3>Grow Professionally</h3>
+          <p>Advance your medical career with specialized curriculum and clinical skillsets.</p>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- PART 2: RIGHT SIDE - Authentication Form -->
-    <div class="right-auth-panel">
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="main-footer">
+    <div class="section-container footer-inner">
+      <p>&copy; 2026 MedCME Academy. All Rights Reserved. Accredited by NMC & MMC.</p>
+    </div>
+  </footer>
+
+  <!-- ==================== LOGIN/SIGNUP MODAL OVERLAY ==================== -->
+  <div class="modal-overlay animate-fade-in" *ngIf="showLoginModal" (click)="showLoginModal = false">
+    <div class="login-modal-box animate-scale-up" (click)="$event.stopPropagation()">
+      <button class="btn-close-modal" (click)="showLoginModal = false">&#10005;</button>
       
-      <!-- TOP SECTION (ALIGNS WITH LOGO TOP) -->
-      <div class="auth-panel-top">
-        <div class="role-selector-tabs">
-          <button [class.active]="activeRole() === 'doctor'" (click)="switchRole('doctor')" type="button">
-            👨‍⚕️ Doctor Sign In
-          </button>
-          <button [class.active]="activeRole() === 'admin'" (click)="switchRole('admin')" type="button">
-            ⚡ Admin Sign In
-          </button>
-        </div>
-
-        <div class="step-progress-bar">
-          <div class="step-item" [class.active]="loginStep >= 1" (click)="goToStep(1)">
-            <span class="step-num">1</span>
-            <span class="step-txt">Account Identifier</span>
+      <div class="login-split-container">
+        
+        <!-- Left Side: Brand Showcase -->
+        <div class="left-showcase-panel">
+          <div class="hero-logo-showcase">
+            <img src="assets/logo.png" alt="MedCME Academy Logo" class="modal-showcase-logo" />
+            <h2>MedCME Academy</h2>
+            <p>Official MMC & NMC Accredited CME Sessions, Courses & Real-Time Credit Tracking</p>
           </div>
-          <div class="step-line" [class.filled]="loginStep === 2"></div>
-          <div class="step-item" [class.active]="loginStep === 2">
-            <span class="step-num">2</span>
-            <span class="step-txt">Password / Security</span>
+          <div class="modal-metrics-grid">
+            <div class="metric-item">
+              <span class="m-val">50,000+</span>
+              <span class="m-lbl">Doctors</span>
+            </div>
+            <div class="metric-item">
+              <span class="m-val">100%</span>
+              <span class="m-lbl">Accredited</span>
+            </div>
           </div>
         </div>
 
-        <div *ngIf="errorMessage" class="error-alert animate-shake">
-          <span>⚠️ {{ errorMessage }}</span>
-        </div>
-      </div>
-
-      <!-- MIDDLE SECTION (FORM CONTROLS) -->
-      <div class="auth-panel-middle">
-        <form (ngSubmit)="onLogin()" class="interactive-form">
-          <div class="form-step-content" *ngIf="loginStep === 1">
-            <div class="form-group">
-              <label *ngIf="activeRole() === 'doctor'">Doctor Email / Registered Mobile Number</label>
-              <label *ngIf="activeRole() === 'admin'">Administrator Email / Admin ID</label>
-              <div class="input-icon-wrapper">
-                <span class="field-icon">👤</span>
-                <input type="text" [(ngModel)]="userId" name="userId" (blur)="checkNumberPresent()"
-                  placeholder="e.g. doctor@medcme.org or 9876543210" required />
+        <!-- Right Side: Auth Form -->
+        <div class="right-auth-panel">
+          <div class="auth-panel-top">
+            <div class="role-selector-tabs">
+              <button [class.active]="activeRole() === 'doctor'" (click)="switchRole('doctor')">👨‍⚕️ Doctor Sign In</button>
+              <button [class.active]="activeRole() === 'admin'" (click)="switchRole('admin')">⚡ Admin Sign In</button>
+            </div>
+            <div class="step-progress-bar">
+              <div class="step-item" [class.active]="loginStep >= 1" (click)="goToStep(1)">
+                <span class="step-num">1</span>
+                <span class="step-txt">Account ID</span>
               </div>
-              <div class="field-hint-bar">
-                <span class="field-hint" *ngIf="userId.includes('@')">📧 Recognized as Registered Email Identifier</span>
-                <span class="field-hint" *ngIf="!userId.includes('@') && userId.length >= 8">📱 Recognized as Mobile Phone
-                  Identifier</span>
+              <div class="step-line" [class.filled]="loginStep === 2"></div>
+              <div class="step-item" [class.active]="loginStep === 2">
+                <span class="step-num">2</span>
+                <span class="step-txt">Security</span>
               </div>
             </div>
-
-            <div class="step-action-row">
-              <button type="button" class="btn-next-step" (click)="nextStep()">
-                Continue to Password & Security →
-              </button>
+            <div *ngIf="errorMessage" class="error-alert">
+              <span>⚠️ {{ errorMessage }}</span>
             </div>
           </div>
 
-          <div class="form-step-content" *ngIf="loginStep === 2">
-            <div class="step-back-bar">
-              <button type="button" class="btn-back-step" (click)="goToStep(1)">
-                ← Change {{ activeRole() === 'doctor' ? 'Doctor' : 'Admin' }} Identifier ({{ userId }})
-              </button>
-            </div>
-
-            <!-- Login Method Toggle Tabs -->
-            <div class="login-method-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
-              <button type="button" (click)="loginMethod = 'password'" 
-                [style.background]="loginMethod === 'password' ? '#2563eb' : '#f1f5f9'"
-                [style.color]="loginMethod === 'password' ? '#fff' : '#475569'"
-                style="flex: 1; border: none; padding: 0.55rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
-                🔑 Password Login
-              </button>
-              <button type="button" (click)="loginMethod = 'otp'" 
-                [style.background]="loginMethod === 'otp' ? '#2563eb' : '#f1f5f9'"
-                [style.color]="loginMethod === 'otp' ? '#fff' : '#475569'"
-                style="flex: 1; border: none; padding: 0.55rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
-                📱 OTP Login
-              </button>
-            </div>
-
-            <!-- PASSWORD METHOD -->
-            <div class="form-group" *ngIf="loginMethod === 'password'">
-              <label>Security Password</label>
-              <div class="input-icon-wrapper">
-                <span class="field-icon">🔒</span>
-                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass"
-                  placeholder="••••••••" required />
-                <button type="button" class="pwd-toggle-btn" (click)="togglePasswordVisibility()"
-                  title="Toggle password visibility">
-                  {{ showPassword ? '🙈' : '👁️' }}
-                </button>
-              </div>
-            </div>
-
-            <!-- OTP METHOD -->
-            <div *ngIf="loginMethod === 'otp'">
-              <div *ngIf="!otpSentForLogin" style="text-align: center; margin-bottom: 1.25rem; padding: 0.5rem 0;">
-                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 1rem; line-height: 1.4;">
-                  We will send a 6-digit verification code to: <strong style="color: #0f172a;">{{ userId }}</strong>
-                </p>
-                <button type="button" class="btn-submit-main" (click)="sendLoginOtp()" style="background: #10b981; border-color: #059669; box-shadow: 0 4px 10px rgba(16,185,129,0.25);">
-                  📩 Send OTP Verification Code
-                </button>
-              </div>
-
-              <div *ngIf="otpSentForLogin">
+          <div class="auth-panel-middle">
+            <form (ngSubmit)="onLogin()">
+              
+              <!-- STEP 1: Account ID input -->
+              <div *ngIf="loginStep === 1" class="form-step-content">
                 <div class="form-group">
-                  <label>Enter 6-Digit OTP Code</label>
+                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin ID / Email' }}</label>
                   <div class="input-icon-wrapper">
-                    <span class="field-icon">🔢</span>
-                    <input type="text" [(ngModel)]="userPass" name="userPass"
-                      placeholder="e.g. 123456" maxlength="6" required />
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.78rem;">
-                    <span style="color: #10b981; font-weight: 600;">✓ OTP Code Sent!</span>
-                    <button type="button" (click)="sendLoginOtp()" [disabled]="loginOtpCountdown > 0" 
-                      style="background: transparent; border: none; color: #2563eb; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
-                      {{ loginOtpCountdown > 0 ? 'Resend in ' + loginOtpCountdown + 's' : 'Resend OTP' }}
-                    </button>
+                    <span class="field-icon">👤</span>
+                    <input type="text" [(ngModel)]="userId" name="userId" placeholder="doctor@medcme.org or 9876543210" required />
                   </div>
                 </div>
+                <button type="button" class="btn-next-step" (click)="nextStep()">Continue to Password &rarr;</button>
               </div>
-            </div>
 
-            <!-- Remember Device Checkbox (Fulfills A-02 Checkbox) -->
-            <div style="margin-top: 1rem; text-align: left; padding: 0 0.1rem;">
-              <label style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: #475569; cursor: pointer; user-select: none;">
-                <input type="checkbox" name="rememberDevice" style="width: 15px; height: 15px; cursor: pointer; accent-color: #2563eb;" />
-                <span>Keep me signed in on this device (Remember device)</span>
-              </label>
-            </div>
+              <!-- STEP 2: Password / Security input -->
+              <div *ngIf="loginStep === 2" class="form-step-content">
+                <div class="step-back-bar">
+                  <button type="button" class="btn-back-step" (click)="goToStep(1)">&larr; Back ({{ userId }})</button>
+                </div>
 
-            <!-- SUBMIT BUTTON -->
-            <button type="submit" class="btn-submit-main" [disabled]="loading || (loginMethod === 'otp' && !otpSentForLogin)" style="margin-top: 1rem;">
-              <span *ngIf="!loading && activeRole() === 'doctor'">
-                {{ loginMethod === 'otp' ? 'Verify & Sign In as Doctor' : 'Sign In as Doctor → Access Dashboard' }}
-              </span>
-              <span *ngIf="!loading && activeRole() === 'admin'">
-                {{ loginMethod === 'otp' ? 'Verify & Sign In as Admin' : 'Sign In as Administrator → Manage Portal' }}
-              </span>
-              <span *ngIf="loading" class="spinner"></span>
-            </button>
+                <div class="login-method-tabs">
+                  <button type="button" [class.active]="loginMethod === 'password'" (click)="loginMethod = 'password'">🔑 Password</button>
+                  <button type="button" [class.active]="loginMethod === 'otp'" (click)="loginMethod = 'otp'">📱 OTP Code</button>
+                </div>
+
+                <!-- Password Method -->
+                <div class="form-group" *ngIf="loginMethod === 'password'">
+                  <label>Security Password</label>
+                  <div class="input-icon-wrapper">
+                    <span class="field-icon">🔒</span>
+                    <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass" placeholder="••••••••" required />
+                    <button type="button" class="pwd-toggle-btn" (click)="togglePasswordVisibility()">{{ showPassword ? '🙈' : '👁️' }}</button>
+                  </div>
+                </div>
+
+                <!-- OTP Method -->
+                <div *ngIf="loginMethod === 'otp'">
+                  <div *ngIf="!otpSentForLogin" class="otp-request-box">
+                    <p>We will send a 6-digit code to {{ userId }}</p>
+                    <button type="button" class="btn-send-otp" (click)="sendLoginOtp()">Send Verification OTP</button>
+                  </div>
+                  <div *ngIf="otpSentForLogin" class="form-group">
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.6rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.75rem;">
+                      📱 <strong>Account Verification Required:</strong> Enter the 6-digit OTP code sent to <strong>{{ userId }}</strong> to complete login.
+                    </div>
+                    <label>Enter 6-Digit OTP Code</label>
+                    <div class="input-icon-wrapper">
+                      <span class="field-icon">🔢</span>
+                      <input type="text" [(ngModel)]="userPass" name="userPass" placeholder="e.g. 123456" maxlength="6" required />
+                    </div>
+                    <div class="otp-resend-row">
+                      <span class="otp-sent-txt">✓ OTP Sent!</span>
+                      <button type="button" class="btn-resend-otp-link" [disabled]="loginOtpCountdown > 0" (click)="sendLoginOtp()">
+                        {{ loginOtpCountdown > 0 ? 'Resend in ' + loginOtpCountdown + 's' : 'Resend Code' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Keep Signed In -->
+                <label class="remember-checkbox">
+                  <input type="checkbox" name="rememberDevice" />
+                  <span>Keep me signed in on this device</span>
+                </label>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit-main" [disabled]="loading || (loginMethod === 'otp' && !otpSentForLogin)">
+                  <span *ngIf="!loading">Sign In as {{ activeRole() === 'doctor' ? 'Doctor' : 'Admin' }} &rarr;</span>
+                  <span *ngIf="loading" class="spinner"></span>
+                </button>
+              </div>
+
+            </form>
           </div>
-        </form>
-      </div>
 
-      <!-- BOTTOM SECTION (ALIGNS WITH METRICS BOTTOM) -->
-      <div class="auth-panel-bottom">
-        <div class="quick-links-row">
-          <a href="#" *ngIf="activeRole() === 'doctor'" (click)="$event.preventDefault(); openRegistration()"
-            class="link-register">
-            🆕 New Doctor? Register Account
-          </a>
-          <div *ngIf="activeRole() !== 'doctor'" style="flex: 1;"></div>
-          <a href="#" (click)="$event.preventDefault(); openForgotPassword()" class="link-forgot">
-            Forgot Password / Reset OTP?
-          </a>
+          <div class="auth-panel-bottom">
+            <div class="quick-links-row">
+              <a href="#" *ngIf="activeRole() === 'doctor'" (click)="$event.preventDefault(); openRegistration()">🆕 Create Account</a>
+              <a href="#" (click)="$event.preventDefault(); openForgotPassword()">Forgot Password?</a>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
 
-  <!-- Registration success toast -->
-  <div *ngIf="regSuccessMsg" class="registration-success-toast">
-    <span>🎉 {{ regSuccessMsg }}</span>
-  </div>
-
-  <!-- User Not Registered Modal -->
-  <div class="modal-overlay" *ngIf="showNotRegisteredModal" (click)="closeRegistration()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
+  <!-- ==================== REGISTRATION MODAL ==================== -->
+  <div class="modal-overlay animate-fade-in" *ngIf="showRegistrationForm" (click)="closeRegistration()">
+    <div class="registration-modal-box animate-scale-up" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>⚠️ User Not Registered</h3>
+        <h3>📝 New Doctor Registration</h3>
         <button class="close-btn" (click)="closeRegistration()">&#10005;</button>
       </div>
-      <div class="modal-body">
-        <p style="margin-bottom: 0.75rem; font-size: 0.92rem; color: #475569; line-height: 1.5;">
-          The entered mobile number/email is not present in our database.
-        </p>
-        <p style="font-weight: 700; color: #1e3a8a; font-size: 0.95rem;">
-          Click "New User Registration" to create a new doctor profile.
-        </p>
-      </div>
-      <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
-        <button class="btn-cancel"
-          style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;"
-          (click)="closeRegistration()">Cancel</button>
-        <button class="btn-primary"
-          style="padding: 0.6rem 1.2rem; border-radius: 8px; border: none; background: #2563eb; color: #fff; cursor: pointer; font-weight: 600;"
-          (click)="openRegistration()">New User Registration</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- New User Registration Form Modal -->
-  <div class="modal-overlay" *ngIf="showRegistrationForm" (click)="closeRegistration()">
-    <div class="modal-box registration-modal" (click)="$event.stopPropagation()"
-      style="max-width: 650px; width: 95%; max-height: 85vh; overflow-y: auto; padding: 1.5rem; border-radius: 12px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
-      <div class="modal-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
-        <h3 style="margin: 0; font-size: 1.2rem; color: #1e3a8a;">📝 New Doctor Profile Registration</h3>
-        <button class="close-btn" (click)="closeRegistration()"
-          style="border: none; background: none; font-size: 1.25rem; cursor: pointer; color: #64748b;">&#10005;</button>
-      </div>
       <form (ngSubmit)="submitRegistration()">
-        <div class="modal-body"
-          style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.95rem; margin-top: 1.25rem;">
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Designation *</label>
-            <select [(ngModel)]="regDesignation" name="regDesignation"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required>
+        <div class="registration-modal-body">
+          
+          <div class="form-group">
+            <label>Designation *</label>
+            <select [(ngModel)]="regDesignation" name="regDesignation" required>
               <option value="Dr.">Dr.</option>
               <option value="Prof. Dr.">Prof. Dr.</option>
               <option value="Assoc. Prof. Dr.">Assoc. Prof. Dr.</option>
             </select>
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Mobile Number *</label>
-            <input type="text" [(ngModel)]="regMobileNumber" name="regMobileNumber"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="e.g. 9876543210" />
+          <div class="form-group">
+            <label>Mobile Number *</label>
+            <input type="text" [(ngModel)]="regMobileNumber" name="regMobileNumber" placeholder="Mobile Number" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">First Name *</label>
-            <input type="text" [(ngModel)]="regFirstName" name="regFirstName"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="First Name" />
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" [(ngModel)]="regFirstName" name="regFirstName" placeholder="First Name" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Last Name *</label>
-            <input type="text" [(ngModel)]="regLastName" name="regLastName"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="Last Name" />
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" [(ngModel)]="regLastName" name="regLastName" placeholder="Last Name" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Email Address *</label>
-            <input type="email" [(ngModel)]="regEmail" name="regEmail"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="doctor@hospital.org" />
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" [(ngModel)]="regEmail" name="regEmail" placeholder="email@hospital.org" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Preferred Language</label>
-            <select [(ngModel)]="regLanguage" name="regLanguage"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
-              <option value="English">English</option>
-              <option value="Hindi">Hindi</option>
-              <option value="Marathi">Marathi</option>
-            </select>
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Password *</label>
-            <input type="password" [(ngModel)]="regPassword" name="regPassword"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="Password" />
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Confirm Password *</label>
-            <input type="password" [(ngModel)]="regConfirmPassword" name="regConfirmPassword"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="Retype password" />
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Gender</label>
-            <select [(ngModel)]="regGender" name="regGender"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-            </select>
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Date of Birth</label>
-            <input type="date" [(ngModel)]="regDob" name="regDob"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" />
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">MMC / Medical Registration
-              Number</label>
-            <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. MCI-2026-19349" />
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Specialty Category *</label>
-            <select [(ngModel)]="regSpecialty" name="regSpecialty"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+          <div class="form-group">
+            <label>Specialty Category *</label>
+            <select [(ngModel)]="regSpecialty" name="regSpecialty" required>
               <option value="Cardiology">Cardiology</option>
               <option value="Pediatrics">Pediatrics</option>
               <option value="Neurology">Neurology</option>
               <option value="Surgery">Surgery</option>
               <option value="General Medicine">General Medicine</option>
-              <option value="Other">Other (Type below)</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;"
-            *ngIf="regSpecialty === 'Other'">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Specify Other Specialty *</label>
-            <input type="text" [(ngModel)]="regSpecialtyOther" name="regSpecialtyOther"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. Dermatology" />
+          <div class="form-group" *ngIf="regSpecialty === 'Other'">
+            <label>Specify Specialty *</label>
+            <input type="text" [(ngModel)]="regSpecialtyOther" name="regSpecialtyOther" placeholder="Specify specialty" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Hospital / Institution Name *</label>
-            <input type="text" [(ngModel)]="regHospital" name="regHospital"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. Kokilaben Hospital Mumbai" />
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" [(ngModel)]="regPassword" name="regPassword" placeholder="••••••••" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Organization Name</label>
-            <input type="text" [(ngModel)]="regOrganization" name="regOrganization"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. MedCME Academy Group" />
+          <div class="form-group">
+            <label>Confirm Password *</label>
+            <input type="password" [(ngModel)]="regConfirmPassword" name="regConfirmPassword" placeholder="••••••••" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Department Name</label>
-            <input type="text" [(ngModel)]="regDepartment" name="regDepartment"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. Cardiology OPD" />
+          <div class="form-group">
+            <label>Hospital / Institution *</label>
+            <input type="text" [(ngModel)]="regHospital" name="regHospital" placeholder="Hospital Name" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">City *</label>
-            <input type="text" [(ngModel)]="regCity" name="regCity"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" required
-              placeholder="e.g. Mumbai, Pune" />
+          <div class="form-group">
+            <label>City *</label>
+            <input type="text" [(ngModel)]="regCity" name="regCity" placeholder="City" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Professional Qualification *</label>
-            <input type="text" [(ngModel)]="regQualification" name="regQualification"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. MBBS, MD Cardiology" />
+          <div class="form-group">
+            <label>Medical Registration Number (MMC) *</label>
+            <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" placeholder="MMC / MCI Number" required />
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Years of Experience</label>
-            <input type="number" [(ngModel)]="regExperience" name="regExperience" min="0"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" />
+          <div class="form-group" style="grid-column: span 2; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.35rem;">
+            <label style="font-weight: 700; color: #1e3a8a;">Select CME Interests (Only matching events will show first on your dashboard) *</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 8px;">
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Cardiology']" name="interestCardiology" style="width: auto; margin-right: 0.2rem;" /> Cardiology
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Pediatrics']" name="interestPediatrics" style="width: auto; margin-right: 0.2rem;" /> Pediatrics
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Neurology']" name="interestNeurology" style="width: auto; margin-right: 0.2rem;" /> Neurology
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Surgery']" name="interestSurgery" style="width: auto; margin-right: 0.2rem;" /> Surgery
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['General Medicine']" name="interestGenMed" style="width: auto; margin-right: 0.2rem;" /> General Medicine
+              </label>
+            </div>
           </div>
 
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Clinic Address</label>
-            <input type="text" [(ngModel)]="regClinicAddress" name="regClinicAddress"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. Shop 4, Sector 5, Vashi, Navi Mumbai" />
-          </div>
-
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
-            <label style="font-size: 0.76rem; font-weight: 700; color: #475569;">Practicing Interest</label>
-            <input type="text" [(ngModel)]="regPracticingInterest" name="regPracticingInterest"
-              style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;"
-              placeholder="e.g. Preventive Cardiology, Echo" />
-          </div>
-
-          <!-- Toggles and Privacy -->
-          <div
-            style="grid-column: span 2; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-            <label
-              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer; color: #334155;">
-              <input type="checkbox" [(ngModel)]="regEmailConsent" name="regEmailConsent"
-                style="width: 16px; height: 16px;" />
-              Get invitations, updates, and reminders via Email.
-            </label>
-            <label
-              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer; color: #334155;">
-              <input type="checkbox" [(ngModel)]="regWhatsappConsent" name="regWhatsappConsent"
-                style="width: 16px; height: 16px;" />
-              Get invitations, details, and PDF invoices via WhatsApp.
-            </label>
-            <label
-              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer; color: #1e3a8a; font-weight: 700;">
-              <input type="checkbox" [(ngModel)]="regTermsConsent" name="regTermsConsent"
-                style="width: 16px; height: 16px;" required />
-              I agree to the CME Platform Terms of Service and Privacy Policy. *
+          <div class="registration-consents">
+            <label>
+              <input type="checkbox" [(ngModel)]="regTermsConsent" name="regTermsConsent" required />
+              <span>I agree to the Terms of Service & Privacy Policy *</span>
             </label>
           </div>
 
         </div>
-        <div class="modal-footer"
-          style="border-top: 1px solid #e2e8f0; padding-top: 0.75rem; margin-top: 1.25rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
-          <button type="button" class="btn-cancel"
-            style="padding: 0.6rem 1.25rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;"
-            (click)="closeRegistration()">Cancel</button>
-          <button type="submit" class="btn-primary"
-            style="padding: 0.6rem 1.75rem; border-radius: 8px; border: none; background: #2563eb; color: #fff; cursor: pointer; font-weight: 700; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">Register
-            &amp; Login</button>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel-modal" (click)="closeRegistration()">Cancel</button>
+          <button type="submit" class="btn-submit-modal">Register &amp; Proceed to OTP Login</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Password Recovery / OTP Simulation Modal -->
-  <div class="modal-overlay" *ngIf="showForgotPassword" (click)="closeForgotPassword()">
-    <div class="modal-box" (click)="$event.stopPropagation()"
-      style="max-width: 440px; width: 90%; padding: 1.5rem; border-radius: 12px; background: #fff;">
+  <!-- Registration Success Toast -->
+  <div class="success-toast" *ngIf="regSuccessMsg">
+    <span>🎉 {{ regSuccessMsg }}</span>
+  </div>
+
+  <!-- ==================== FORGOT PASSWORD MODAL ==================== -->
+  <div class="modal-overlay animate-fade-in" *ngIf="showForgotPassword" (click)="closeForgotPassword()">
+    <div class="forgot-modal-box animate-scale-up" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3 style="margin: 0; color: #1e3a8a; display: flex; align-items: center; gap: 0.5rem;">🔑 Password Recovery
-        </h3>
-        <button class="close-btn" (click)="closeForgotPassword()"
-          style="border: none; background: none; font-size: 1.25rem; cursor: pointer; color: #64748b;">&#10005;</button>
+        <h3>🔑 Password Recovery</h3>
+        <button class="close-btn" (click)="closeForgotPassword()">&#10005;</button>
       </div>
 
-      <div *ngIf="forgotErrorMsg"
-        style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca; padding:0.6rem; border-radius:6px; font-size:0.82rem; margin-top:1rem;">
-        ⚠️ {{ forgotErrorMsg }}
+      <div *ngIf="forgotErrorMsg" class="alert-error-recovery">⚠️ {{ forgotErrorMsg }}</div>
+      <div *ngIf="forgotSuccessMsg" class="alert-success-recovery">✓ {{ forgotSuccessMsg }}</div>
+
+      <!-- Send OTP -->
+      <div *ngIf="!otpSent" class="forgot-body">
+        <p>Enter your registered Email or Mobile number. We will send a code.</p>
+        <input type="text" [(ngModel)]="forgotEmailOrMobile" placeholder="e.g. doctor@medcme.org" class="forgot-input" />
+        <button (click)="sendForgotOtp()" class="btn-send-recovery">Send Recovery OTP</button>
       </div>
 
-      <div *ngIf="forgotSuccessMsg"
-        style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:0.6rem; border-radius:6px; font-size:0.82rem; margin-top:1rem;">
-        ✓ {{ forgotSuccessMsg }}
-      </div>
-
-      <!-- STEP 1: Send OTP -->
-      <div *ngIf="!otpSent" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
-        <p style="font-size: 0.84rem; color: #475569; margin: 0; line-height: 1.4;">
-          Enter your registered Email Address or Phone Number. We will simulate sending a 6-digit verification code.
-        </p>
-        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Email / Phone Number</label>
-          <input type="text" [(ngModel)]="forgotEmailOrMobile"
-            style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;"
-            placeholder="e.g. doctor@medcme.org" />
+      <!-- Verify & Reset -->
+      <div *ngIf="otpSent && !forgotSuccessMsg" class="forgot-body">
+        <div class="simulated-otp-info">
+          📟 Simulated OTP dispatched. Enter code: <strong>{{ forgotOtpCode }}</strong>.
         </div>
-        <button (click)="sendForgotOtp()"
-          style="padding: 0.65rem; border: none; background: #2563eb; color: #fff; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Send Recovery OTP Code
+        <div class="form-group">
+          <label>Verification Code</label>
+          <input type="text" [(ngModel)]="otpCode" placeholder="Code" class="forgot-input text-center" />
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" [(ngModel)]="newPassword" placeholder="Min 6 chars" class="forgot-input" />
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" [(ngModel)]="newPasswordConfirm" placeholder="Retype password" class="forgot-input" />
+        </div>
+        <button (click)="verifyOtpAndReset()" class="btn-send-recovery">Reset Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EVENT DETAIL MODAL ==================== -->
+  <div class="modal-overlay animate-fade-in" *ngIf="showEventDetailModal" (click)="closeEventDetail()">
+    <div class="detail-modal-box animate-scale-up" (click)="$event.stopPropagation()">
+      <button class="btn-close-modal" (click)="closeEventDetail()">&#10005;</button>
+      
+      <div class="detail-header" [style.background]="selectedEventForDetail?.bannerColor || '#1e3a8a'">
+        <span class="detail-format-tag">{{ selectedEventForDetail?.mode }} Event</span>
+        <h2 class="detail-title">{{ selectedEventForDetail?.title }}</h2>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-meta-grid">
+          <div class="meta-cell">
+            <span class="cell-label">🗓️ DATE & TIME</span>
+            <span class="cell-val">{{ selectedEventForDetail?.date | date:'mediumDate' }} • {{ selectedEventForDetail?.time }}</span>
+          </div>
+          <div class="meta-cell">
+            <span class="cell-label">📍 VENUE / PLATFORM</span>
+            <span class="cell-val">{{ selectedEventForDetail?.venue }}</span>
+          </div>
+          <div class="meta-cell">
+            <span class="cell-label">👤 SPEAKER</span>
+            <span class="cell-val"><strong>{{ selectedEventForDetail?.speaker }}</strong> ({{ selectedEventForDetail?.speakerRole }})</span>
+          </div>
+          <div class="meta-cell">
+            <span class="cell-label">🎖️ ACCREDITATION</span>
+            <span class="cell-val">{{ selectedEventForDetail?.creditPoints }} MMC/NMC Accredited CME Points</span>
+          </div>
+        </div>
+
+        <div class="detail-description-section">
+          <h3>Event Overview</h3>
+          <p>{{ selectedEventForDetail?.description }}</p>
+        </div>
+
+        <div class="detail-price-row">
+          <div class="price-info">
+            <span class="price-lbl">REGISTRATION FEE</span>
+            <span class="price-val" [class.free-green]="selectedEventForDetail?.price === 0">
+              {{ selectedEventForDetail?.price === 0 ? 'FREE' : '₹' + selectedEventForDetail?.price }}
+            </span>
+          </div>
+          
+          <button *ngIf="!isRegistered(selectedEventForDetail?.id || '')" class="btn-register-action-trigger" (click)="registerForEventFromDetail()">
+            Register for Event &rarr;
+          </button>
+          <button *ngIf="isRegistered(selectedEventForDetail?.id || '')" class="btn-registered-badge" disabled>
+            ✓ Already Enrolled
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REGISTRATION CHECKOUT MODAL ==================== -->
+  <div class="modal-overlay animate-fade-in" *ngIf="showRegisterModal" (click)="closeRegisterModal()">
+    <div class="checkout-modal-box animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>🛒 CME Event Checkout</h3>
+        <button class="close-btn" (click)="closeRegisterModal()">&#10005;</button>
+      </div>
+
+      <!-- Success Screen -->
+      <div *ngIf="registrationSuccess" class="checkout-success-body">
+        <div class="success-icon">🎉</div>
+        <h3>Registration Successful!</h3>
+        <p>You have been enrolled in <strong>{{ selectedEvent?.title }}</strong>.</p>
+        <p>Go to your personal dashboard to access live rooms, materials, and certificates.</p>
+        <button class="btn-go-dash" routerLink="/dashboard" (click)="closeRegisterModal()">Go to Dashboard &rarr;</button>
+      </div>
+
+      <!-- Form Checkout Screen -->
+      <div *ngIf="!registrationSuccess && !showSimulatedRazorpay" class="checkout-body">
+        <div class="checkout-summary-card">
+          <h4>Event Selection</h4>
+          <p class="summary-title">{{ selectedEvent?.title }}</p>
+          <div class="summary-details">
+            <span>📅 {{ selectedEvent?.date | date:'mediumDate' }}</span>
+            <span>📍 {{ selectedEvent?.venue }}</span>
+          </div>
+          <div class="summary-price-row">
+            <span>Price</span>
+            <strong [class.free-green]="selectedEvent?.price === 0">
+              {{ selectedEvent?.price === 0 ? 'FREE' : '₹' + selectedEvent?.price }}
+            </strong>
+          </div>
+        </div>
+
+        <!-- User Information Validation Info -->
+        <div class="checkout-user-details-card">
+          <h4>Attendee Profile</h4>
+          <div><strong>Name:</strong> {{ authService.currentUser()?.name }}</div>
+          <div><strong>Email:</strong> {{ authService.currentUser()?.email }} &bull; <strong>Mobile:</strong> {{ authService.currentUser()?.phone }}</div>
+          <div><strong>Specialty:</strong> {{ authService.currentUser()?.specialty }}</div>
+        </div>
+
+        <!-- MR Sponsorship Code Section -->
+        <div class="sponsor-code-section" *ngIf="selectedEvent && selectedEvent.price > 0">
+          <div class="sponsor-toggle-row">
+            <span>Have an MR Sponsorship / Coupon Code?</span>
+            <button type="button" class="btn-toggle-sponsor" (click)="showSponsorInput = !showSponsorInput">
+              {{ showSponsorInput ? 'Hide' : 'Enter Code' }}
+            </button>
+          </div>
+          <div class="sponsor-input-wrapper animate-slide-down" *ngIf="showSponsorInput">
+            <div class="sponsor-input-row">
+              <input type="text" [(ngModel)]="sponsorCode" placeholder="Enter MR Code (e.g. MR_SUN, COUPON_100)" />
+              <button type="button" class="btn-verify-sponsor" (click)="verifySponsorCode()">Verify</button>
+            </div>
+            <div class="sponsor-validation-msg error" *ngIf="sponsorCodeError">{{ sponsorCodeError }}</div>
+            <div class="sponsor-validation-msg success" *ngIf="sponsorNameDetected">
+              ✓ Verified! Sponsored by: <strong>{{ sponsorNameDetected }}</strong> (Fee fully waived)
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms agreement -->
+        <label class="terms-label">
+          <input type="checkbox" [(ngModel)]="agreeTermsCheckout" />
+          <span>I agree to the MedCME Academy Event Code of Conduct and Cancellation Policy. *</span>
+        </label>
+
+        <button class="btn-checkout-confirm" [disabled]="!agreeTermsCheckout" (click)="confirmRegister()">
+          {{ selectedEvent?.price === 0 || sponsorNameDetected ? 'Complete Free Registration' : 'Proceed to Payment (₹' + selectedEvent?.price + ')' }}
         </button>
       </div>
 
-      <!-- STEP 2: Verify OTP and setup new password -->
-      <div *ngIf="otpSent && !forgotSuccessMsg"
-        style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
-        <div
-          style="background: rgba(14,165,233,0.06); border: 1px solid rgba(14,165,233,0.2); border-radius: 8px; padding: 0.75rem; font-size: 0.8rem; color: #0284c7; line-height: 1.4;">
-          📟 Simulated verification message dispatched to <strong>{{ forgotEmailOrMobile }}</strong>. Enter verification
-          code <strong>653099</strong>.
+      <!-- Razorpay Simulated Gateway Screen -->
+      <div *ngIf="showSimulatedRazorpay" class="simulated-payment-body">
+        <div class="payment-card-header">
+          <div class="razorpay-logo">💳 Razorpay Secure Checkout</div>
+          <div class="payment-amount-display">Payable: ₹{{ selectedEvent?.price }}</div>
+        </div>
+        
+        <div class="payment-options-tabs">
+          <button [class.active]="selectedPaymentMethod === 'upi'" (click)="selectedPaymentMethod = 'upi'">UPI / QR Code</button>
+          <button [class.active]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">Credit / Debit Card</button>
         </div>
 
-        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Enter Verification Code</label>
-          <input type="text" [(ngModel)]="otpCode" maxlength="6"
-            style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; text-align: center; font-weight: 700; letter-spacing: 0.35em;"
-            placeholder="653099" />
-          <span style="font-size: 0.72rem; color: #64748b; margin-top: 0.15rem; font-style: italic;">
-            <span *ngIf="otpCountdown > 0">Resend code in {{ otpCountdown }} seconds</span>
-            <span *ngIf="otpCountdown === 0" style="color: #2563eb; font-weight: 700; cursor: pointer;"
-              (click)="sendForgotOtp()">Resend OTP</span>
-          </span>
+        <!-- UPI Option -->
+        <div *ngIf="selectedPaymentMethod === 'upi'" class="payment-fields animate-fade-in">
+          <label>Enter Virtual Payment Address (VPA) / UPI ID</label>
+          <input type="text" [(ngModel)]="upiId" placeholder="doctor@okicici" class="payment-input" />
+          <div class="field-desc">Enter your UPI ID to simulate checkout prompt. (e.g. name@upi)</div>
         </div>
 
-        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">New Password</label>
-          <input type="password" [(ngModel)]="newPassword"
-            style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;"
-            placeholder="Min 6 characters" />
+        <!-- Card Option -->
+        <div *ngIf="selectedPaymentMethod === 'card'" class="payment-fields animate-fade-in">
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" [(ngModel)]="cardNumber" class="payment-input text-center" />
+          </div>
+          <div class="payment-card-grid">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" placeholder="MM/YY" class="payment-input text-center" />
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="password" placeholder="•••" maxlength="3" class="payment-input text-center" />
+            </div>
+          </div>
         </div>
 
-        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Confirm New Password</label>
-          <input type="password" [(ngModel)]="newPasswordConfirm"
-            style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;"
-            placeholder="Retype password" />
+        <!-- Processing State -->
+        <div *ngIf="processingPayment" class="payment-loading-overlay">
+          <div class="spinner-large"></div>
+          <p>Processing transaction securely...</p>
         </div>
 
-        <button (click)="verifyOtpAndReset()"
-          style="padding: 0.65rem; border: none; background: #10b981; color: #fff; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Verify OTP &amp; Reset Password
-        </button>
+        <!-- Success State -->
+        <div *ngIf="paymentSuccess" class="payment-success-overlay animate-scale-up">
+          <div class="success-checkmark">✓</div>
+          <h3>Payment Successful</h3>
+          <p>Transaction ID: {{ paymentTransactionId }}</p>
+        </div>
+
+        <div class="payment-footer-row" *ngIf="!processingPayment && !paymentSuccess">
+          <button class="btn-payment-cancel" (click)="showSimulatedRazorpay = false">Cancel Payment</button>
+          <button class="btn-payment-submit" (click)="confirmSimulatedPayment()">Simulate Successful Payment</button>
+        </div>
       </div>
 
     </div>

@@ -242,9 +242,9 @@ export class MyLearningComponent implements OnInit {
     }
   }
 
-  navigateToCourses() {
-    this.router.navigate(['/events']);
-  }
+  // navigateToCourses() {
+  //   this.router.navigate(['/events']);
+  // }
 
   navigateToProfile() {
     this.router.navigate(['/profile']);

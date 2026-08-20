@@ -462,4 +462,66 @@
       </button>
     </div>
   </div>
+
+  <!-- ==================== GUEST LOGIN MODAL ==================== -->
+  <div class="modal-overlay animate-fade-in" *ngIf="showLoginModal" (click)="showLoginModal = false">
+    <div class="login-modal-box animate-scale-up" (click)="$event.stopPropagation()" style="max-width: 500px; padding: 2rem; position: relative; background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+      <button class="close-btn" (click)="showLoginModal = false" style="position: absolute; top: 1rem; right: 1rem; border: none; background: none; font-size: 1.25rem; cursor: pointer; color: #64748b;">&#10005;</button>
+      
+      <h3 style="margin-top: 0; font-size: 1.25rem; font-weight: 800; color: #1e3a8a; text-align: center; margin-bottom: 1.5rem;">🔑 Log In to MedCME Academy</h3>
+      
+      <div class="role-selector-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid #f1f5f9;">
+        <button type="button" [class.active]="activeRole === 'doctor'" (click)="switchRole('doctor')" style="flex: 1; border: none; padding: 0.6rem; font-weight: 700; font-size: 0.82rem; cursor: pointer; background: transparent; color: #64748b;" [style.border-bottom]="activeRole === 'doctor' ? '2px solid #2563eb' : 'none'" [style.color]="activeRole === 'doctor' ? '#2563eb' : '#64748b'">👨‍⚕️ Doctor</button>
+        <button type="button" [class.active]="activeRole === 'admin'" (click)="switchRole('admin')" style="flex: 1; border: none; padding: 0.6rem; font-weight: 700; font-size: 0.82rem; cursor: pointer; background: transparent; color: #64748b;" [style.border-bottom]="activeRole === 'admin' ? '2px solid #2563eb' : 'none'" [style.color]="activeRole === 'admin' ? '#2563eb' : '#64748b'">⚡ Admin</button>
+      </div>
+
+      <div *ngIf="errorMessage" style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; margin-bottom: 1rem;">
+        ⚠️ {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onLocalLoginSubmit()">
+        <!-- Step 1: Identifier -->
+        <div *ngIf="loginStep === 1">
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">{{ activeRole === 'doctor' ? 'Email / Registered Mobile Number' : 'Admin ID' }}</label>
+            <input type="text" [(ngModel)]="userId" name="userId" placeholder="doctor@medcme.org or 9876543210" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; width: 100%; box-sizing: border-box;" required />
+          </div>
+          <button type="button" (click)="nextStep()" style="width: 100%; padding: 0.7rem; background: #2563eb; color: #fff; font-weight: 700; border: none; border-radius: 8px; cursor: pointer;">Continue &rarr;</button>
+        </div>
+
+        <!-- Step 2: Password / OTP -->
+        <div *ngIf="loginStep === 2">
+          <button type="button" (click)="goToStep(1)" style="background: transparent; border: none; color: #64748b; font-size: 0.78rem; cursor: pointer; padding: 0; margin-bottom: 0.75rem;">&larr; Change User ID ({{ userId }})</button>
+          
+          <div class="login-method-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <button type="button" [class.active]="loginMethod === 'password'" (click)="loginMethod = 'password'" style="flex: 1; padding: 0.45rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;" [style.background]="loginMethod === 'password' ? '#eff6ff' : '#f8fafc'" [style.color]="loginMethod === 'password' ? '#2563eb' : '#475569'">🔑 Password</button>
+            <button type="button" [class.active]="loginMethod === 'otp'" (click)="loginMethod = 'otp'" style="flex: 1; padding: 0.45rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;" [style.background]="loginMethod === 'otp' ? '#eff6ff' : '#f8fafc'" [style.color]="loginMethod === 'otp' ? '#2563eb' : '#475569'">📱 OTP Code</button>
+          </div>
+
+          <!-- Password field -->
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem;" *ngIf="loginMethod === 'password'">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Security Password</label>
+            <input type="password" [(ngModel)]="userPass" name="userPass" placeholder="••••••••" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; width: 100%; box-sizing: border-box;" required />
+          </div>
+
+          <!-- OTP field -->
+          <div *ngIf="loginMethod === 'otp'">
+            <div *ngIf="!otpSentForLogin" style="text-align: center; margin-bottom: 1.25rem;">
+              <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.75rem;">We will send a code to {{ userId }}</p>
+              <button type="button" (click)="sendLoginOtp()" style="padding: 0.5rem 1.15rem; background: #10b981; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Send OTP</button>
+            </div>
+            <div *ngIf="otpSentForLogin" class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem;">
+              <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">6-Digit OTP Code</label>
+              <input type="text" [(ngModel)]="userPass" name="userPass" placeholder="e.g. 123456" maxLength="6" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; width: 100%; box-sizing: border-box;" required />
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="loading || (loginMethod === 'otp' && !otpSentForLogin)" style="width: 100%; padding: 0.75rem; background: #2563eb; color: #fff; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;">
+            <span *ngIf="!loading">Verify & Sign In</span>
+            <span *ngIf="loading" class="spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

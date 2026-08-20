@@ -37,6 +37,21 @@ export class CourseDetailComponent implements OnInit {
   sponsorNameDetected = '';
   registrationSuccess = false;
 
+  // Local login/registration modal states for guest enrollment
+  showLoginModal = false;
+  activeRole: 'doctor' | 'admin' = 'doctor';
+  userId = 'doctor@medcme.org';
+  userPass = 'doctor123';
+  showPassword = false;
+  loginStep = 1;
+  loginMethod: 'password' | 'otp' = 'password';
+  otpSentForLogin = false;
+  loginOtpCountdown = 60;
+  loginOtpInterval: any = null;
+  loginOtpCode = '123456';
+  errorMessage = '';
+  loading = false;
+
   // Quiz state
   userAnswers: { [key: string]: number } = {};
   quizSubmitted = false;
@@ -79,7 +94,11 @@ export class CourseDetailComponent implements OnInit {
     if (!this.course) return;
     const user = this.authService.currentUser();
     if (!user) {
-      this.router.navigate(['/login']);
+      this.userId = 'doctor@medcme.org';
+      this.userPass = 'doctor123';
+      this.loginStep = 1;
+      this.loginMethod = 'password';
+      this.showLoginModal = true;
       return;
     }
     this.showRegisterModal = true;
@@ -89,6 +108,95 @@ export class CourseDetailComponent implements OnInit {
     this.sponsorCodeError = '';
     this.sponsorNameDetected = '';
     this.registrationSuccess = false;
+  }
+
+  // Local auth helper methods for course details guest flow
+  switchRole(role: 'doctor' | 'admin') {
+    this.activeRole = role;
+    this.errorMessage = '';
+    this.loginMethod = 'password';
+    this.otpSentForLogin = false;
+    if (this.loginOtpInterval) {
+      clearInterval(this.loginOtpInterval);
+    }
+    if (role === 'doctor') {
+      this.userId = 'doctor@medcme.org';
+      this.userPass = 'doctor123';
+    } else {
+      this.userId = 'admin@medcme.org';
+      this.userPass = 'admin123';
+    }
+  }
+
+  goToStep(step: number) {
+    this.loginStep = step;
+  }
+
+  nextStep() {
+    if (!this.userId.trim()) {
+      this.errorMessage = 'Please enter your Account Identifier.';
+      return;
+    }
+    this.errorMessage = '';
+    this.loginStep = 2;
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  sendLoginOtp() {
+    if (!this.userId.trim()) return;
+    this.otpSentForLogin = true;
+    this.loginOtpCountdown = 60;
+    this.errorMessage = '';
+    this.loginOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    alert(`[Simulated MedCME OTP] Your login verification code is: ${this.loginOtpCode}`);
+    this.userPass = this.loginOtpCode;
+
+    if (this.loginOtpInterval) {
+      clearInterval(this.loginOtpInterval);
+    }
+    this.loginOtpInterval = setInterval(() => {
+      if (this.loginOtpCountdown > 0) {
+        this.loginOtpCountdown--;
+      } else {
+        clearInterval(this.loginOtpInterval);
+      }
+    }, 1000);
+  }
+
+  onLocalLoginSubmit() {
+    this.errorMessage = '';
+    this.loading = true;
+
+    if (this.loginMethod === 'otp' && this.userPass.trim() !== this.loginOtpCode) {
+      this.loading = false;
+      this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
+      return;
+    }
+
+    setTimeout(() => {
+      this.loading = false;
+      if (this.activeRole === 'doctor') {
+        const res = this.authService.authenticateDoctor(this.userId, this.userPass);
+        if (res.success) {
+          this.showLoginModal = false;
+          // Open enrollment checkout modal immediately
+          this.initiatePurchase();
+        } else {
+          this.errorMessage = res.message || 'Invalid Doctor Login Credentials';
+        }
+      } else {
+        const res = this.authService.authenticateAdmin(this.userId, this.userPass);
+        if (res.success) {
+          this.showLoginModal = false;
+          this.initiatePurchase();
+        } else {
+          this.errorMessage = res.message || 'Invalid Administrator Login Credentials';
+        }
+      }
+    }, 500);
   }
 
   closeRegisterModal() {

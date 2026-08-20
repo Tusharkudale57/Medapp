@@ -106,11 +106,10 @@ export class AuthService {
           console.error('Failed to parse user session', e);
         }
       }
-      // Default to Doctor Account
-      this.saveUserToStorage(this.staticDoctorAccount);
-      this.currentUserSignal.set(this.staticDoctorAccount);
+      // Default to guest (null)
+      this.currentUserSignal.set(null);
     } else {
-      this.currentUserSignal.set(this.staticDoctorAccount);
+      this.currentUserSignal.set(null);
     }
   }
 
@@ -137,7 +136,7 @@ export class AuthService {
     return list.some(u => u.email.toLowerCase() === clean || u.phone === clean);
   }
 
-  registerNewUser(profile: Partial<UserProfile>): UserProfile {
+  registerNewUser(profile: Partial<UserProfile>, autoLogin: boolean = false): UserProfile {
     const newUser: UserProfile = {
       id: 'doc_' + Date.now(),
       name: `${profile.designation || 'Dr.'} ${profile.name || ''} ${profile.sirName || ''}`,
@@ -178,8 +177,10 @@ export class AuthService {
       return updated;
     });
 
-    this.currentUserSignal.set(newUser);
-    this.saveUserToStorage(newUser);
+    if (autoLogin) {
+      this.currentUserSignal.set(newUser);
+      this.saveUserToStorage(newUser);
+    }
     return newUser;
   }
 

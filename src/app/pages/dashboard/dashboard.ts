@@ -61,6 +61,7 @@ export class DashboardComponent implements OnInit {
   showSimulatedRazorpay = false;
 
   // Advanced Search, Filter & Sort States
+  showInterestedOnly = true;
   searchQuery = '';
   showFiltersPanel = false;
   selectedLanguages: string[] = []; // Empty = all
@@ -172,6 +173,10 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    if (!this.authService.currentUser()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     if (typeof window !== 'undefined') {
       const cat = localStorage.getItem('medcme_active_category_filter');
       if (cat) {
@@ -197,6 +202,20 @@ export class DashboardComponent implements OnInit {
   get filteredEvents(): CmeEvent[] {
     let events = this.eventService.getUpcomingEvents();
     
+    // Filter by interests if enabled, otherwise prioritize interests by sorting them first
+    const user = this.authService.currentUser();
+    if (user && user.interests && user.interests.length > 0) {
+      if (this.showInterestedOnly) {
+        events = events.filter(e => user.interests!.includes(e.category));
+      } else {
+        events = [...events].sort((a, b) => {
+          const aMatch = user.interests!.includes(a.category) ? 1 : 0;
+          const bMatch = user.interests!.includes(b.category) ? 1 : 0;
+          return bMatch - aMatch;
+        });
+      }
+    }
+
     const cat = this.activeCategory();
     if (cat !== 'All') {
       events = events.filter(e => e.category.toLowerCase() === cat.toLowerCase());
@@ -923,9 +942,9 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/profile']);
   }
 
-  navigateToCourses() {
-    this.router.navigate(['/events']);
-  }
+  // navigateToCourses() {
+  //   this.router.navigate(['/events']);
+  // }
 
   navigateToMyLearning() {
     this.router.navigate(['/my-learning']);

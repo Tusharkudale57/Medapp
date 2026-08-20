@@ -115,7 +115,7 @@
 
       <nav class="nav-links">
         <button class="nav-link active">&#128197; CME Events</button>
-        <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button>
+        <!-- <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button> -->
         <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">&#128214; My Learning</button>
         <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button>
         <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
@@ -225,6 +225,14 @@
         <button (click)="resetAllFilters()" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0 1rem; font-size: 0.82rem; cursor: pointer;">
           Reset
         </button>
+      </div>
+
+      <!-- Interests Default Filter Toggle -->
+      <div *ngIf="authService.currentUser()?.interests && authService.currentUser()!.interests!.length > 0" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; background: #eff6ff; border: 1px dashed #bfdbfe; padding: 0.5rem 0.85rem; border-radius: 8px;">
+        <input type="checkbox" id="showInterestedOnlyToggle" [(ngModel)]="showInterestedOnly" style="width: auto; cursor: pointer; height: auto; margin: 0;" />
+        <label for="showInterestedOnlyToggle" style="font-size: 0.82rem; font-weight: 700; color: #1e40af; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.25rem; margin: 0;">
+          🎯 Filter by my CME Interests ({{ authService.currentUser()!.interests!.join(', ') }})
+        </label>
       </div>
 
       <!-- Collapsible Advanced Filters Panel -->
