@@ -450,7 +450,8 @@ export class EventService {
       outline: e.outline || '1. Introduction & Panel Details\n2. Basic MCQ (Pre-Test)\n3. Lecture Session 1\n4. Mid-Session MCQ (Knowledge Check)\n5. Lecture Session 2\n6. Live Q&A and Expert Panel Discussion',
       scopeDetails: e.scopeDetails || `Accredited CME event focusing on advanced clinical protocols, guidelines, and diagnostic decisions. Earn +${e.creditPoints} CME points.`,
       outcome: e.outcome || 'Mastery of specialized diagnostics, implementation of critical protocols, and verified CME credits.',
-      videoAssistance: e.videoAssistance || 'Live Stream, 2 Dedicated Moderators, 1-2 Consultants for Chat Q&A'
+      videoAssistance: e.videoAssistance || 'Live Stream, 2 Dedicated Moderators, 1-2 Consultants for Chat Q&A',
+      zohoBackstageLink: e.zohoBackstageLink || ''
     })));
   }
 
@@ -612,7 +613,8 @@ export class EventService {
       paymentLink: `https://medcme.org/pay/${id}`,
       status: 'upcoming',
       bannerColor: partial.bannerColor || '#0ea5e9',
-      preRead: partial.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'
+      preRead: partial.preRead || 'ACLS_Standard_Protocols_Guideline.pdf',
+      zohoBackstageLink: partial.zohoBackstageLink || ''
     };
     this.eventsSignal.update(events => [newEvent, ...events]);
     this.saveEventsToStorage();

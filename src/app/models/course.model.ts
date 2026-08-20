@@ -113,6 +113,7 @@ export interface CmeEvent {
   scopeDetails?: string;
   outcome?: string;
   videoAssistance?: string;
+  zohoBackstageLink?: string;
 }
 
 // TODO: When backend is ready, replace with:

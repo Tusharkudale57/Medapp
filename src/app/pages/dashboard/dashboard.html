@@ -864,6 +864,10 @@
           <label>Venue / Meeting Link *</label>
           <input type="text" [(ngModel)]="newVenue" placeholder="e.g. AIIMS Delhi or https://zoom.us/..." />
         </div>
+        <div class="form-group full-width">
+          <label>Zoho Backstage Link</label>
+          <input type="text" [(ngModel)]="newZohoLink" placeholder="e.g. https://backstage.zoho.com/events/..." />
+        </div>
         <div class="form-group">
           <label>Mode</label>
           <select [(ngModel)]="newMode">
@@ -1125,6 +1129,16 @@
               <h5>📍 Venue / Meeting Info</h5>
               <p>{{ selectedEventForDetail.venue }} ({{ selectedEventForDetail.mode }} Type)</p>
             </div>
+          </div>
+
+          <!-- Zoho Backstage Link -->
+          <div class="detail-section" *ngIf="selectedEventForDetail.zohoBackstageLink">
+            <h5>🎟️ Zoho Backstage</h5>
+            <p>
+              <a [href]="selectedEventForDetail.zohoBackstageLink" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
+                Open Zoho Backstage Page <span style="font-size: 0.8rem;">↗</span>
+              </a>
+            </p>
           </div>
 
           <!-- Language Preference & Pre-Reads -->

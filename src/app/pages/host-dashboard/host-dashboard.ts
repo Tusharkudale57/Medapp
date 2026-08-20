@@ -46,6 +46,7 @@ export class HostDashboardComponent implements OnInit {
   newMaxSeats = 100;
   newBannerColor = '#0ea5e9';
   newPreRead = '';
+  newZohoLink = '';
   uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
 
   onFileSelected(event: any) {
@@ -188,6 +189,7 @@ export class HostDashboardComponent implements OnInit {
     this.newMaxSeats = event.maxSeats || 100;
     this.newBannerColor = event.bannerColor || '#0ea5e9';
     this.newPreRead = event.preRead || '';
+    this.newZohoLink = event.zohoBackstageLink || '';
     if (event.preRead) {
       this.uploadedFiles = [{ name: event.preRead, size: 'N/A', status: 'uploaded' }];
     } else {
@@ -224,7 +226,8 @@ export class HostDashboardComponent implements OnInit {
           price: this.newPrice,
           maxSeats: this.newMaxSeats,
           bannerColor: this.newBannerColor,
-          preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
+          preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
+          zohoBackstageLink: this.newZohoLink
         });
       }
       this.editingEventId = null;
@@ -243,7 +246,8 @@ export class HostDashboardComponent implements OnInit {
         price: this.newPrice,
         maxSeats: this.newMaxSeats,
         bannerColor: this.newBannerColor,
-        preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf'
+        preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
+        zohoBackstageLink: this.newZohoLink
       }, user.id, user.name);
     }
     this.showCreateModal = false;
@@ -452,6 +456,7 @@ export class HostDashboardComponent implements OnInit {
     this.newMaxSeats = 100;
     this.newBannerColor = '#0ea5e9';
     this.newPreRead = '';
+    this.newZohoLink = '';
     this.uploadedFiles = [];
   }
 }

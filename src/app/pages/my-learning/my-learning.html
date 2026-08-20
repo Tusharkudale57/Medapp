@@ -447,6 +447,16 @@
             </div>
           </div>
 
+          <!-- Zoho Backstage Link -->
+          <div class="detail-section" *ngIf="selectedEventForDetail.zohoBackstageLink">
+            <h5>🎟️ Zoho Backstage</h5>
+            <p>
+              <a [href]="selectedEventForDetail.zohoBackstageLink" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
+                Open Zoho Backstage Page <span style="font-size: 0.8rem;">↗</span>
+              </a>
+            </p>
+          </div>
+
           <!-- Language & Pre-Reads -->
           <div class="detail-section grid-section">
             <div>
