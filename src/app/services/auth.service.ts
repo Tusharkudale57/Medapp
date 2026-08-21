@@ -139,8 +139,9 @@ export class AuthService {
   registerNewUser(profile: Partial<UserProfile>, autoLogin: boolean = false): UserProfile {
     const newUser: UserProfile = {
       id: 'doc_' + Date.now(),
-      name: `${profile.designation || 'Dr.'} ${profile.name || ''} ${profile.sirName || ''}`,
+      name: `${profile.designation || 'Dr.'} ${profile.name || ''} ${profile.middleName ? profile.middleName + ' ' : ''}${profile.sirName || ''}`,
       sirName: profile.sirName || '',
+      middleName: profile.middleName || '',
       email: profile.email || '',
       phone: (profile.phone || '').trim(),
       specialty: profile.specialty || 'General Medicine',

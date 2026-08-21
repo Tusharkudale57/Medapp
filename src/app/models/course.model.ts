@@ -62,6 +62,7 @@ export interface UserProfile {
   certificates: Certificate[];
   role: 'doctor' | 'admin' | 'user';
   sirName?: string;
+  middleName?: string;
   city?: string;
   specialtyOther?: string;
   interests?: string[];

@@ -1384,6 +1384,7 @@
 }
 
 .registration-modal-body select,
+.registration-modal-body textarea,
 .registration-modal-body input:not([type="checkbox"]):not([type="radio"]) {
   padding: 0.5rem 0.75rem;
   border: 1px solid #cbd5e1;

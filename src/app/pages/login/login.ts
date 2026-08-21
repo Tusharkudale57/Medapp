@@ -102,6 +102,7 @@ export class LoginComponent implements OnInit {
   // New User Registration Fields
   regDesignation: string = 'Dr.';
   regFirstName: string = '';
+  regMiddleName: string = '';
   regLastName: string = '';
   regMobileNumber: string = '';
   regCity: string = '';
@@ -126,7 +127,6 @@ export class LoginComponent implements OnInit {
   regWhatsappConsent: boolean = true;
   regTermsConsent: boolean = false;
   regClinicAddress: string = '';
-  regPracticingInterest: string = '';
   regInterests: { [key: string]: boolean } = {
     Cardiology: false,
     Pediatrics: false,
@@ -262,23 +262,85 @@ export class LoginComponent implements OnInit {
   }
 
   submitRegistration() {
-    // 1. Mandatory Field checks
-    if (!this.regFirstName.trim() || !this.regLastName.trim() || !this.regMobileNumber.trim() || !this.regEmail.trim()) {
-      alert('Please fill in all required fields: First Name, Last Name, Email, and Mobile.');
+    // 1. Mandatory Field presence checks
+    if (!this.regFirstName.trim() || 
+        !this.regLastName.trim() || 
+        !this.regMobileNumber.trim() || 
+        !this.regEmail.trim() ||
+        !this.regCity.trim() ||
+        !this.regDesignation.trim() ||
+        !this.regSpecialty.trim() ||
+        !this.regQualification.trim() ||
+        !this.regHospital.trim() ||
+        !this.regLanguage.trim() ||
+        !this.regMmcNo.trim()) {
+      alert('Please fill in all required fields (marked with *).');
       return;
     }
 
-    if (!this.regPassword.trim() || this.regPassword !== this.regConfirmPassword) {
-      alert('Passwords do not match or are empty.');
+    // 2. Character and Format validations
+    const namePattern = /^[a-zA-Z\s\-\']{2,60}$/;
+    if (!namePattern.test(this.regFirstName.trim())) {
+      alert('First Name must be 2-60 characters and contain only letters, spaces, hyphens, or apostrophes.');
       return;
     }
 
-    if (!this.regTermsConsent) {
-      alert('You must accept the Terms and Conditions to proceed.');
+    if (!namePattern.test(this.regLastName.trim())) {
+      alert('Last Name (Surname) must be 2-60 characters and contain only letters, spaces, hyphens, or apostrophes.');
       return;
     }
 
-    // 2. Date of birth check (not in future)
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(this.regEmail.trim())) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    const phonePattern = /^\+?\d{8,15}$/;
+    if (!phonePattern.test(this.regMobileNumber.trim())) {
+      alert('Please enter a valid mobile number (8-15 digits, country code optional).');
+      return;
+    }
+
+    // 3. Uniqueness checks
+    if (this.authService.checkUserExists(this.regEmail.trim())) {
+      alert('This email address is already registered.');
+      return;
+    }
+
+    if (this.authService.checkUserExists(this.regMobileNumber.trim())) {
+      alert('This mobile number is already registered.');
+      return;
+    }
+
+    // 4. Length and integer validations
+    if (this.regHospital.trim().length > 150) {
+      alert('Hospital name cannot exceed 150 characters.');
+      return;
+    }
+
+    if (this.regOrganization && this.regOrganization.trim().length > 150) {
+      alert('Organization name cannot exceed 150 characters.');
+      return;
+    }
+
+    if (this.regExperience !== null && (this.regExperience < 0 || !Number.isInteger(this.regExperience))) {
+      alert('Years of Experience must be a non-negative integer.');
+      return;
+    }
+
+    if (this.regSpecialty === 'Other' && !this.regSpecialtyOther.trim()) {
+      alert('Please specify your specialty category.');
+      return;
+    }
+
+    // 5. Consent and Terms checks
+    if (!this.regEmailConsent || !this.regWhatsappConsent || !this.regTermsConsent) {
+      alert('You must accept all required consents (Email, WhatsApp) and the Terms & Privacy Policy to proceed.');
+      return;
+    }
+
+    // 6. Date of birth check (not in future)
     if (this.regDob) {
       const selected = new Date(this.regDob);
       const today = new Date();
@@ -288,7 +350,7 @@ export class LoginComponent implements OnInit {
       }
     }
 
-    // 3. Collect selected interests
+    // 7. Collect selected interests
     const selectedInterests = Object.keys(this.regInterests).filter(k => this.regInterests[k]);
 
     // 4. Register user in mock DB
@@ -296,6 +358,7 @@ export class LoginComponent implements OnInit {
       designation: this.regDesignation,
       name: this.regFirstName,
       sirName: this.regLastName,
+      middleName: this.regMiddleName.trim(),
       email: this.regEmail.trim(),
       phone: this.regMobileNumber.trim(),
       city: this.regCity.trim(),
@@ -313,7 +376,6 @@ export class LoginComponent implements OnInit {
       emailConsent: this.regEmailConsent,
       whatsappConsent: this.regWhatsappConsent,
       clinicAddress: this.regClinicAddress.trim(),
-      practicingInterest: this.regPracticingInterest.trim(),
       interests: selectedInterests
     };
 
@@ -756,12 +818,37 @@ export class LoginComponent implements OnInit {
 
   openSignupModalDirect() {
     this.activeRole.set('doctor');
-    this.regMobileNumber = '';
+    this.regDesignation = 'Dr.';
     this.regFirstName = '';
+    this.regMiddleName = '';
     this.regLastName = '';
+    this.regMobileNumber = '';
     this.regEmail = '';
     this.regPassword = '';
     this.regConfirmPassword = '';
+    this.regCity = '';
+    this.regGender = 'Male';
+    this.regDob = '';
+    this.regDepartment = '';
+    this.regSpecialty = 'Cardiology';
+    this.regSpecialtyOther = '';
+    this.regQualification = 'MBBS';
+    this.regMmcNo = '';
+    this.regHospital = '';
+    this.regOrganization = '';
+    this.regExperience = 2;
+    this.regLanguage = 'English';
+    this.regClinicAddress = '';
+    this.regEmailConsent = true;
+    this.regWhatsappConsent = true;
+    this.regTermsConsent = false;
+    this.regInterests = {
+      Cardiology: false,
+      Pediatrics: false,
+      Neurology: false,
+      Surgery: false,
+      'General Medicine': false
+    };
     this.showRegistrationForm = true;
   }
 }

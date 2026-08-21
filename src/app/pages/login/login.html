@@ -454,6 +454,11 @@
           </div>
 
           <div class="form-group">
+            <label>Middle Name</label>
+            <input type="text" [(ngModel)]="regMiddleName" name="regMiddleName" placeholder="Middle Name" />
+          </div>
+
+          <div class="form-group">
             <label>Last Name *</label>
             <input type="text" [(ngModel)]="regLastName" name="regLastName" placeholder="Last Name" required />
           </div>
@@ -461,6 +466,21 @@
           <div class="form-group">
             <label>Email Address *</label>
             <input type="email" [(ngModel)]="regEmail" name="regEmail" placeholder="email@hospital.org" required />
+          </div>
+
+          <div class="form-group">
+            <label>Gender</label>
+            <select [(ngModel)]="regGender" name="regGender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" [(ngModel)]="regDob" name="regDob" />
           </div>
 
           <div class="form-group">
@@ -481,6 +501,24 @@
               required />
           </div>
 
+          <div class="form-group">
+            <label>Qualification *</label>
+            <select [(ngModel)]="regQualification" name="regQualification" required>
+              <option value="MBBS">MBBS</option>
+              <option value="MD">MD</option>
+              <option value="MS">MS</option>
+              <option value="DM">DM</option>
+              <option value="MCh">MCh</option>
+              <option value="DNB">DNB</option>
+              <option value="PhD">PhD</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Medical Registration Number (MMC) *</label>
+            <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" placeholder="MMC / MCI Number" required />
+          </div>
 
           <div class="form-group">
             <label>Hospital / Institution *</label>
@@ -488,13 +526,37 @@
           </div>
 
           <div class="form-group">
+            <label>Organization</label>
+            <input type="text" [(ngModel)]="regOrganization" name="regOrganization" placeholder="Organization" />
+          </div>
+
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" [(ngModel)]="regDepartment" name="regDepartment" placeholder="e.g. Cardiology Dept" />
+          </div>
+
+          <div class="form-group">
+            <label>Years of Experience</label>
+            <input type="number" [(ngModel)]="regExperience" name="regExperience" placeholder="e.g. 5" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label>Preferred Language *</label>
+            <select [(ngModel)]="regLanguage" name="regLanguage" required>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Marathi">Marathi</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>City *</label>
             <input type="text" [(ngModel)]="regCity" name="regCity" placeholder="City" required />
           </div>
 
-          <div class="form-group">
-            <label>Medical Registration Number (MMC) *</label>
-            <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" placeholder="MMC / MCI Number" required />
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Clinic Address</label>
+            <textarea [(ngModel)]="regClinicAddress" name="regClinicAddress" placeholder="Clinic / Office Address" rows="2"></textarea>
           </div>
 
           <div class="form-group"
@@ -531,7 +593,15 @@
             </div>
           </div>
 
-          <div class="registration-consents">
+          <div class="registration-consents" style="grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.35rem;">
+            <label>
+              <input type="checkbox" [(ngModel)]="regEmailConsent" name="regEmailConsent" required />
+              <span>I consent to receive emails regarding CME updates and courses *</span>
+            </label>
+            <label>
+              <input type="checkbox" [(ngModel)]="regWhatsappConsent" name="regWhatsappConsent" required />
+              <span>I consent to receive WhatsApp notifications for certificate validation and event alerts *</span>
+            </label>
             <label>
               <input type="checkbox" [(ngModel)]="regTermsConsent" name="regTermsConsent" required />
               <span>I agree to the Terms of Service & Privacy Policy *</span>

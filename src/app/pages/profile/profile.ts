@@ -21,6 +21,7 @@ export class ProfileComponent implements OnInit {
   // Edit profile state
   isEditing = false;
   editFirstName = '';
+  editMiddleName = '';
   editLastName = '';
   editSpecialtyDropdown = '';
   editSpecialtyOther = '';
@@ -79,7 +80,8 @@ export class ProfileComponent implements OnInit {
       }
       const nameParts = cleanName.split(/\s+/);
       this.editFirstName = nameParts[0] || '';
-      this.editLastName = this.user.sirName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+      this.editMiddleName = this.user.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '');
+      this.editLastName = this.user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
       this.editRegNo = this.user.registrationNo;
       this.editEmail = this.user.email;
       this.editPhone = this.user.phone;
@@ -182,12 +184,14 @@ export class ProfileComponent implements OnInit {
     if (!this.user) return;
 
     const prefix = this.user.name.trim().toLowerCase().startsWith('dr. ') ? 'Dr. ' : '';
-    const fullName = `${prefix}${this.editFirstName.trim()} ${this.editLastName.trim()}`;
+    const middlePart = this.editMiddleName.trim() ? this.editMiddleName.trim() + ' ' : '';
+    const fullName = `${prefix}${this.editFirstName.trim()} ${middlePart}${this.editLastName.trim()}`;
     const finalSpecialty = this.editSpecialtyDropdown === 'Others' ? this.editSpecialtyOther : this.editSpecialtyDropdown;
 
     this.authService.updateExtendedProfile({
       name: fullName,
       sirName: this.editLastName.trim(),
+      middleName: this.editMiddleName.trim(),
       specialty: finalSpecialty,
       registrationNo: this.editRegNo,
       email: this.editEmail,
