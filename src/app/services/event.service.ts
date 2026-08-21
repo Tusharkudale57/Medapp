@@ -428,6 +428,216 @@ export class EventService {
       paymentLink: 'https://medcme.org/pay/evt-020',
       status: 'upcoming',
       bannerColor: '#ef4444'
+    },
+    {
+      id: 'evt-021',
+      title: 'Orthopedic Update: Joint Replacement & Sports Injuries 2026',
+      description: 'CME workshop covering advances in total knee and hip arthroplasty, ACL reconstruction techniques, and post-op rehabilitation protocols for orthopedic surgeons.',
+      date: '2026-09-10',
+      time: '09:30 AM IST',
+      venue: 'Kokilaben Hospital, Mumbai - Seminar Hall',
+      mode: 'Offline',
+      speaker: 'Dr. Nikhil Kadam',
+      speakerRole: 'Senior Orthopedic Surgeon, Kokilaben Hospital',
+      category: 'Orthopedics',
+      creditPoints: 2,
+      price: 1799,
+      maxSeats: 100,
+      registeredCount: 34,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-021',
+      status: 'upcoming',
+      bannerColor: '#10b981'
+    },
+    {
+      id: 'evt-022',
+      title: 'Oncology Masterclass: Immunotherapy & Targeted Therapy',
+      description: 'Latest evidence on PD-1/PD-L1 checkpoint inhibitors, CAR-T cell therapy, and biomarker-driven treatment decisions in solid tumors and hematological malignancies.',
+      date: '2026-09-20',
+      time: '11:00 AM IST',
+      venue: 'Online (Zoom Webinar)',
+      mode: 'Online',
+      speaker: 'Dr. Priya Bhatia',
+      speakerRole: 'Medical Oncologist, Rajiv Gandhi Cancer Institute',
+      category: 'Oncology',
+      creditPoints: 2,
+      price: 1499,
+      maxSeats: 600,
+      registeredCount: 178,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-022',
+      status: 'upcoming',
+      bannerColor: '#ec4899'
+    },
+    {
+      id: 'evt-023',
+      title: 'Obstetrics & Gynecology: High-Risk Pregnancy Management',
+      description: 'Evidence-based CME on managing gestational diabetes, preeclampsia, PROM, placenta previa, and fetal monitoring in high-risk obstetric cases.',
+      date: '2026-10-08',
+      time: '10:00 AM IST',
+      venue: 'Online & Wockhardt Hospital, Mumbai',
+      mode: 'Hybrid',
+      speaker: 'Dr. Rekha Singhal',
+      speakerRole: 'HOD Obstetrics & Gynecology, Wockhardt Hospital',
+      category: 'Obstetrics',
+      creditPoints: 2,
+      price: 1299,
+      maxSeats: 300,
+      registeredCount: 92,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-023',
+      status: 'upcoming',
+      bannerColor: '#f472b6'
+    },
+    {
+      id: 'evt-024',
+      title: 'Pulmonology: COPD, Asthma & Interstitial Lung Disease',
+      description: 'Clinical update on GOLD COPD guidelines, biologic therapies in severe asthma, antifibrotic treatment in IPF, and pulmonary rehabilitation protocols.',
+      date: '2026-10-18',
+      time: '02:30 PM IST',
+      venue: 'Online (Google Meet)',
+      mode: 'Online',
+      speaker: 'Dr. Avinash Bhatt',
+      speakerRole: 'Consultant Pulmonologist, Hinduja Hospital',
+      category: 'General Medicine',
+      creditPoints: 1,
+      price: 999,
+      maxSeats: 800,
+      registeredCount: 241,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-024',
+      status: 'upcoming',
+      bannerColor: '#38bdf8'
+    },
+    {
+      id: 'evt-025',
+      title: 'Urology: Robotic Surgery & Uro-Oncology Update',
+      description: 'Advanced CME session on robotic prostatectomy, bladder cancer BCG immunotherapy, renal tumor ablation, and urological laparoscopy case reviews.',
+      date: '2026-11-07',
+      time: '09:00 AM IST',
+      venue: 'Global Hospital, Chennai - Urology Suite',
+      mode: 'Offline',
+      speaker: 'Dr. Santosh Kulkarni',
+      speakerRole: 'Director Urology & Robotic Surgery, Global Hospital',
+      category: 'Surgery',
+      creditPoints: 3,
+      price: 2299,
+      maxSeats: 75,
+      registeredCount: 28,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-025',
+      status: 'upcoming',
+      bannerColor: '#6366f1'
+    },
+    {
+      id: 'evt-026',
+      title: 'ENT & Head-Neck Surgery: Endoscopic & Microsurgery CME',
+      description: 'Accredited CME covering functional endoscopic sinus surgery (FESS), thyroid surgery, cholesteatoma management, and cochlear implant evaluation protocols.',
+      date: '2026-11-25',
+      time: '10:30 AM IST',
+      venue: 'Online & Lilavati Hospital, Mumbai',
+      mode: 'Hybrid',
+      speaker: 'Dr. Deepa Menon',
+      speakerRole: 'Head of ENT, Lilavati Hospital Mumbai',
+      category: 'Surgery',
+      creditPoints: 2,
+      price: 1599,
+      maxSeats: 200,
+      registeredCount: 55,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-026',
+      status: 'upcoming',
+      bannerColor: '#f59e0b'
+    },
+    {
+      id: 'evt-027',
+      title: 'Gastroenterology & Hepatology Update: IBD & NAFLD 2026',
+      description: 'Comprehensive CME on modern biologic therapy in Inflammatory Bowel Disease, Non-Alcoholic Fatty Liver Disease (MAFLD) management, and advanced therapeutic endoscopy protocols.',
+      date: '2026-11-28',
+      time: '09:00 AM IST',
+      venue: 'Sir Ganga Ram Hospital, New Delhi',
+      mode: 'Offline',
+      speaker: 'Dr. Alok Verma',
+      speakerRole: 'HOD Gastroenterology, Sir Ganga Ram Hospital',
+      category: 'Gastroenterology',
+      creditPoints: 2,
+      price: 1899,
+      maxSeats: 120,
+      registeredCount: 42,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-027',
+      status: 'upcoming',
+      bannerColor: '#10b981'
+    },
+    {
+      id: 'evt-028',
+      title: 'Anesthesiology & Airway Management Masterclass 2026',
+      description: 'CME workshop on difficult airway algorithms, videolaryngoscopy, ultrasound-guided regional nerve blocks, and perioperative hemodynamic monitoring.',
+      date: '2026-12-05',
+      time: '11:00 AM IST',
+      venue: 'Online (Zoom Webinar)',
+      mode: 'Online',
+      speaker: 'Dr. Smita Kapoor',
+      speakerRole: 'Professor of Anesthesiology, PGI Chandigarh',
+      category: 'General Medicine',
+      creditPoints: 2,
+      price: 1399,
+      maxSeats: 500,
+      registeredCount: 165,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-028',
+      status: 'upcoming',
+      bannerColor: '#0ea5e9'
+    },
+    {
+      id: 'evt-029',
+      title: 'Clinical Pathology & Laboratory Medicine Guidelines',
+      description: 'Accredited session covering next-generation sequencing in oncology, liquid biopsy interpretation, and quality assurance in automated diagnostic labs.',
+      date: '2026-12-12',
+      time: '02:00 PM IST',
+      venue: 'Online & Metropolis Diagnostics Centre, Mumbai',
+      mode: 'Hybrid',
+      speaker: 'Dr. Rajiv Mukherji',
+      speakerRole: 'Chief Pathologist, Metropolis Healthcare',
+      category: 'General Medicine',
+      creditPoints: 1,
+      price: 1199,
+      maxSeats: 350,
+      registeredCount: 88,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-029',
+      status: 'upcoming',
+      bannerColor: '#8b5cf6'
+    },
+    {
+      id: 'evt-030',
+      title: 'Rheumatology & Autoimmune Disorders: Biologic Therapies',
+      description: 'Clinical update on targeted DMARDs, JAK inhibitors in Rheumatoid Arthritis, SLE management guidelines, and early diagnosis of Spondyloarthritis.',
+      date: '2026-12-20',
+      time: '10:00 AM IST',
+      venue: 'Medanta Medicity, Gurugram - Auditorium',
+      mode: 'Offline',
+      speaker: 'Dr. Meera Joshi',
+      speakerRole: 'Head of Rheumatology, Medanta Gurugram',
+      category: 'General Medicine',
+      creditPoints: 2,
+      price: 1699,
+      maxSeats: 150,
+      registeredCount: 61,
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: 'https://medcme.org/pay/evt-030',
+      status: 'upcoming',
+      bannerColor: '#ec4899'
     }
   ]);
 
@@ -465,9 +675,18 @@ export class EventService {
       const savedEvents = localStorage.getItem('medcme_events');
       if (savedEvents) {
         const parsed = JSON.parse(savedEvents);
-        if (Array.isArray(parsed) && parsed.length >= this.eventsSignal().length) {
-          this.eventsSignal.set(parsed);
-          return;
+        if (Array.isArray(parsed)) {
+          const existingIds = new Set(parsed.map((e: any) => e.id));
+          const missingDefaults = this.eventsSignal().filter(e => !existingIds.has(e.id));
+          if (missingDefaults.length > 0) {
+            const merged = [...parsed, ...missingDefaults];
+            this.eventsSignal.set(merged);
+            localStorage.setItem('medcme_events', JSON.stringify(merged));
+            return;
+          } else {
+            this.eventsSignal.set(parsed);
+            return;
+          }
         }
       }
       // Save default list to storage if cached events are shorter/empty

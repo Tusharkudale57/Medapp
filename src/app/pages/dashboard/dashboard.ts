@@ -42,6 +42,7 @@ export class DashboardComponent implements OnInit {
   activeLiveEvent: CmeEvent | null = null;
   liveChatMessages: Array<{ sender: string; text: string; time: string; isUser: boolean }> = [];
   newChatMessageText = '';
+  showJoinLiveAlert = false;  // shown when non-registered user clicks Join Live
 
   // MCQ state
   basicMcqAnswered = false;
@@ -61,7 +62,7 @@ export class DashboardComponent implements OnInit {
   showSimulatedRazorpay = false;
 
   // Advanced Search, Filter & Sort States
-  showInterestedOnly = true;
+  showInterestedOnly = false;
   searchQuery = '';
   showFiltersPanel = false;
   selectedLanguages: string[] = []; // Empty = all
@@ -109,6 +110,7 @@ export class DashboardComponent implements OnInit {
   newPreRead = '';
   newZohoLink = '';
   uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
+  categories = ['Cardiology', 'Oncology', 'Neurology', 'Pediatrics', 'Surgery', 'General Medicine', 'Orthopedics', 'Obstetrics', 'Gastroenterology', 'Radiology', 'Emergency', 'Dermatology', 'Endocrinology', 'Psychiatry'];
 
   onFileSelected(event: any) {
     const files = event.target.files;
@@ -162,7 +164,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  readonly categories = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Endocrinology', 'Oncology', 'Psychiatry', 'General Medicine'];
+
   readonly colorOptions = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#f97316', '#14b8a6', '#ef4444'];
 
   constructor(
@@ -292,6 +294,17 @@ export class DashboardComponent implements OnInit {
       });
     }
 
+    // Prioritize newly created custom events to the top!
+    events = [...events].sort((a, b) => {
+      const aNum = Number(a.id.replace('evt-', ''));
+      const bNum = Number(b.id.replace('evt-', ''));
+      const aNew = (user && a.hostId === user.id) || (!isNaN(aNum) && aNum > 1000000000);
+      const bNew = (user && b.hostId === user.id) || (!isNaN(bNum) && bNum > 1000000000);
+      if (aNew && !bNew) return -1;
+      if (!aNew && bNew) return 1;
+      return 0;
+    });
+
     return events;
   }
 
@@ -306,13 +319,15 @@ export class DashboardComponent implements OnInit {
       const cat = (event.category || '').toLowerCase();
       const title = (event.title || '').toLowerCase();
       
+      const evtNum = Number(event.id.replace('evt-', ''));
+      const isUserCreated = (user && event.hostId === user.id) || (!isNaN(evtNum) && evtNum > 1000000000);
       const matchesSpecialty = specialty.includes(cat) || cat.includes(specialty);
       const matchesInterests = interests.some(interest => {
         const clean = interest.toLowerCase();
         return cat.includes(clean) || title.includes(clean);
       });
       
-      return matchesSpecialty || matchesInterests;
+      return isUserCreated || matchesSpecialty || matchesInterests;
     });
   }
 
@@ -414,14 +429,30 @@ export class DashboardComponent implements OnInit {
   }
 
   openLiveRoom(event: CmeEvent) {
+    // Access check: only registered users can join the live room
+    const user = this.authService.currentUser();
+    if (!user) return;
+    const registered = this.eventService.isRegistered(event.id, user.id);
+    if (!registered) {
+      this.showJoinLiveAlert = true;
+      setTimeout(() => this.showJoinLiveAlert = false, 4000);
+      return;
+    }
+
+    // Close ALL other modals first
+    this.showDetailModal = false;
+    this.selectedEventForDetail = null;
+    this.showRegisterModal = false;
+    this.showProtocolModal = false;
+
     this.activeLiveEvent = event;
     this.showLiveRoomModal = true;
-    this.showDetailModal = false;
     
     // Pre-populate chat messages
     this.liveChatMessages = [
-      { sender: 'Moderator 1 (Dr. Anjali Sharma)', text: 'Welcome to this Live CME Event! Please use this chat for Q&A with our panel.', time: '10:00 AM', isUser: false },
-      { sender: 'Consultant 1 (Dr. Suresh Patel)', text: 'Hello doctors. I am online to answer your questions regarding today\'s clinical protocols.', time: '10:02 AM', isUser: false }
+      { sender: 'Moderator 1 (Dr. Anjali Sharma)', text: `Welcome to the Live CME: ${event.title}! Use this chat for Q&A with our panel.`, time: '10:00 AM', isUser: false },
+      { sender: `Consultant 1 (Dr. ${event.speaker})`, text: `Hello doctors. I am online to answer your questions regarding today's session: ${event.title}.`, time: '10:02 AM', isUser: false },
+      { sender: 'Moderator 2 (Dr. Renu Kapoor)', text: 'Please answer the pre-test MCQ below to get started. All questions are CME accredited.', time: '10:04 AM', isUser: false }
     ];
     
     // Reset quizzes
@@ -979,7 +1010,7 @@ export class DashboardComponent implements OnInit {
   private resetForm() {
     this.newTitle = '';
     this.newDescription = '';
-    this.newDate = '';
+    this.newDate = new Date().toISOString().split('T')[0];
     this.newTime = '10:00 AM IST';
     this.newVenue = '';
     this.newMode = 'Online';

@@ -171,7 +171,10 @@
           </div>
         </div>
       </div>
-      <div class="hero-badge">
+      <div class="hero-badge" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end;">
+        <button (click)="openCreateModal()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3); transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem;">
+          <span>➕</span> Create New Event
+        </button>
         <div class="gold-seal">
           <span class="seal-icon">&#127891;</span>
           <span class="seal-text">Official CME Accreditation</span>
@@ -338,6 +341,20 @@
 
     <!-- Doctor Grid: Stacking Recommended and Generic vertically in full-width grids -->
     <div class="doctor-dashboard-layout" *ngIf="!authService.isAdmin(); else adminGrid">
+      <!-- Registration Gate Toast Alert -->
+      <div *ngIf="showJoinLiveAlert"
+        style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999;
+               background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;
+               padding: 1rem 1.5rem; border-radius: 14px; box-shadow: 0 8px 30px rgba(239,68,68,0.4);
+               font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 0.75rem;
+               animation: slideDown 0.3s ease;">
+        <span style="font-size: 1.2rem;">🔒</span>
+        <div>
+          <div>Registration Required to Join Live</div>
+          <div style="font-weight: 400; font-size: 0.78rem; margin-top: 0.2rem; opacity: 0.9;">Please enroll in this event first to access the live session.</div>
+        </div>
+      </div>
+
       <!-- Recommended Events Section -->
       <div class="events-section" style="margin-bottom: 3rem;">
         <div class="section-header-coursera" style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #eff6ff; padding-bottom: 0.75rem; margin-bottom: 1.5rem; text-align: left;">
@@ -394,19 +411,24 @@
               </div>
 
               <div class="card-bottom-row-coursera">
-                <div class="price-section-coursera">
+                <div class="price-section-coursera" (click)="$event.stopPropagation(); openRegisterModal(event)" style="cursor: pointer;">
                   <span class="price-val" [class.free]="event.price === 0">
                     {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
                   </span>
                   <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
                 </div>
                 <div class="actions-section-coursera" style="display: flex; gap: 0.4rem;">
-                  <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openRegisterModal(event)">
-                    Enroll
+                  <!-- Not registered: show Pay & Enroll button that opens Razorpay -->
+                  <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera"
+                    (click)="$event.stopPropagation(); openRegisterModal(event)"
+                    style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; font-weight: 800;">
+                    {{ event.price === 0 ? 'Enroll Free' : 'Pay & Enroll' }}
                   </button>
-                  <button *ngIf="isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openLiveRoom(event)" style="background: #ef4444; border-color: #ef4444; color: #fff;">
-                    🔴 Join Live
-                  </button>
+                  <!-- Already Registered: show clean Enrolled badge -->
+                  <span *ngIf="isRegistered(event.id)"
+                    style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                    ✓ Enrolled
+                  </span>
                 </div>
               </div>
             </div>
@@ -483,19 +505,24 @@
               </div>
 
               <div class="card-bottom-row-coursera">
-                <div class="price-section-coursera">
+                <div class="price-section-coursera" (click)="$event.stopPropagation(); openRegisterModal(event)" style="cursor: pointer;">
                   <span class="price-val" [class.free]="event.price === 0">
                     {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
                   </span>
                   <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
                 </div>
                 <div class="actions-section-coursera" style="display: flex; gap: 0.4rem;">
-                  <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openRegisterModal(event)">
-                    Enroll
+                  <!-- Not registered: show Pay & Enroll button that opens Razorpay -->
+                  <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera"
+                    (click)="$event.stopPropagation(); openRegisterModal(event)"
+                    style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; font-weight: 800;">
+                    {{ event.price === 0 ? 'Enroll Free' : 'Pay & Enroll' }}
                   </button>
-                  <button *ngIf="isRegistered(event.id)" class="btn-enroll-coursera" (click)="$event.stopPropagation(); openLiveRoom(event)" style="background: #ef4444; border-color: #ef4444; color: #fff;">
-                    🔴 Join Live
-                  </button>
+                  <!-- Already Registered: show clean Enrolled badge -->
+                  <span *ngIf="isRegistered(event.id)"
+                    style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                    ✓ Enrolled
+                  </span>
                 </div>
               </div>
             </div>
@@ -1580,6 +1607,99 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ====== CREATE EVENT MODAL ============================================= -->
+  <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()" style="z-index: 10000; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="modal-box" (click)="$event.stopPropagation()" style="background: #ffffff; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); padding: 1.75rem; text-align: left;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+        <div>
+          <span style="font-size: 0.78rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px;">CME Publishing Portal</span>
+          <h2 style="margin: 0.15rem 0 0 0; font-size: 1.35rem; font-weight: 800; color: #0f172a;">{{ editingEventId ? 'Edit CME Event' : 'Create New CME Event' }}</h2>
+        </div>
+        <button (click)="closeCreateModal()" style="background: transparent; border: none; font-size: 1.3rem; color: #64748b; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px;">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Event Title *</label>
+          <input type="text" [(ngModel)]="newTitle" placeholder="e.g. Advanced Cardiology CME Workshop 2026" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+        </div>
+
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Description</label>
+          <textarea [(ngModel)]="newDescription" rows="3" placeholder="Describe the CME event content and learning objectives..." style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Date *</label>
+            <input type="date" [(ngModel)]="newDate" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Time</label>
+            <input type="text" [(ngModel)]="newTime" placeholder="10:00 AM IST" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Venue / Location *</label>
+          <input type="text" [(ngModel)]="newVenue" placeholder="e.g. AIIMS Delhi or Online (Zoom)" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Event Mode</label>
+            <select [(ngModel)]="newMode" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+              <option value="Online">Online</option>
+              <option value="Offline">Offline</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Category</label>
+            <select [(ngModel)]="newCategory" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Speaker Name</label>
+            <input type="text" [(ngModel)]="newSpeaker" placeholder="Dr. Full Name" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Speaker Designation</label>
+            <input type="text" [(ngModel)]="newSpeakerRole" placeholder="HOD Cardiology, AIIMS" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">CME Credits</label>
+            <input type="number" [(ngModel)]="newCreditPoints" min="1" max="10" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Fee (Rs.)</label>
+            <input type="number" [(ngModel)]="newPrice" min="0" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Max Seats</label>
+            <input type="number" [(ngModel)]="newMaxSeats" min="1" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button (click)="closeCreateModal()" style="padding: 0.65rem 1.25rem; border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Cancel</button>
+        <button (click)="saveEvent()" style="padding: 0.65rem 1.5rem; border: none; background: #2563eb; color: #fff; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
+          {{ editingEventId ? 'Update Event' : 'Publish Event' }}
+        </button>
+      </div>
+
     </div>
   </div>
 

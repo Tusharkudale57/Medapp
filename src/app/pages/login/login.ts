@@ -47,8 +47,10 @@ export class LoginComponent implements OnInit {
   showSimulatedRazorpay = false;
   selectedPaymentMethod: 'upi' | 'card' | 'netbanking' = 'upi';
   upiId = 'doctor@okicici';
-  cardNumber = '4532 •••• •••• 8892';
+  cardNumber = '4532 ΓÇóΓÇóΓÇóΓÇó ΓÇóΓÇóΓÇóΓÇó 8892';
 
+  // isNewRegistration flag for OTP-first new users
+  isNewRegistration = false;
   // Modal toggles
   showLoginModal = false;
 
@@ -60,7 +62,7 @@ export class LoginComponent implements OnInit {
   userPass: string = 'doctor123';
   showPassword: boolean = false;
   loginStep: number = 1; // 1: Identifier, 2: Credentials
-  loginMethod: 'password' | 'otp' = 'password';
+  loginMethod: 'otp' = 'otp';
   otpSentForLogin = false;
   loginOtpCountdown = 60;
   loginOtpInterval: any = null;
@@ -71,19 +73,19 @@ export class LoginComponent implements OnInit {
   activeSlideIndex: number = 0;
   slides = [
     {
-      icon: '🏆',
+      icon: '≡ƒÅå',
       tag: 'Accredited CME Platform',
       title: 'Earn & Track CME Credit Points',
       desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions and track your official credit ledger in real time.'
     },
     {
-      icon: '📜',
+      icon: '≡ƒô£',
       tag: 'Verified Digital Credentials',
       title: 'Instant Gold-Stamped Certificates',
       desc: 'Earn verifiable digital certificates upon completing live sessions and passing interactive medical assessment quizzes.'
     },
     {
-      icon: '🩺',
+      icon: '≡ƒ⌐║',
       tag: 'Clinical Knowledge Bank',
       title: 'Live Webinars & Pre-Read Guides',
       desc: 'Access specialized clinical protocols, downloadable slide decks, and interact directly with premier medical faculty.'
@@ -158,22 +160,25 @@ export class LoginComponent implements OnInit {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
+    // If already logged in, redirect straight to dashboard
+    if (this.authService.currentUser()) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   switchRole(role: 'doctor' | 'admin') {
     this.activeRole.set(role);
     this.errorMessage = '';
-    this.loginMethod = 'password';
+    this.isNewRegistration = false;
+    this.loginMethod = 'otp';
     this.otpSentForLogin = false;
     if (this.loginOtpInterval) {
       clearInterval(this.loginOtpInterval);
     }
     if (role === 'doctor') {
       this.userId = 'doctor@medcme.org';
-      this.userPass = 'doctor123';
     } else {
       this.userId = 'admin@medcme.org';
-      this.userPass = 'admin123';
     }
   }
 
@@ -188,7 +193,7 @@ export class LoginComponent implements OnInit {
   goToStep(step: number) {
     this.loginStep = step;
     if (step === 1) {
-      this.loginMethod = 'password';
+      this.loginMethod = 'otp';
       this.otpSentForLogin = false;
       if (this.loginOtpInterval) {
         clearInterval(this.loginOtpInterval);
@@ -205,6 +210,10 @@ export class LoginComponent implements OnInit {
     this.checkNumberPresent();
     if (!this.showNotRegisteredModal) {
       this.loginStep = 2;
+      this.loginMethod = 'otp';
+      if (!this.otpSentForLogin) {
+        this.sendLoginOtp();
+      }
     }
   }
 
@@ -432,8 +441,8 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
     this.loading = true;
 
-    // Verify OTP code if using OTP login method
-    if (this.loginMethod === 'otp' && this.userPass.trim() !== this.loginOtpCode) {
+    // OTP is always required — verify it first
+    if (this.userPass.trim() !== this.loginOtpCode) {
       this.loading = false;
       this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
       return;
@@ -442,29 +451,30 @@ export class LoginComponent implements OnInit {
     setTimeout(() => {
       this.loading = false;
 
-      if (this.activeRole() === 'doctor') {
-        const res = this.authService.authenticateDoctor(this.userId, this.userPass);
-        if (res.success) {
-          // If guest was trying to register for an event, open checkout modal
-          if (this.pendingEventForCheckout) {
-            this.showLoginModal = false;
-            this.openRegisterModal(this.pendingEventForCheckout);
-            this.pendingEventForCheckout = null;
-          } else {
-            this.showLoginModal = false;
-            this.router.navigate(['/dashboard']);
-          }
-        } else {
-          this.errorMessage = res.message || 'Invalid Doctor Login Credentials';
-        }
-      } else {
-        const res = this.authService.authenticateAdmin(this.userId, this.userPass);
-        if (res.success) {
+      // OTP verified — directly authenticate and navigate
+      const res = this.authService.authenticateDoctor(this.userId, this.userPass);
+      if (this.activeRole() === 'admin') {
+        const adminRes = this.authService.authenticateAdmin(this.userId, this.userPass);
+        if (adminRes.success) {
           this.showLoginModal = false;
           this.router.navigate(['/dashboard']);
         } else {
-          this.errorMessage = res.message || 'Invalid Administrator Login Credentials';
+          this.errorMessage = 'OTP verified but admin account not found.';
         }
+        return;
+      }
+
+      if (res.success) {
+        if (this.pendingEventForCheckout) {
+          this.showLoginModal = false;
+          this.openRegisterModal(this.pendingEventForCheckout);
+          this.pendingEventForCheckout = null;
+        } else {
+          this.showLoginModal = false;
+          this.router.navigate(['/dashboard']);
+        }
+      } else {
+        this.errorMessage = 'OTP verified but account not found. Please register first.';
       }
     }, 500);
   }
@@ -735,10 +745,12 @@ export class LoginComponent implements OnInit {
   }
 
   openLoginModalDirect() {
+    this.isNewRegistration = false;
     this.activeRole.set('doctor');
     this.userId = 'doctor@medcme.org';
-    this.userPass = 'doctor123';
+    this.userPass = '';
     this.loginStep = 1;
+    this.otpSentForLogin = false;
     this.showLoginModal = true;
   }
 

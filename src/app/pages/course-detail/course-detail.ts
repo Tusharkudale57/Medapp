@@ -44,7 +44,7 @@ export class CourseDetailComponent implements OnInit {
   userPass = 'doctor123';
   showPassword = false;
   loginStep = 1;
-  loginMethod: 'password' | 'otp' = 'password';
+  loginMethod: 'otp' | 'password' = 'otp';
   otpSentForLogin = false;
   loginOtpCountdown = 60;
   loginOtpInterval: any = null;
@@ -114,17 +114,15 @@ export class CourseDetailComponent implements OnInit {
   switchRole(role: 'doctor' | 'admin') {
     this.activeRole = role;
     this.errorMessage = '';
-    this.loginMethod = 'password';
+    this.loginMethod = 'otp';
     this.otpSentForLogin = false;
     if (this.loginOtpInterval) {
       clearInterval(this.loginOtpInterval);
     }
     if (role === 'doctor') {
       this.userId = 'doctor@medcme.org';
-      this.userPass = 'doctor123';
     } else {
       this.userId = 'admin@medcme.org';
-      this.userPass = 'admin123';
     }
   }
 
@@ -139,6 +137,10 @@ export class CourseDetailComponent implements OnInit {
     }
     this.errorMessage = '';
     this.loginStep = 2;
+    this.loginMethod = 'otp';
+    if (!this.otpSentForLogin) {
+      this.sendLoginOtp();
+    }
   }
 
   togglePasswordVisibility() {
@@ -170,7 +172,8 @@ export class CourseDetailComponent implements OnInit {
     this.errorMessage = '';
     this.loading = true;
 
-    if (this.loginMethod === 'otp' && this.userPass.trim() !== this.loginOtpCode) {
+    // Always validate OTP
+    if (this.userPass.trim() !== this.loginOtpCode) {
       this.loading = false;
       this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
       return;
@@ -185,7 +188,7 @@ export class CourseDetailComponent implements OnInit {
           // Open enrollment checkout modal immediately
           this.initiatePurchase();
         } else {
-          this.errorMessage = res.message || 'Invalid Doctor Login Credentials';
+          this.errorMessage = 'OTP verified but account not found. Please register.';
         }
       } else {
         const res = this.authService.authenticateAdmin(this.userId, this.userPass);
@@ -193,7 +196,7 @@ export class CourseDetailComponent implements OnInit {
           this.showLoginModal = false;
           this.initiatePurchase();
         } else {
-          this.errorMessage = res.message || 'Invalid Administrator Login Credentials';
+          this.errorMessage = 'OTP verified but admin account not found.';
         }
       }
     }, 500);

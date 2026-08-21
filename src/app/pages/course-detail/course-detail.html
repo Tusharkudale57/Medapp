@@ -489,35 +489,35 @@
           <button type="button" (click)="nextStep()" style="width: 100%; padding: 0.7rem; background: #2563eb; color: #fff; font-weight: 700; border: none; border-radius: 8px; cursor: pointer;">Continue &rarr;</button>
         </div>
 
-        <!-- Step 2: Password / OTP -->
+        <!-- Step 2: OTP Verification -->
         <div *ngIf="loginStep === 2">
           <button type="button" (click)="goToStep(1)" style="background: transparent; border: none; color: #64748b; font-size: 0.78rem; cursor: pointer; padding: 0; margin-bottom: 0.75rem;">&larr; Change User ID ({{ userId }})</button>
-          
-          <div class="login-method-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <button type="button" [class.active]="loginMethod === 'password'" (click)="loginMethod = 'password'" style="flex: 1; padding: 0.45rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;" [style.background]="loginMethod === 'password' ? '#eff6ff' : '#f8fafc'" [style.color]="loginMethod === 'password' ? '#2563eb' : '#475569'">🔑 Password</button>
-            <button type="button" [class.active]="loginMethod === 'otp'" (click)="loginMethod = 'otp'" style="flex: 1; padding: 0.45rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;" [style.background]="loginMethod === 'otp' ? '#eff6ff' : '#f8fafc'" [style.color]="loginMethod === 'otp' ? '#2563eb' : '#475569'">📱 OTP Code</button>
-          </div>
 
-          <!-- Password field -->
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem;" *ngIf="loginMethod === 'password'">
-            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">Security Password</label>
-            <input type="password" [(ngModel)]="userPass" name="userPass" placeholder="••••••••" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; width: 100%; box-sizing: border-box;" required />
+          <!-- OTP info banner -->
+          <div style="background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📱 Secure Login via OTP Verification</span>
           </div>
 
           <!-- OTP field -->
-          <div *ngIf="loginMethod === 'otp'">
-            <div *ngIf="!otpSentForLogin" style="text-align: center; margin-bottom: 1.25rem;">
-              <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.75rem;">We will send a code to {{ userId }}</p>
-              <button type="button" (click)="sendLoginOtp()" style="padding: 0.5rem 1.15rem; background: #10b981; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Send OTP</button>
+          <div *ngIf="!otpSentForLogin" style="text-align: center; margin-bottom: 1.25rem;">
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.75rem;">We will send a 6-digit code to <strong>{{ userId }}</strong></p>
+            <button type="button" (click)="sendLoginOtp()" style="padding: 0.5rem 1.15rem; background: #10b981; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Send Verification OTP</button>
+          </div>
+          <div *ngIf="otpSentForLogin" class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem;">
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.65rem;">
+              ✅ OTP sent to <strong>{{ userId }}</strong>. Enter the code below.
             </div>
-            <div *ngIf="otpSentForLogin" class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem;">
-              <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">6-Digit OTP Code</label>
-              <input type="text" [(ngModel)]="userPass" name="userPass" placeholder="e.g. 123456" maxLength="6" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; width: 100%; box-sizing: border-box;" required />
+            <label style="font-size: 0.78rem; font-weight: 700; color: #475569;">6-Digit OTP Code *</label>
+            <input type="text" [(ngModel)]="userPass" name="userPass" placeholder="Enter 6-digit code" maxlength="6" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; width: 100%; box-sizing: border-box;" required />
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.35rem;">
+              <button type="button" (click)="sendLoginOtp()" [disabled]="loginOtpCountdown > 0" style="background: transparent; border: none; color: #2563eb; font-size: 0.75rem; font-weight: 700; cursor: pointer; padding: 0;">
+                {{ loginOtpCountdown > 0 ? 'Resend in ' + loginOtpCountdown + 's' : 'Resend OTP' }}
+              </button>
             </div>
           </div>
 
-          <button type="submit" [disabled]="loading || (loginMethod === 'otp' && !otpSentForLogin)" style="width: 100%; padding: 0.75rem; background: #2563eb; color: #fff; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;">
-            <span *ngIf="!loading">Verify & Sign In</span>
+          <button type="submit" [disabled]="loading || !otpSentForLogin" style="width: 100%; padding: 0.75rem; background: #2563eb; color: #fff; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;">
+            <span *ngIf="!loading">Verify OTP &amp; Sign In</span>
             <span *ngIf="loading" class="spinner"></span>
           </button>
         </div>

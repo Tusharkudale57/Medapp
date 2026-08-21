@@ -3,7 +3,7 @@
   <!-- ==================== HEADER ==================== -->
   <header class="main-header">
     <div class="header-inner">
-      
+
       <!-- Logo -->
       <div class="logo-wrapper" (click)="selectExploreOption('All')">
         <img src="assets/logo.png" alt="MedCME Academy Logo" class="header-logo" />
@@ -56,8 +56,9 @@
       <div class="hero-content">
         <span class="hero-badge">LEARN. EARN. GROW.</span>
         <h1 class="hero-title">Advance Your Medical <br />Career with <span class="highlight-blue">CME</span></h1>
-        <p class="hero-subtitle">Join accredited CME events, earn credits, and stay up-to-date with the latest advancements in healthcare.</p>
-        
+        <p class="hero-subtitle">Join accredited CME events, earn credits, and stay up-to-date with the latest
+          advancements in healthcare.</p>
+
         <div class="hero-metrics">
           <div class="metric-card">
             <span class="metric-icon">👥</span>
@@ -114,26 +115,35 @@
             <option value="Offline">Offline / Live</option>
             <option value="Hybrid">Hybrid</option>
           </select>
-          <button class="btn-filter-action" (click)="searchQuery = ''; selectedSpecialty = 'All'; selectedFormat = 'All'">Reset Filter</button>
+          <button class="btn-filter-action"
+            (click)="searchQuery = ''; selectedSpecialty = 'All'; selectedFormat = 'All'">Reset Filter</button>
         </div>
       </div>
 
       <!-- Specialty Pills Row (under the search bar!) -->
       <div class="specialty-pills-row">
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'All'" (click)="selectSpecialtyBadge('All')">View All</button>
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Cardiology'" (click)="selectSpecialtyBadge('Cardiology')">Cardiology</button>
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Oncology'" (click)="selectSpecialtyBadge('Oncology')">Oncology</button>
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Neurology'" (click)="selectSpecialtyBadge('Neurology')">Neurology</button>
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Pediatrics'" (click)="selectSpecialtyBadge('Pediatrics')">Pediatrics</button>
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Surgery'" (click)="selectSpecialtyBadge('Surgery')">Surgery</button>
-        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'General Medicine'" (click)="selectSpecialtyBadge('General Medicine')">General Medicine</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'All'"
+          (click)="selectSpecialtyBadge('All')">View All</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Cardiology'"
+          (click)="selectSpecialtyBadge('Cardiology')">Cardiology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Oncology'"
+          (click)="selectSpecialtyBadge('Oncology')">Oncology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Neurology'"
+          (click)="selectSpecialtyBadge('Neurology')">Neurology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Pediatrics'"
+          (click)="selectSpecialtyBadge('Pediatrics')">Pediatrics</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Surgery'"
+          (click)="selectSpecialtyBadge('Surgery')">Surgery</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'General Medicine'"
+          (click)="selectSpecialtyBadge('General Medicine')">General Medicine</button>
       </div>
 
       <!-- Events Grid -->
       <div class="events-grid">
         <div class="event-card animate-fade-in" *ngFor="let event of visibleEvents">
           <div class="card-image-wrapper">
-            <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'" [class.hybrid]="event.mode === 'Hybrid'">
+            <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'"
+              [class.hybrid]="event.mode === 'Hybrid'">
               {{ event.mode === 'Offline' ? 'LIVE EVENT' : event.mode === 'Online' ? 'VIRTUAL' : 'HYBRID' }}
             </span>
             <!-- Dynamically style based on event banner or thumbnail placeholder -->
@@ -142,7 +152,8 @@
               <span class="thumb-icon" *ngIf="event.category === 'Pediatrics'">👶</span>
               <span class="thumb-icon" *ngIf="event.category === 'Neurology'">🧠</span>
               <span class="thumb-icon" *ngIf="event.category === 'Surgery'">🦴</span>
-              <span class="thumb-icon" *ngIf="event.category !== 'Cardiology' && event.category !== 'Pediatrics' && event.category !== 'Neurology' && event.category !== 'Surgery'">🩺</span>
+              <span class="thumb-icon"
+                *ngIf="event.category !== 'Cardiology' && event.category !== 'Pediatrics' && event.category !== 'Neurology' && event.category !== 'Surgery'">🩺</span>
             </div>
           </div>
           <div class="card-body">
@@ -159,7 +170,8 @@
               </div>
               <div class="card-footer-row">
                 <span class="credits-badge">{{ event.creditPoints }} CME Credits</span>
-                <span class="card-price" [class.free-green]="event.price === 0">{{ event.price === 0 ? 'FREE' : '₹' + event.price }}</span>
+                <span class="card-price" [class.free-green]="event.price === 0">{{ event.price === 0 ? 'FREE' : '₹' +
+                  event.price }}</span>
               </div>
               <button class="btn-view-details" (click)="openEventDetail(event)">View Details</button>
             </div>
@@ -175,11 +187,14 @@
       </div>
 
       <!-- Show More / Show Less Button -->
-      <div class="show-more-events-container" *ngIf="filteredEvents.length > 4" style="text-align: center; margin-top: 2rem;">
-        <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()" style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+      <div class="show-more-events-container" *ngIf="filteredEvents.length > 4"
+        style="text-align: center; margin-top: 2rem;">
+        <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()"
+          style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
           Show More ({{ filteredEvents.length - eventsLimit }} remaining) 📂
         </button>
-        <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()" style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+        <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()"
+          style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
           Show Less ↩️
         </button>
       </div>
@@ -225,10 +240,12 @@
 
       <!-- Show More / Show Less Button for Courses -->
       <div *ngIf="filteredCourses.length > 3" style="text-align: center; margin-top: 2rem;">
-        <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()" style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+        <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()"
+          style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
           Show More ({{ filteredCourses.length - coursesLimit }} remaining) 📚
         </button>
-        <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()" style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+        <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()"
+          style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
           Show Less ↩️
         </button>
       </div>
@@ -274,9 +291,9 @@
   <div class="modal-overlay animate-fade-in" *ngIf="showLoginModal" (click)="showLoginModal = false">
     <div class="login-modal-box animate-scale-up" (click)="$event.stopPropagation()">
       <button class="btn-close-modal" (click)="showLoginModal = false">&#10005;</button>
-      
+
       <div class="login-split-container">
-        
+
         <!-- Left Side: Brand Showcase -->
         <div class="left-showcase-panel">
           <div class="hero-logo-showcase">
@@ -300,7 +317,8 @@
         <div class="right-auth-panel">
           <div class="auth-panel-top">
             <div class="role-selector-tabs">
-              <button [class.active]="activeRole() === 'doctor'" (click)="switchRole('doctor')">👨‍⚕️ Doctor Sign In</button>
+              <button [class.active]="activeRole() === 'doctor'" (click)="switchRole('doctor')">👨‍⚕️ Doctor Sign
+                In</button>
               <button [class.active]="activeRole() === 'admin'" (click)="switchRole('admin')">⚡ Admin Sign In</button>
             </div>
             <div class="step-progress-bar">
@@ -321,17 +339,21 @@
 
           <div class="auth-panel-middle">
             <form (ngSubmit)="onLogin()">
-              
+
               <!-- STEP 1: Account ID input -->
               <div *ngIf="loginStep === 1" class="form-step-content">
                 <div class="form-group">
-                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin ID / Email' }}</label>
+                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin ID / Email'
+                    }}</label>
                   <div class="input-icon-wrapper">
                     <span class="field-icon">👤</span>
-                    <input type="text" [(ngModel)]="userId" name="userId" placeholder="doctor@medcme.org or 9876543210" required />
+                    <input type="text" [(ngModel)]="userId" name="userId" placeholder="doctor@medcme.org or 9876543210"
+                      required />
                   </div>
                 </div>
-                <button type="button" class="btn-next-step" (click)="nextStep()">Continue to Password &rarr;</button>
+                <button type="button" class="btn-next-step" (click)="nextStep()">
+                  Continue to OTP Verification &rarr;
+                </button>
               </div>
 
               <!-- STEP 2: Password / Security input -->
@@ -340,19 +362,9 @@
                   <button type="button" class="btn-back-step" (click)="goToStep(1)">&larr; Back ({{ userId }})</button>
                 </div>
 
-                <div class="login-method-tabs">
-                  <button type="button" [class.active]="loginMethod === 'password'" (click)="loginMethod = 'password'">🔑 Password</button>
-                  <button type="button" [class.active]="loginMethod === 'otp'" (click)="loginMethod = 'otp'">📱 OTP Code</button>
-                </div>
-
-                <!-- Password Method -->
-                <div class="form-group" *ngIf="loginMethod === 'password'">
-                  <label>Security Password</label>
-                  <div class="input-icon-wrapper">
-                    <span class="field-icon">🔒</span>
-                    <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass" placeholder="••••••••" required />
-                    <button type="button" class="pwd-toggle-btn" (click)="togglePasswordVisibility()">{{ showPassword ? '🙈' : '👁️' }}</button>
-                  </div>
+                <div
+                  style="background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; padding: 0.75rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <span>📱 Secure Login via OTP Verification</span>
                 </div>
 
                 <!-- OTP Method -->
@@ -362,17 +374,21 @@
                     <button type="button" class="btn-send-otp" (click)="sendLoginOtp()">Send Verification OTP</button>
                   </div>
                   <div *ngIf="otpSentForLogin" class="form-group">
-                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.6rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.75rem;">
-                      📱 <strong>Account Verification Required:</strong> Enter the 6-digit OTP code sent to <strong>{{ userId }}</strong> to complete login.
+                    <div
+                      style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.75rem; line-height: 1.4;">
+                      📱 <strong>New Registration Verification:</strong> A 6-digit OTP has been dispatched to <strong>{{
+                        userId }}</strong>. Please enter the OTP code to complete authentication.
                     </div>
-                    <label>Enter 6-Digit OTP Code</label>
+                    <label>Enter 6-Digit OTP Code *</label>
                     <div class="input-icon-wrapper">
                       <span class="field-icon">🔢</span>
-                      <input type="text" [(ngModel)]="userPass" name="userPass" placeholder="e.g. 123456" maxlength="6" required />
+                      <input type="text" [(ngModel)]="userPass" name="userPass"
+                        placeholder="Enter 6-digit code (e.g. 123456)" maxlength="6" required />
                     </div>
                     <div class="otp-resend-row">
                       <span class="otp-sent-txt">✓ OTP Sent!</span>
-                      <button type="button" class="btn-resend-otp-link" [disabled]="loginOtpCountdown > 0" (click)="sendLoginOtp()">
+                      <button type="button" class="btn-resend-otp-link" [disabled]="loginOtpCountdown > 0"
+                        (click)="sendLoginOtp()">
                         {{ loginOtpCountdown > 0 ? 'Resend in ' + loginOtpCountdown + 's' : 'Resend Code' }}
                       </button>
                     </div>
@@ -386,8 +402,8 @@
                 </label>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn-submit-main" [disabled]="loading || (loginMethod === 'otp' && !otpSentForLogin)">
-                  <span *ngIf="!loading">Sign In as {{ activeRole() === 'doctor' ? 'Doctor' : 'Admin' }} &rarr;</span>
+                <button type="submit" class="btn-submit-main" [disabled]="loading || !otpSentForLogin">
+                  <span *ngIf="!loading">Verify OTP &amp; Sign In &rarr;</span>
                   <span *ngIf="loading" class="spinner"></span>
                 </button>
               </div>
@@ -397,8 +413,8 @@
 
           <div class="auth-panel-bottom">
             <div class="quick-links-row">
-              <a href="#" *ngIf="activeRole() === 'doctor'" (click)="$event.preventDefault(); openRegistration()">🆕 Create Account</a>
-              <a href="#" (click)="$event.preventDefault(); openForgotPassword()">Forgot Password?</a>
+              <a href="#" *ngIf="activeRole() === 'doctor'" (click)="$event.preventDefault(); openRegistration()">🆕
+                Create Account</a>
             </div>
           </div>
         </div>
@@ -416,7 +432,7 @@
       </div>
       <form (ngSubmit)="submitRegistration()">
         <div class="registration-modal-body">
-          
+
           <div class="form-group">
             <label>Designation *</label>
             <select [(ngModel)]="regDesignation" name="regDesignation" required>
@@ -428,7 +444,8 @@
 
           <div class="form-group">
             <label>Mobile Number *</label>
-            <input type="text" [(ngModel)]="regMobileNumber" name="regMobileNumber" placeholder="Mobile Number" required />
+            <input type="text" [(ngModel)]="regMobileNumber" name="regMobileNumber" placeholder="Mobile Number"
+              required />
           </div>
 
           <div class="form-group">
@@ -460,18 +477,10 @@
 
           <div class="form-group" *ngIf="regSpecialty === 'Other'">
             <label>Specify Specialty *</label>
-            <input type="text" [(ngModel)]="regSpecialtyOther" name="regSpecialtyOther" placeholder="Specify specialty" required />
+            <input type="text" [(ngModel)]="regSpecialtyOther" name="regSpecialtyOther" placeholder="Specify specialty"
+              required />
           </div>
 
-          <div class="form-group">
-            <label>Password *</label>
-            <input type="password" [(ngModel)]="regPassword" name="regPassword" placeholder="••••••••" required />
-          </div>
-
-          <div class="form-group">
-            <label>Confirm Password *</label>
-            <input type="password" [(ngModel)]="regConfirmPassword" name="regConfirmPassword" placeholder="••••••••" required />
-          </div>
 
           <div class="form-group">
             <label>Hospital / Institution *</label>
@@ -488,23 +497,36 @@
             <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" placeholder="MMC / MCI Number" required />
           </div>
 
-          <div class="form-group" style="grid-column: span 2; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.35rem;">
-            <label style="font-weight: 700; color: #1e3a8a;">Select CME Interests (Only matching events will show first on your dashboard) *</label>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 8px;">
-              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
-                <input type="checkbox" [(ngModel)]="regInterests['Cardiology']" name="interestCardiology" style="width: auto; margin-right: 0.2rem;" /> Cardiology
+          <div class="form-group"
+            style="grid-column: span 2; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.35rem;">
+            <label style="font-weight: 700; color: #1e3a8a;">Select CME Interests (Only matching events will show first
+              on your dashboard) *</label>
+            <div
+              style="display: flex; flex-wrap: wrap; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 8px;">
+              <label
+                style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Cardiology']" name="interestCardiology"
+                  style="width: auto; margin-right: 0.2rem;" /> Cardiology
               </label>
-              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
-                <input type="checkbox" [(ngModel)]="regInterests['Pediatrics']" name="interestPediatrics" style="width: auto; margin-right: 0.2rem;" /> Pediatrics
+              <label
+                style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Pediatrics']" name="interestPediatrics"
+                  style="width: auto; margin-right: 0.2rem;" /> Pediatrics
               </label>
-              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
-                <input type="checkbox" [(ngModel)]="regInterests['Neurology']" name="interestNeurology" style="width: auto; margin-right: 0.2rem;" /> Neurology
+              <label
+                style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Neurology']" name="interestNeurology"
+                  style="width: auto; margin-right: 0.2rem;" /> Neurology
               </label>
-              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
-                <input type="checkbox" [(ngModel)]="regInterests['Surgery']" name="interestSurgery" style="width: auto; margin-right: 0.2rem;" /> Surgery
+              <label
+                style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['Surgery']" name="interestSurgery"
+                  style="width: auto; margin-right: 0.2rem;" /> Surgery
               </label>
-              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
-                <input type="checkbox" [(ngModel)]="regInterests['General Medicine']" name="interestGenMed" style="width: auto; margin-right: 0.2rem;" /> General Medicine
+              <label
+                style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #475569;">
+                <input type="checkbox" [(ngModel)]="regInterests['General Medicine']" name="interestGenMed"
+                  style="width: auto; margin-right: 0.2rem;" /> General Medicine
               </label>
             </div>
           </div>
@@ -544,7 +566,8 @@
       <!-- Send OTP -->
       <div *ngIf="!otpSent" class="forgot-body">
         <p>Enter your registered Email or Mobile number. We will send a code.</p>
-        <input type="text" [(ngModel)]="forgotEmailOrMobile" placeholder="e.g. doctor@medcme.org" class="forgot-input" />
+        <input type="text" [(ngModel)]="forgotEmailOrMobile" placeholder="e.g. doctor@medcme.org"
+          class="forgot-input" />
         <button (click)="sendForgotOtp()" class="btn-send-recovery">Send Recovery OTP</button>
       </div>
 
@@ -574,7 +597,7 @@
   <div class="modal-overlay animate-fade-in" *ngIf="showEventDetailModal" (click)="closeEventDetail()">
     <div class="detail-modal-box animate-scale-up" (click)="$event.stopPropagation()">
       <button class="btn-close-modal" (click)="closeEventDetail()">&#10005;</button>
-      
+
       <div class="detail-header" [style.background]="selectedEventForDetail?.bannerColor || '#1e3a8a'">
         <span class="detail-format-tag">{{ selectedEventForDetail?.mode }} Event</span>
         <h2 class="detail-title">{{ selectedEventForDetail?.title }}</h2>
@@ -584,7 +607,8 @@
         <div class="detail-meta-grid">
           <div class="meta-cell">
             <span class="cell-label">🗓️ DATE & TIME</span>
-            <span class="cell-val">{{ selectedEventForDetail?.date | date:'mediumDate' }} • {{ selectedEventForDetail?.time }}</span>
+            <span class="cell-val">{{ selectedEventForDetail?.date | date:'mediumDate' }} • {{
+              selectedEventForDetail?.time }}</span>
           </div>
           <div class="meta-cell">
             <span class="cell-label">📍 VENUE / PLATFORM</span>
@@ -592,7 +616,8 @@
           </div>
           <div class="meta-cell">
             <span class="cell-label">👤 SPEAKER</span>
-            <span class="cell-val"><strong>{{ selectedEventForDetail?.speaker }}</strong> ({{ selectedEventForDetail?.speakerRole }})</span>
+            <span class="cell-val"><strong>{{ selectedEventForDetail?.speaker }}</strong> ({{
+              selectedEventForDetail?.speakerRole }})</span>
           </div>
           <div class="meta-cell">
             <span class="cell-label">🎖️ ACCREDITATION</span>
@@ -612,8 +637,9 @@
               {{ selectedEventForDetail?.price === 0 ? 'FREE' : '₹' + selectedEventForDetail?.price }}
             </span>
           </div>
-          
-          <button *ngIf="!isRegistered(selectedEventForDetail?.id || '')" class="btn-register-action-trigger" (click)="registerForEventFromDetail()">
+
+          <button *ngIf="!isRegistered(selectedEventForDetail?.id || '')" class="btn-register-action-trigger"
+            (click)="registerForEventFromDetail()">
             Register for Event &rarr;
           </button>
           <button *ngIf="isRegistered(selectedEventForDetail?.id || '')" class="btn-registered-badge" disabled>
@@ -638,7 +664,8 @@
         <h3>Registration Successful!</h3>
         <p>You have been enrolled in <strong>{{ selectedEvent?.title }}</strong>.</p>
         <p>Go to your personal dashboard to access live rooms, materials, and certificates.</p>
-        <button class="btn-go-dash" routerLink="/dashboard" (click)="closeRegisterModal()">Go to Dashboard &rarr;</button>
+        <button class="btn-go-dash" routerLink="/dashboard" (click)="closeRegisterModal()">Go to Dashboard
+          &rarr;</button>
       </div>
 
       <!-- Form Checkout Screen -->
@@ -662,7 +689,8 @@
         <div class="checkout-user-details-card">
           <h4>Attendee Profile</h4>
           <div><strong>Name:</strong> {{ authService.currentUser()?.name }}</div>
-          <div><strong>Email:</strong> {{ authService.currentUser()?.email }} &bull; <strong>Mobile:</strong> {{ authService.currentUser()?.phone }}</div>
+          <div><strong>Email:</strong> {{ authService.currentUser()?.email }} &bull; <strong>Mobile:</strong> {{
+            authService.currentUser()?.phone }}</div>
           <div><strong>Specialty:</strong> {{ authService.currentUser()?.specialty }}</div>
         </div>
 
@@ -693,7 +721,8 @@
         </label>
 
         <button class="btn-checkout-confirm" [disabled]="!agreeTermsCheckout" (click)="confirmRegister()">
-          {{ selectedEvent?.price === 0 || sponsorNameDetected ? 'Complete Free Registration' : 'Proceed to Payment (₹' + selectedEvent?.price + ')' }}
+          {{ selectedEvent?.price === 0 || sponsorNameDetected ? 'Complete Free Registration' : 'Proceed to Payment (₹'
+          + selectedEvent?.price + ')' }}
         </button>
       </div>
 
@@ -703,10 +732,12 @@
           <div class="razorpay-logo">💳 Razorpay Secure Checkout</div>
           <div class="payment-amount-display">Payable: ₹{{ selectedEvent?.price }}</div>
         </div>
-        
+
         <div class="payment-options-tabs">
-          <button [class.active]="selectedPaymentMethod === 'upi'" (click)="selectedPaymentMethod = 'upi'">UPI / QR Code</button>
-          <button [class.active]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">Credit / Debit Card</button>
+          <button [class.active]="selectedPaymentMethod === 'upi'" (click)="selectedPaymentMethod = 'upi'">UPI / QR
+            Code</button>
+          <button [class.active]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">Credit /
+            Debit Card</button>
         </div>
 
         <!-- UPI Option -->
