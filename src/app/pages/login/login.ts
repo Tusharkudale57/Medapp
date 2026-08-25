@@ -1,4 +1,4 @@
-import { Component, signal, HostListener, OnInit } from '@angular/core';
+import { Component, signal, HostListener, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -154,15 +154,18 @@ export class LoginComponent implements OnInit {
     public eventService: EventService,
     private razorpayService: RazorpayService,
     private router: Router
-  ) { }
+  ) {
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (typeof window !== 'undefined' && user) {
+        this.router.navigate(['/dashboard']);
+      }
+    });
+  }
 
   ngOnInit() {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
-    }
-    // If already logged in, redirect straight to dashboard
-    if (this.authService.currentUser()) {
-      this.router.navigate(['/dashboard']);
     }
   }
 
@@ -389,16 +392,14 @@ export class LoginComponent implements OnInit {
       this.showRegistrationForm = false;
       this.showNotRegisteredModal = false;
 
-      // Bring user to Login modal configured in OTP mode with their registered account ID
+      // Bring user to Login modal configured in Step 1 (ID entry) with their registered account ID prefilled
       this.userId = registrationDetails.email || registrationDetails.phone;
       this.userPass = '';
       this.activeRole.set('doctor');
-      this.loginStep = 2;
+      this.loginStep = 1;
       this.loginMethod = 'otp';
+      this.otpSentForLogin = false;
       this.showLoginModal = true;
-
-      // Send OTP to user for verification
-      this.sendLoginOtp();
     }, 1500);
   }
 

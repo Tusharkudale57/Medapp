@@ -172,9 +172,6 @@
         </div>
       </div>
       <div class="hero-badge" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end;">
-        <button (click)="openCreateModal()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3); transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem;">
-          <span>➕</span> Create New Event
-        </button>
         <div class="gold-seal">
           <span class="seal-icon">&#127891;</span>
           <span class="seal-text">Official CME Accreditation</span>
@@ -823,13 +820,16 @@
           <p *ngIf="sponsorNameDetected" style="color:#059669; font-weight:700; margin-bottom:0.5rem;">✓ Sponsorship/Coupon Verified: {{ sponsorNameDetected }} (Rs. {{ selectedEvent?.price | number }} fully waived)</p>
 
           <!-- Toggle Link -->
+          <!--
           <div class="mr-sponsor-toggle" style="margin-top: 0.5rem; text-align: left;">
             <a href="javascript:void(0)" (click)="showSponsorInput = !showSponsorInput" style="font-size:0.82rem; font-weight:700; color:#2563eb; text-decoration:none;">
               {{ showSponsorInput ? '✕ Hide Sponsor Code Option' : '🔑 Sponsored by an MR / Coupon Code? Click here' }}
             </a>
           </div>
+          -->
 
           <!-- Sponsor Code Input Box -->
+          <!--
           <div *ngIf="showSponsorInput" style="margin-top: 0.75rem; text-align: left; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.75rem;">
             <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:0.25rem;">MR Sponsorship / Coupon Code</label>
             <div style="display:flex; gap:0.5rem;">
@@ -840,6 +840,7 @@
             <div *ngIf="sponsorNameDetected" style="color:#16a34a; font-size:0.75rem; font-weight:700; margin-top:0.4rem;">✓ Verified Sponsor/Coupon: {{ sponsorNameDetected }}</div>
             <div style="font-size:0.68rem; color:#64748b; margin-top:0.4rem; line-height:1.2;">* Available codes: <strong>COUPON_100</strong>, <strong>MR_FREE</strong>, <strong>MR_SUN</strong>, <strong>MR_REDDY</strong>, or <strong>MR_CIPLA</strong>.</div>
           </div>
+          -->
 
           <!-- Terms Checkbox (Paid/Sponsored events) -->
           <div style="margin-top: 1rem; text-align: left; border-top: 1px dotted #cbd5e1; padding-top: 0.75rem;">

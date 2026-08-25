@@ -871,6 +871,7 @@ export class DashboardComponent implements OnInit {
 
   // Admin create event
   openCreateModal() {
+    if (!this.authService.isAdmin()) return;
     this.editingEventId = null;
     this.resetForm();
     this.showCreateModal = true;
@@ -909,6 +910,7 @@ export class DashboardComponent implements OnInit {
 
   saveEvent() {
     if (!this.newTitle.trim() || !this.newDate || !this.newVenue.trim()) return;
+    if (!this.authService.isAdmin()) return;
     const user = this.authService.currentUser();
     if (!user) return;
 
