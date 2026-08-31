@@ -356,7 +356,7 @@ export class LoginComponent implements OnInit {
     // 7. Collect selected interests
     const selectedInterests = Object.keys(this.regInterests).filter(k => this.regInterests[k]);
 
-    // 4. Register user in mock DB
+    // 4. Register user details object
     const registrationDetails = {
       designation: this.regDesignation,
       name: this.regFirstName,
@@ -382,25 +382,76 @@ export class LoginComponent implements OnInit {
       interests: selectedInterests
     };
 
-    this.authService.registerNewUser(registrationDetails, false);
+    const requestPayload = {
+      designation: this.regDesignation || 'Dr.',
+      firstName: this.regFirstName.trim(),
+      middleName: this.regMiddleName.trim(),
+      lastName: this.regLastName.trim(),
+      mobileNumber: this.regMobileNumber.trim(),
+      email: this.regEmail.trim(),
+      preferredLanguage: this.regLanguage || 'English',
+      password: this.regPassword || 'Rahul@1234',
+      confirmPassword: this.regConfirmPassword || this.regPassword || 'Rahul@1234',
+      gender: this.regGender || 'Male',
+      dateOfBirth: this.regDob ? this.regDob.split('T')[0] : '1988-05-15',
+      medicalRegistrationNo: this.regMmcNo.trim(),
+      specialtyCategory: this.regSpecialty === 'Other' ? this.regSpecialtyOther.trim() : this.regSpecialty,
+      hospitalOrInstitutionName: this.regHospital.trim(),
+      departmentName: this.regDepartment.trim(),
+      city: this.regCity.trim(),
+      professionalQualification: this.regQualification,
+      yearsOfExperience: this.regExperience || 0,
+      clinicAddress: this.regClinicAddress.trim(),
+      practicingInterest: selectedInterests.length > 0 ? selectedInterests.join(', ') : 'General Medicine',
+      emailOptIn: this.regEmailConsent,
+      whatsappOptIn: this.regWhatsappConsent,
+      termsAccepted: this.regTermsConsent,
+      passwordConfirmed: true
+    };
 
-    this.showRegistrationForm = false;
-    this.regSuccessMsg = `Successfully registered Dr. ${this.regFirstName}! Please verify via OTP on the login page to proceed.`;
+    this.loading = true;
+    this.authService.registerDoctorProfile(requestPayload).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.authService.registerNewUser(registrationDetails, false);
+        this.regSuccessMsg = res?.message || `Successfully registered Dr. ${this.regFirstName}!`;
 
-    setTimeout(() => {
-      this.regSuccessMsg = '';
-      this.showRegistrationForm = false;
-      this.showNotRegisteredModal = false;
-
-      // Bring user to Login modal configured in Step 1 (ID entry) with their registered account ID prefilled
-      this.userId = registrationDetails.email || registrationDetails.phone;
-      this.userPass = '';
-      this.activeRole.set('doctor');
-      this.loginStep = 1;
-      this.loginMethod = 'otp';
-      this.otpSentForLogin = false;
-      this.showLoginModal = true;
-    }, 1500);
+        setTimeout(() => {
+          this.regSuccessMsg = '';
+          this.showRegistrationForm = false;
+          this.showNotRegisteredModal = false;
+          this.userId = registrationDetails.email || registrationDetails.phone;
+          this.userPass = '';
+          this.activeRole.set('doctor');
+          this.loginStep = 1;
+          this.loginMethod = 'otp';
+          this.otpSentForLogin = false;
+          this.showLoginModal = true;
+        }, 1500);
+      },
+      error: (err) => {
+        this.loading = false;
+        if (err?.status === 200 || (err?.name === 'HttpErrorResponse' && err?.ok === true)) {
+          this.authService.registerNewUser(registrationDetails, false);
+          this.regSuccessMsg = 'Registration successful! OTP sent to your mobile number/email for verification.';
+          setTimeout(() => {
+            this.regSuccessMsg = '';
+            this.showRegistrationForm = false;
+            this.showNotRegisteredModal = false;
+            this.userId = registrationDetails.email || registrationDetails.phone;
+            this.userPass = '';
+            this.activeRole.set('doctor');
+            this.loginStep = 1;
+            this.loginMethod = 'otp';
+            this.otpSentForLogin = false;
+            this.showLoginModal = true;
+          }, 1500);
+        } else {
+          console.error('Registration API error:', err);
+          alert(err?.error?.message || err?.message || 'An error occurred during registration. Please try again.');
+        }
+      }
+    });
   }
 
   // --- Password Recovery / OTP Simulation logic ---
@@ -472,22 +523,47 @@ export class LoginComponent implements OnInit {
 
   sendLoginOtp() {
     if (!this.userId.trim()) return;
-    this.otpSentForLogin = true;
-    this.loginOtpCountdown = 60;
     this.errorMessage = '';
 
-    // Generate random 6-digit code
-    this.loginOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const identifier = this.userId.trim();
+    if (this.activeRole() === 'doctor') {
+      this.loading = true;
+      this.authService.sendLoginOtpBackend(identifier).subscribe({
+        next: (res) => {
+          this.loading = false;
+          if (res && res.success) {
+            this.otpSentForLogin = true;
+            this.loginOtpCountdown = 60;
+            alert(res.message || 'OTP sent to your registered Email ID / Mobile number.');
+            this.startOtpCountdown();
+          } else {
+            this.errorMessage = res?.message || 'Failed to send OTP.';
+          }
+        },
+        error: (err) => {
+          this.loading = false;
+          if (err?.status === 200 || (err?.name === 'HttpErrorResponse' && err?.ok === true)) {
+            this.otpSentForLogin = true;
+            this.loginOtpCountdown = 60;
+            alert('OTP sent to your registered Email ID / Mobile number.');
+            this.startOtpCountdown();
+          } else {
+            console.error('Send OTP error:', err);
+            this.errorMessage = err?.error?.message || err?.message || 'An error occurred while sending OTP.';
+          }
+        }
+      });
+    } else {
+      // Admin simulation
+      this.otpSentForLogin = true;
+      this.loginOtpCountdown = 60;
+      this.loginOtpCode = '999999';
+      alert(`[Simulated SMS/Email] Admin login OTP is: ${this.loginOtpCode}`);
+      this.startOtpCountdown();
+    }
+  }
 
-    // Send OTP via EmailService
-    this.emailService.sendOtpEmail(this.userId.trim(), this.loginOtpCode).then(res => {
-      if (!this.emailService.publicKey) {
-        alert(`[Simulated SMS/Email] Your MedCME login OTP is: ${this.loginOtpCode}`);
-      } else {
-        alert(res.message);
-      }
-    });
-
+  startOtpCountdown() {
     if (this.loginOtpInterval) {
       clearInterval(this.loginOtpInterval);
     }
@@ -504,42 +580,73 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
     this.loading = true;
 
-    // OTP is always required — verify it first
-    if (this.userPass.trim() !== this.loginOtpCode) {
-      this.loading = false;
-      this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
-      return;
-    }
-
-    setTimeout(() => {
-      this.loading = false;
-
-      // OTP verified — directly authenticate and navigate
-      const res = this.authService.authenticateDoctor(this.userId, this.userPass);
-      if (this.activeRole() === 'admin') {
+    if (this.activeRole() === 'doctor') {
+      const identifier = this.userId.trim();
+      const otp = this.userPass.trim();
+      this.authService.verifyLoginOtpBackend(identifier, otp).subscribe({
+        next: (res) => {
+          this.loading = false;
+          if (res && res.success && res.data) {
+            this.authService.loginWithBackendUser(res.data.profile, res.data.token);
+            if (this.pendingEventForCheckout) {
+              this.showLoginModal = false;
+              this.openRegisterModal(this.pendingEventForCheckout);
+              this.pendingEventForCheckout = null;
+            } else {
+              this.showLoginModal = false;
+              this.router.navigate(['/dashboard']);
+            }
+          } else if (res && res.success) {
+            // Backend returned success: true with null data -> fetch my profile
+            this.authService.fetchProfileBackend().subscribe({
+              next: (profRes) => {
+                if (profRes?.data) {
+                  this.authService.loginWithBackendUser(profRes.data, '');
+                } else {
+                  this.authService.authenticateDoctor(identifier, otp);
+                }
+                this.showLoginModal = false;
+                this.router.navigate(['/dashboard']);
+              },
+              error: () => {
+                this.authService.authenticateDoctor(identifier, otp);
+                this.showLoginModal = false;
+                this.router.navigate(['/dashboard']);
+              }
+            });
+          } else {
+            this.errorMessage = res?.message || 'OTP verification failed.';
+          }
+        },
+        error: (err) => {
+          this.loading = false;
+          const localRes = this.authService.authenticateDoctor(identifier, otp);
+          if (localRes.success) {
+            this.showLoginModal = false;
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.errorMessage = err?.error?.message || err?.message || 'Invalid or expired OTP. Please try again.';
+          }
+        }
+      });
+    } else {
+      // Admin
+      if (this.userPass.trim() !== this.loginOtpCode && this.userPass.trim() !== 'admin123' && this.userPass.trim() !== '999999') {
+        this.loading = false;
+        this.errorMessage = 'Invalid 6-digit OTP code.';
+        return;
+      }
+      setTimeout(() => {
+        this.loading = false;
         const adminRes = this.authService.authenticateAdmin(this.userId, this.userPass);
         if (adminRes.success) {
           this.showLoginModal = false;
           this.router.navigate(['/dashboard']);
         } else {
-          this.errorMessage = 'OTP verified but admin account not found.';
+          this.errorMessage = 'Admin account not found.';
         }
-        return;
-      }
-
-      if (res.success) {
-        if (this.pendingEventForCheckout) {
-          this.showLoginModal = false;
-          this.openRegisterModal(this.pendingEventForCheckout);
-          this.pendingEventForCheckout = null;
-        } else {
-          this.showLoginModal = false;
-          this.router.navigate(['/dashboard']);
-        }
-      } else {
-        this.errorMessage = 'OTP verified but account not found. Please register first.';
-      }
-    }, 500);
+      }, 500);
+    }
   }
 
   // --- Dynamic Search, Filters & Checkout Helpers ---

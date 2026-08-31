@@ -20,6 +20,7 @@ export class ProfileComponent implements OnInit {
 
   // Edit profile state
   isEditing = false;
+  profileSaveMsg = '';
   editFirstName = '';
   editMiddleName = '';
   editLastName = '';
@@ -183,12 +184,13 @@ export class ProfileComponent implements OnInit {
     if (!this.editFirstName.trim() || !this.editLastName.trim()) return;
     if (!this.user) return;
 
-    const prefix = this.user.name.trim().toLowerCase().startsWith('dr. ') ? 'Dr. ' : '';
+    const prefix = (this.user.name || '').trim().toLowerCase().startsWith('dr. ') ? 'Dr. ' : 'Dr. ';
     const middlePart = this.editMiddleName.trim() ? this.editMiddleName.trim() + ' ' : '';
     const fullName = `${prefix}${this.editFirstName.trim()} ${middlePart}${this.editLastName.trim()}`;
     const finalSpecialty = this.editSpecialtyDropdown === 'Others' ? this.editSpecialtyOther : this.editSpecialtyDropdown;
 
-    this.authService.updateExtendedProfile({
+    const updatedUser: UserProfile = {
+      ...this.user,
       name: fullName,
       sirName: this.editLastName.trim(),
       middleName: this.editMiddleName.trim(),
@@ -199,7 +201,7 @@ export class ProfileComponent implements OnInit {
       city: this.editCity,
       gender: this.editGender,
       dob: this.editDob,
-      designation: this.editDesignation,
+      designation: this.editDesignation || 'Dr.',
       department: this.editDepartment,
       qualification: this.editQualification,
       hospital: this.editHospital,
@@ -211,10 +213,40 @@ export class ProfileComponent implements OnInit {
       interests: this.selectedInterests,
       emailConsent: this.editEmailConsent,
       whatsappConsent: this.editWhatsappConsent
-    });
+    };
 
-    this.user = this.authService.currentUser();
-    this.isEditing = false;
+    const jwtToken = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
+
+    if (jwtToken && this.user.role === 'doctor') {
+      this.authService.updateProfileBackend(updatedUser).subscribe({
+        next: (res) => {
+          if (res?.success) {
+            const fresh = res.data ? this.authService.mapBackendProfileToUser(res.data) : updatedUser;
+            const merged = { ...fresh, role: this.user!.role };
+            this.authService.updateExtendedProfile(merged);
+            this.user = this.authService.currentUser();
+            this.profileSaveMsg = 'Profile updated successfully!';
+          } else {
+            this.authService.updateExtendedProfile(updatedUser);
+            this.user = this.authService.currentUser();
+            this.profileSaveMsg = res?.message || 'Profile updated locally.';
+          }
+          setTimeout(() => this.profileSaveMsg = '', 3500);
+          this.isEditing = false;
+        },
+        error: (err) => {
+          this.authService.updateExtendedProfile(updatedUser);
+          this.user = this.authService.currentUser();
+          this.profileSaveMsg = 'Profile saved locally.';
+          setTimeout(() => this.profileSaveMsg = '', 3500);
+          this.isEditing = false;
+        }
+      });
+    } else {
+      this.authService.updateExtendedProfile(updatedUser);
+      this.user = this.authService.currentUser();
+      this.isEditing = false;
+    }
   }
 
   get certificates(): Certificate[] {

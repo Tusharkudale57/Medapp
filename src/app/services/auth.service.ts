@@ -1,5 +1,7 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { UserProfile, Certificate } from '../models/course.model';
 
 @Injectable({
@@ -80,7 +82,7 @@ export class AuthService {
     interests: []
   };
 
-  constructor(@Inject(PLATFORM_ID) platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) platformId: Object, private http: HttpClient) {
     this.isBrowser = isPlatformBrowser(platformId);
     this.initUser();
   }
@@ -97,17 +99,33 @@ export class AuthService {
         localStorage.setItem('medcme_all_users', JSON.stringify(initialList));
       }
 
+      const jwtToken = localStorage.getItem('medcme_jwt_token');
       const savedUser = localStorage.getItem('medcme_user');
+
       if (savedUser) {
         try {
           this.currentUserSignal.set(JSON.parse(savedUser));
-          return;
         } catch (e) {
           console.error('Failed to parse user session', e);
         }
+      } else {
+        this.currentUserSignal.set(null);
       }
-      // Default to guest (null)
-      this.currentUserSignal.set(null);
+
+      if (jwtToken) {
+        this.fetchProfileBackend().subscribe({
+          next: (res) => {
+            if (res?.success && res?.data) {
+              const freshUser = this.mapBackendProfileToUser(res.data);
+              const stored = this.currentUserSignal();
+              const merged = { ...freshUser, role: stored?.role || 'doctor' };
+              this.currentUserSignal.set(merged);
+              this.saveUserToStorage(merged);
+            }
+          },
+          error: () => {}
+        });
+      }
     } else {
       this.currentUserSignal.set(null);
     }
@@ -183,6 +201,143 @@ export class AuthService {
       this.saveUserToStorage(newUser);
     }
     return newUser;
+  }
+
+  /** Register Doctor Profile via Backend API (POST /api/auth/register) */
+  registerDoctorProfile(payload: any): Observable<any> {
+    return this.http.post<any>('/api/auth/register', payload);
+  }
+
+  /** Send OTP for Login via Backend API (POST /api/auth/login/sendOtp) */
+  sendLoginOtpBackend(identifier: string): Observable<any> {
+    const isEmail = identifier.includes('@');
+    const payload = isEmail ? { email: identifier.trim() } : { mobileNumber: identifier.trim() };
+    return this.http.post<any>('/api/auth/login/sendOtp', payload);
+  }
+
+  /** Verify OTP for Login via Backend API (POST /api/auth/login/verifyOtp) */
+  verifyLoginOtpBackend(identifier: string, otp: string): Observable<any> {
+    const isEmail = identifier.includes('@');
+    const payload = isEmail 
+      ? { email: identifier.trim(), otp: otp.trim() } 
+      : { mobileNumber: identifier.trim(), otp: otp.trim() };
+    return this.http.post<any>('/api/auth/login/verifyOtp', payload);
+  }
+
+  /** Fetch Doctor Profile from Backend API (GET /api/profile/get-my-profile) */
+  fetchProfileBackend(): Observable<any> {
+    const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+    return this.http.get<any>('/api/profile/get-my-profile', { headers });
+  }
+
+  /** Update Doctor Profile on Backend API (PUT /api/profile/update-my-profile) */
+  updateProfileBackend(user: UserProfile): Observable<any> {
+    const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+
+    const rawName = (user.name || '').replace(/^Dr\.\s*/i, '').trim();
+    const nameParts = rawName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
+    const middleName = user.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '');
+
+    const payload = {
+      designation: user.designation || 'Dr.',
+      firstName: firstName,
+      middleName: middleName,
+      lastName: lastName,
+      mobileNumber: user.phone || '',
+      email: user.email || '',
+      preferredLanguage: user.language || 'English',
+      gender: user.gender || 'Male',
+      dateOfBirth: user.dob ? user.dob.split('T')[0] : '',
+      medicalRegistrationNo: user.registrationNo || '',
+      specialtyCategory: user.specialty || '',
+      hospitalOrInstitutionName: user.hospital || '',
+      departmentName: user.department || '',
+      city: user.city || '',
+      professionalQualification: user.qualification || '',
+      yearsOfExperience: user.experience || 0,
+      clinicAddress: user.clinicAddress || '',
+      practicingInterest: user.practicingInterest || (user.interests ? user.interests.join(', ') : ''),
+      emailOptIn: user.emailConsent ?? true,
+      whatsappOptIn: user.whatsappConsent ?? true,
+      termsAccepted: true,
+      passwordConfirmed: true
+    };
+
+    return this.http.put<any>('/api/profile/update-my-profile', payload, { headers });
+  }
+
+  /** Map backend JSON profile to frontend UserProfile model */
+  mapBackendProfileToUser(bp: any): UserProfile {
+    const firstName = bp.firstName || '';
+    const middleName = bp.middleName ? bp.middleName.trim() + ' ' : '';
+    const lastName = bp.lastName || '';
+    const fullName = bp.fullName || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
+
+    return {
+      id: String(bp.id || 'doc_' + Date.now()),
+      name: fullName,
+      email: bp.email || '',
+      phone: bp.mobileNumber || '',
+      specialty: bp.specialtyCategory || 'General Medicine',
+      registrationNo: bp.medicalRegistrationNo || bp.medicalRegistrationNumber || '',
+      creditPoints: bp.creditPoints || 0,
+      purchasedCourseIds: bp.purchasedCourseIds || [],
+      completedCourseIds: bp.completedCourseIds || [],
+      certificates: bp.certificates || [],
+      role: 'doctor',
+      sirName: bp.lastName || '',
+      middleName: bp.middleName || '',
+      city: bp.city || '',
+      gender: bp.gender || 'Male',
+      dob: bp.dateOfBirth ? bp.dateOfBirth.split('T')[0] : '',
+      designation: bp.designation || 'Dr.',
+      department: bp.departmentName || bp.department || '',
+      qualification: bp.professionalQualification || bp.qualification || '',
+      hospital: bp.hospitalOrInstitutionName || bp.hospitalInstitution || bp.hospital || '',
+      organization: bp.organization || '',
+      experience: bp.yearsOfExperience || 0,
+      language: bp.preferredLanguage || 'English',
+      clinicAddress: bp.clinicAddress || '',
+      practicingInterest: bp.practicingInterest || '',
+      interests: bp.cmeInterests || (bp.practicingInterest ? [bp.practicingInterest] : []),
+      emailConsent: bp.emailOptIn ?? bp.emailConsent ?? true,
+      whatsappConsent: bp.whatsappOptIn ?? bp.whatsappConsent ?? true
+    };
+  }
+
+  /** Set backend authenticated user session & token */
+  loginWithBackendUser(profile: any, token: string) {
+    const user = this.mapBackendProfileToUser(profile);
+    this.currentUserSignal.set(user);
+    this.saveUserToStorage(user);
+    if (this.isBrowser && token) {
+      localStorage.setItem('medcme_jwt_token', token);
+    }
+
+    this.usersSignal.update(list => {
+      const idx = list.findIndex(u => (user.phone && u.phone === user.phone) || (user.email && u.email.toLowerCase() === user.email.toLowerCase()));
+      if (idx >= 0) {
+        const updated = [...list];
+        updated[idx] = user;
+        if (this.isBrowser) {
+          localStorage.setItem('medcme_all_users', JSON.stringify(updated));
+        }
+        return updated;
+      } else {
+        const updated = [...list, user];
+        if (this.isBrowser) {
+          localStorage.setItem('medcme_all_users', JSON.stringify(updated));
+        }
+        return updated;
+      }
+    });
   }
 
   // Doctor Static/Dynamic Authentication
