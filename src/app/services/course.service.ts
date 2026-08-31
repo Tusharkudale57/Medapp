@@ -20,7 +20,7 @@ export class CourseService {
       instructorImage: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&auto=format&fit=crop&q=80',
       price: 1499,
       creditPoints: 1,
-      thumbnail: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=600&auto=format&fit=crop&q=80',
       duration: '4.5 Hours',
       level: 'Advanced',
       rating: 4.9,
@@ -164,12 +164,89 @@ export class CourseService {
     this.loadCoursesFromStorage();
   }
 
+  /**
+   * Returns a curated, high-definition medical poster matching any medical specialty or title.
+   */
+  getCategoryPoster(category: string, title?: string): string {
+    const combined = `${category || ''} ${title || ''}`.toLowerCase();
+
+    if (combined.includes('physio') || combined.includes('physical therapy') || combined.includes('rehab')) {
+      return 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&auto=format&fit=crop&q=80'; // Physiotherapy clinic & spinal rehab
+    }
+    if (combined.includes('ortho') || combined.includes('bone') || combined.includes('joint') || combined.includes('spine')) {
+      return 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=600&auto=format&fit=crop&q=80'; // Orthopedics & joint anatomy
+    }
+    if (combined.includes('ayur') || combined.includes('ayush') || combined.includes('herbal')) {
+      return 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600&auto=format&fit=crop&q=80'; // Ayurveda & traditional herbal medicine
+    }
+    if (combined.includes('homeo') || combined.includes('homeopathy')) {
+      return 'https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=600&auto=format&fit=crop&q=80'; // Homeopathy & natural clinical remedies
+    }
+    if (combined.includes('cardio') || combined.includes('heart') || combined.includes('ecg') || combined.includes('acls')) {
+      return 'https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=600&auto=format&fit=crop&q=80'; // Cardiology & ECG
+    }
+    if (combined.includes('neuro') || combined.includes('brain') || combined.includes('stroke')) {
+      return 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&auto=format&fit=crop&q=80'; // Neurology & brain MRI
+    }
+    if (combined.includes('pediat') || combined.includes('child') || combined.includes('neonat') || combined.includes('pals')) {
+      return 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80'; // Pediatrics & child health
+    }
+    if (combined.includes('surg') || combined.includes('operat') || combined.includes('wound') || combined.includes('laparoscop')) {
+      return 'https://images.unsplash.com/photo-1551076805-e1869033e561?w=600&auto=format&fit=crop&q=80'; // Surgery & operating room
+    }
+    if (combined.includes('radio') || combined.includes('x-ray') || combined.includes('mri') || combined.includes('ct scan') || combined.includes('ultrasound')) {
+      return 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&auto=format&fit=crop&q=80'; // Radiology & medical imaging
+    }
+    if (combined.includes('emerg') || combined.includes('trauma') || combined.includes('icu') || combined.includes('critical')) {
+      return 'https://images.unsplash.com/photo-1583324113626-70df0f4decab?w=600&auto=format&fit=crop&q=80'; // Emergency & trauma resuscitation
+    }
+    if (combined.includes('oncol') || combined.includes('cancer') || combined.includes('chemo') || combined.includes('tumor')) {
+      return 'https://images.unsplash.com/photo-1579154204601-01588f351167?w=600&auto=format&fit=crop&q=80'; // Oncology & cancer care
+    }
+    if (combined.includes('endo') || combined.includes('diabet') || combined.includes('thyroid') || combined.includes('metabol')) {
+      return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80'; // Endocrinology & diabetes
+    }
+    if (combined.includes('derma') || combined.includes('skin') || combined.includes('cosmet')) {
+      return 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&auto=format&fit=crop&q=80'; // Dermatology & clinical skin
+    }
+    if (combined.includes('gastro') || combined.includes('digest') || combined.includes('liver') || combined.includes('endoscop')) {
+      return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&auto=format&fit=crop&q=80'; // Gastroenterology & endoscopy
+    }
+    if (combined.includes('obgyn') || combined.includes('gynec') || combined.includes('obstet') || combined.includes('matern') || combined.includes('pregnan')) {
+      return 'https://images.unsplash.com/photo-1578496781985-452d4a934d50?w=600&auto=format&fit=crop&q=80'; // Obstetrics & Gynecology
+    }
+    if (combined.includes('psych') || combined.includes('mental') || combined.includes('behavior')) {
+      return 'https://images.unsplash.com/photo-1527613426441-4da17471b66d?w=600&auto=format&fit=crop&q=80'; // Psychiatry & Mental Health
+    }
+    if (combined.includes('ophthal') || combined.includes('eye') || combined.includes('vision') || combined.includes('retina')) {
+      return 'https://images.unsplash.com/photo-1579684453423-f84349ef60b0?w=600&auto=format&fit=crop&q=80'; // Ophthalmology & eye care
+    }
+    if (combined.includes('general') || combined.includes('internal') || combined.includes('family') || combined.includes('physician')) {
+      return 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&auto=format&fit=crop&q=80'; // General & Internal Medicine
+    }
+
+    // Default high-grade medical CME poster
+    return 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=600&auto=format&fit=crop&q=80';
+  }
+
   private loadCoursesFromStorage() {
     if (this.isBrowser) {
       const saved = localStorage.getItem('medcme_courses');
       if (saved) {
         try {
-          this.courses = JSON.parse(saved);
+          const parsed: Course[] = JSON.parse(saved);
+          const oldPlaceholder = 'photo-1576091160399-112ba8d25d1d';
+          let updated = false;
+          this.courses = parsed.map(c => {
+            if (!c.thumbnail || c.thumbnail.includes(oldPlaceholder)) {
+              updated = true;
+              return { ...c, thumbnail: this.getCategoryPoster(c.category, c.title) };
+            }
+            return c;
+          });
+          if (updated) {
+            this.saveCoursesToStorage();
+          }
           return;
         } catch (e) {
           console.error('Failed to load courses', e);
@@ -213,7 +290,7 @@ export class CourseService {
   }
 
   getCategories(): string[] {
-    return ['All', 'Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Radiology', 'Emergency'];
+    return ['All', 'Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'Radiology', 'Emergency', 'Orthopedics', 'Physiotherapy', 'Ayurveda', 'Homeopathy', 'Dermatology', 'General Medicine'];
   }
 
   // --- ADMIN COURSE MANAGEMENT METHODS ---
@@ -231,7 +308,9 @@ export class CourseService {
       instructorImage: newCourse.instructorImage || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&auto=format&fit=crop&q=80',
       price: newCourse.price || 1499,
       creditPoints: newCourse.creditPoints || 1,
-      thumbnail: newCourse.thumbnail || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80',
+      thumbnail: newCourse.thumbnail && !newCourse.thumbnail.includes('photo-1576091160399-112ba8d25d1d')
+        ? newCourse.thumbnail
+        : this.getCategoryPoster(newCourse.category || 'Cardiology', newCourse.title),
       duration: newCourse.duration || '3.0 Hours',
       level: newCourse.level || 'Intermediate',
       rating: 5.0,

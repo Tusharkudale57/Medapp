@@ -637,24 +637,42 @@ export class DashboardComponent implements OnInit {
 
   getCategoryImage(category: string): string {
     const cat = (category || '').toLowerCase();
-    if (cat.includes('cardio')) {
-      return 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80';
-    } else if (cat.includes('pediat')) {
+    if (cat.includes('physio') || cat.includes('rehab')) {
+      return 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('ortho') || cat.includes('bone') || cat.includes('joint')) {
+      return 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('ayur') || cat.includes('herbal')) {
+      return 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('homeo')) {
+      return 'https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('cardio') || cat.includes('heart')) {
+      return 'https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('pediat') || cat.includes('child')) {
       return 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&auto=format&fit=crop&q=80';
-    } else if (cat.includes('neuro')) {
+    } else if (cat.includes('neuro') || cat.includes('brain') || cat.includes('stroke')) {
       return 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&auto=format&fit=crop&q=80';
-    } else if (cat.includes('surg')) {
+    } else if (cat.includes('surg') || cat.includes('operat')) {
       return 'https://images.unsplash.com/photo-1551076805-e1869033e561?w=600&auto=format&fit=crop&q=80';
-    } else if (cat.includes('radio')) {
-      return 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&auto=format&fit=crop&q=80';
-    } else if (cat.includes('emerg')) {
+    } else if (cat.includes('radio') || cat.includes('x-ray') || cat.includes('mri') || cat.includes('ct')) {
+      return 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('emerg') || cat.includes('trauma') || cat.includes('icu')) {
       return 'https://images.unsplash.com/photo-1583324113626-70df0f4decab?w=600&auto=format&fit=crop&q=80';
     } else if (cat.includes('endo') || cat.includes('diabet')) {
-      return 'https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?w=600&auto=format&fit=crop&q=80';
+      return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80';
     } else if (cat.includes('oncol') || cat.includes('cancer')) {
       return 'https://images.unsplash.com/photo-1579154204601-01588f351167?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('derma') || cat.includes('skin')) {
+      return 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('gastro') || cat.includes('digest')) {
+      return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('obgyn') || cat.includes('gynec') || cat.includes('obstet') || cat.includes('matern')) {
+      return 'https://images.unsplash.com/photo-1578496781985-452d4a934d50?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('psych') || cat.includes('mental')) {
+      return 'https://images.unsplash.com/photo-1527613426441-4da17471b66d?w=600&auto=format&fit=crop&q=80';
+    } else if (cat.includes('ophthal') || cat.includes('eye')) {
+      return 'https://images.unsplash.com/photo-1579684453423-f84349ef60b0?w=600&auto=format&fit=crop&q=80';
     }
-    return 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=600&auto=format&fit=crop&q=80';
+    return 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&auto=format&fit=crop&q=80';
   }
 
   openProtocolModal(type: 'CLS' | 'PLS' | 'ICU' | 'DRUGS' | 'OBGYN' | 'TRAUMA' | 'NEURO') {

@@ -142,19 +142,15 @@
       <div class="events-grid">
         <div class="event-card animate-fade-in" *ngFor="let event of visibleEvents">
           <div class="card-image-wrapper">
+            <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img" (error)="onImgError($event, event.category, event.title)" />
+            <div class="event-poster-overlay"></div>
             <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'"
               [class.hybrid]="event.mode === 'Hybrid'">
               {{ event.mode === 'Offline' ? 'LIVE EVENT' : event.mode === 'Online' ? 'VIRTUAL' : 'HYBRID' }}
             </span>
-            <!-- Dynamically style based on event banner or thumbnail placeholder -->
-            <div class="thumbnail-placeholder" [style.background]="event.bannerColor || '#2563eb'">
-              <span class="thumb-icon" *ngIf="event.category === 'Cardiology'">❤️</span>
-              <span class="thumb-icon" *ngIf="event.category === 'Pediatrics'">👶</span>
-              <span class="thumb-icon" *ngIf="event.category === 'Neurology'">🧠</span>
-              <span class="thumb-icon" *ngIf="event.category === 'Surgery'">🦴</span>
-              <span class="thumb-icon"
-                *ngIf="event.category !== 'Cardiology' && event.category !== 'Pediatrics' && event.category !== 'Neurology' && event.category !== 'Surgery'">🩺</span>
-            </div>
+            <span class="event-category-pill">
+              {{ event.category }}
+            </span>
           </div>
           <div class="card-body">
             <div class="card-date-badge">
@@ -212,7 +208,8 @@
       <div class="courses-grid">
         <div class="course-card" *ngFor="let course of visibleCourses">
           <div class="course-thumb-wrapper">
-            <img [src]="course.thumbnail" [alt]="course.title" class="course-thumbnail" />
+            <img [src]="getCoursePoster(course)" [alt]="course.title" class="course-thumbnail" (error)="onImgError($event, course.category, course.title)" />
+            <div class="course-poster-overlay"></div>
             <span class="course-category-tag">{{ course.category }}</span>
           </div>
           <div class="course-body">

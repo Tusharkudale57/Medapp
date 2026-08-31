@@ -852,4 +852,21 @@ export class LoginComponent implements OnInit {
     };
     this.showRegistrationForm = true;
   }
+
+  getEventPoster(event: CmeEvent): string {
+    return this.courseService.getCategoryPoster(event.category, event.title);
+  }
+
+  getCoursePoster(course: Course): string {
+    if (course.thumbnail && !course.thumbnail.includes('photo-1576091160399-112ba8d25d1d')) {
+      return course.thumbnail;
+    }
+    return this.courseService.getCategoryPoster(course.category, course.title);
+  }
+
+  onImgError(e: any, category: string, title?: string) {
+    if (e && e.target) {
+      e.target.src = this.courseService.getCategoryPoster(category, title);
+    }
+  }
 }
