@@ -7,7 +7,7 @@ import { EmailService } from '../../services/email.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
 import { RazorpayService } from '../../services/razorpay.service';
-import { Course, CmeEvent } from '../../models/course.model';
+import { Course, CmeEvent, RegisterRequest } from '../../models/course.model';
 
 @Component({
   selector: 'app-login',
@@ -382,31 +382,30 @@ export class LoginComponent implements OnInit {
       interests: selectedInterests
     };
 
-    const requestPayload = {
+    const requestPayload: RegisterRequest = {
       designation: this.regDesignation || 'Dr.',
       firstName: this.regFirstName.trim(),
       middleName: this.regMiddleName.trim(),
       lastName: this.regLastName.trim(),
       mobileNumber: this.regMobileNumber.trim(),
-      email: this.regEmail.trim(),
+      email: this.regEmail.trim().toLowerCase(),
       preferredLanguage: this.regLanguage || 'English',
-      password: this.regPassword || 'Rahul@1234',
-      confirmPassword: this.regConfirmPassword || this.regPassword || 'Rahul@1234',
       gender: this.regGender || 'Male',
       dateOfBirth: this.regDob ? this.regDob.split('T')[0] : '1988-05-15',
       medicalRegistrationNo: this.regMmcNo.trim(),
       specialtyCategory: this.regSpecialty === 'Other' ? this.regSpecialtyOther.trim() : this.regSpecialty,
       hospitalOrInstitutionName: this.regHospital.trim(),
+      organization: this.regOrganization.trim(),
       departmentName: this.regDepartment.trim(),
       city: this.regCity.trim(),
       professionalQualification: this.regQualification,
-      yearsOfExperience: this.regExperience || 0,
+      yearsOfExperience: Number(this.regExperience) || 0,
       clinicAddress: this.regClinicAddress.trim(),
       practicingInterest: selectedInterests.length > 0 ? selectedInterests.join(', ') : 'General Medicine',
+      cmeInterests: selectedInterests.length > 0 ? selectedInterests : [this.regSpecialty],
       emailOptIn: this.regEmailConsent,
       whatsappOptIn: this.regWhatsappConsent,
-      termsAccepted: this.regTermsConsent,
-      passwordConfirmed: true
+      termsAccepted: this.regTermsConsent
     };
 
     this.loading = true;
@@ -973,6 +972,12 @@ export class LoginComponent implements OnInit {
 
   onImgError(e: any, category: string, title?: string) {
     if (e && e.target) {
+      if (e.target.dataset.fallbackApplied) {
+        e.target.onerror = null;
+        e.target.src = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80';
+        return;
+      }
+      e.target.dataset.fallbackApplied = 'true';
       e.target.src = this.courseService.getCategoryPoster(category, title);
     }
   }

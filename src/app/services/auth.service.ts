@@ -2,7 +2,7 @@ import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UserProfile, Certificate } from '../models/course.model';
+import { UserProfile, Certificate, RegisterRequest, ApiResponse } from '../models/course.model';
 
 @Injectable({
   providedIn: 'root'
@@ -203,16 +203,31 @@ export class AuthService {
     return newUser;
   }
 
+  public backendUrl = 'http://localhost:8080';
+
+  public getEndpoint(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    const cleanPath = path.startsWith('/') ? path : '/' + path;
+    return `${this.backendUrl}${cleanPath}`;
+  }
+
   /** Register Doctor Profile via Backend API (POST /api/auth/register) */
-  registerDoctorProfile(payload: any): Observable<any> {
-    return this.http.post<any>('/api/auth/register', payload);
+  registerDoctorProfile(payload: RegisterRequest): Observable<ApiResponse<null>> {
+    const url = this.getEndpoint('/api/auth/register');
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post<ApiResponse<null>>(url, payload, { headers });
   }
 
   /** Send OTP for Login via Backend API (POST /api/auth/login/sendOtp) */
   sendLoginOtpBackend(identifier: string): Observable<any> {
     const isEmail = identifier.includes('@');
     const payload = isEmail ? { email: identifier.trim() } : { mobileNumber: identifier.trim() };
-    return this.http.post<any>('/api/auth/login/sendOtp', payload);
+    const url = this.getEndpoint('/api/auth/login/sendOtp');
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post<any>(url, payload, { headers });
   }
 
   /** Verify OTP for Login via Backend API (POST /api/auth/login/verifyOtp) */
@@ -221,14 +236,17 @@ export class AuthService {
     const payload = isEmail 
       ? { email: identifier.trim(), otp: otp.trim() } 
       : { mobileNumber: identifier.trim(), otp: otp.trim() };
-    return this.http.post<any>('/api/auth/login/verifyOtp', payload);
+    const url = this.getEndpoint('/api/auth/login/verifyOtp');
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post<any>(url, payload, { headers });
   }
 
   /** Fetch Doctor Profile from Backend API (GET /api/profile/get-my-profile) */
   fetchProfileBackend(): Observable<any> {
     const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    return this.http.get<any>('/api/profile/get-my-profile', { headers });
+    const url = this.getEndpoint('/api/profile/get-my-profile');
+    return this.http.get<any>(url, { headers });
   }
 
   /** Update Doctor Profile on Backend API (PUT /api/profile/update-my-profile) */
@@ -270,7 +288,8 @@ export class AuthService {
       passwordConfirmed: true
     };
 
-    return this.http.put<any>('/api/profile/update-my-profile', payload, { headers });
+    const url = this.getEndpoint('/api/profile/update-my-profile');
+    return this.http.put<any>(url, payload, { headers });
   }
 
   /** Map backend JSON profile to frontend UserProfile model */

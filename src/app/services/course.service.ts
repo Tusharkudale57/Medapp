@@ -201,7 +201,7 @@ export class CourseService {
       return 'https://images.unsplash.com/photo-1583324113626-70df0f4decab?w=600&auto=format&fit=crop&q=80'; // Emergency & trauma resuscitation
     }
     if (combined.includes('oncol') || combined.includes('cancer') || combined.includes('chemo') || combined.includes('tumor')) {
-      return 'https://images.unsplash.com/photo-1579154204601-01588f351167?w=600&auto=format&fit=crop&q=80'; // Oncology & cancer care
+      return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80'; // Oncology & cancer care
     }
     if (combined.includes('endo') || combined.includes('diabet') || combined.includes('thyroid') || combined.includes('metabol')) {
       return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80'; // Endocrinology & diabetes

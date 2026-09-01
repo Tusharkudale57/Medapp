@@ -660,7 +660,7 @@ export class DashboardComponent implements OnInit {
     } else if (cat.includes('endo') || cat.includes('diabet')) {
       return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80';
     } else if (cat.includes('oncol') || cat.includes('cancer')) {
-      return 'https://images.unsplash.com/photo-1579154204601-01588f351167?w=600&auto=format&fit=crop&q=80';
+      return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80';
     } else if (cat.includes('derma') || cat.includes('skin')) {
       return 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&auto=format&fit=crop&q=80';
     } else if (cat.includes('gastro') || cat.includes('digest')) {

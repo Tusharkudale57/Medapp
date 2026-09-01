@@ -132,3 +132,36 @@ export interface EventRegistration {
   attendedAt?: string;        // Timestamp when marked present
   sponsoredBy?: string;       // MR Sponsor name or sponsor code
 }
+
+export interface RegisterRequest {
+  designation: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  mobileNumber: string;
+  email: string;
+  preferredLanguage?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  medicalRegistrationNo: string;
+  specialtyCategory: string;
+  hospitalOrInstitutionName: string;
+  organization?: string;
+  departmentName?: string;
+  city: string;
+  professionalQualification: string;
+  yearsOfExperience?: number;
+  clinicAddress?: string;
+  practicingInterest?: string;
+  cmeInterests?: string[];
+  emailOptIn: boolean;
+  whatsappOptIn: boolean;
+  termsAccepted: boolean;
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
