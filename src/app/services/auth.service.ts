@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { UserProfile, Certificate, RegisterRequest, ApiResponse } from '../models/course.model';
 
 @Injectable({
@@ -216,29 +216,53 @@ export class AuthService {
 
   /** Register Doctor Profile via Backend API (POST /api/auth/register) */
   registerDoctorProfile(payload: RegisterRequest): Observable<ApiResponse<null>> {
-    const url = this.getEndpoint('/api/auth/register');
     const headers = { 'Content-Type': 'application/json' };
-    return this.http.post<ApiResponse<null>>(url, payload, { headers });
+    return this.http.post<ApiResponse<null>>('/api/auth/register', payload, { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<ApiResponse<null>>(`${this.backendUrl}/api/auth/register`, payload, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
-  /** Send OTP for Login via Backend API (POST /api/auth/login/sendOtp) */
+  /** Send OTP for Login via Backend API (POST /api/auth/login/send-otp) */
   sendLoginOtpBackend(identifier: string): Observable<any> {
-    const isEmail = identifier.includes('@');
-    const payload = isEmail ? { email: identifier.trim() } : { mobileNumber: identifier.trim() };
-    const url = this.getEndpoint('/api/auth/login/sendOtp');
+    const clean = identifier.trim();
+    const payload = clean.includes('@') ? { email: clean } : { mobileNumber: clean };
     const headers = { 'Content-Type': 'application/json' };
-    return this.http.post<any>(url, payload, { headers });
+    return this.http.post<any>('/api/auth/login/send-otp', payload, { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}/api/auth/login/send-otp`, payload, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
-  /** Verify OTP for Login via Backend API (POST /api/auth/login/verifyOtp) */
-  verifyLoginOtpBackend(identifier: string, otp: string): Observable<any> {
-    const isEmail = identifier.includes('@');
-    const payload = isEmail 
-      ? { email: identifier.trim(), otp: otp.trim() } 
-      : { mobileNumber: identifier.trim(), otp: otp.trim() };
-    const url = this.getEndpoint('/api/auth/login/verifyOtp');
+  /** Verify OTP via Backend API (POST /api/auth/verify-otp) */
+  verifyLoginOtpBackend(identifier: string, otp: string, purpose: string = 'LOGIN'): Observable<any> {
+    const clean = identifier.trim();
+    const payload: any = {
+      otp: otp.trim(),
+      purpose: purpose
+    };
+    if (clean.includes('@')) {
+      payload.email = clean;
+    } else {
+      payload.mobileNumber = clean;
+    }
     const headers = { 'Content-Type': 'application/json' };
-    return this.http.post<any>(url, payload, { headers });
+    return this.http.post<any>('/api/auth/verify-otp', payload, { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}/api/auth/verify-otp`, payload, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   /** Fetch Doctor Profile from Backend API (GET /api/profile/get-my-profile) */

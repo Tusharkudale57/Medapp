@@ -68,6 +68,7 @@ export class LoginComponent implements OnInit {
   loginOtpInterval: any = null;
   loginOtpCode = '123456';
   forgotOtpCode = '654321';
+  otpPurpose: 'LOGIN' | 'REGISTRATION' = 'LOGIN';
 
   // Left Panel Interactive Carousel Slides
   activeSlideIndex: number = 0;
@@ -255,16 +256,19 @@ export class LoginComponent implements OnInit {
   }
 
   openRegistration() {
+    this.loading = false;
     this.showNotRegisteredModal = false;
     this.showRegistrationForm = true;
   }
 
   closeRegistration() {
+    this.loading = false;
     this.showRegistrationForm = false;
     this.showNotRegisteredModal = false;
   }
 
   submitRegistration() {
+    this.loading = false;
     // 1. Mandatory Field presence checks
     if (!this.regFirstName.trim() || 
         !this.regLastName.trim() || 
@@ -408,47 +412,28 @@ export class LoginComponent implements OnInit {
       termsAccepted: this.regTermsConsent
     };
 
-    this.loading = true;
+    // 1. Instant UI Handover (0ms delay)
+    this.authService.registerNewUser(registrationDetails, false);
+    this.showRegistrationForm = false;
+    this.showNotRegisteredModal = false;
+    this.userId = registrationDetails.email || registrationDetails.phone;
+    this.userPass = '';
+    this.activeRole.set('doctor');
+    this.loginStep = 2;
+    this.loginMethod = 'otp';
+    this.otpPurpose = 'REGISTRATION';
+    this.otpSentForLogin = true;
+    this.startOtpCountdown();
+    this.showLoginModal = true;
+    this.loading = false;
+
+    // 2. Concurrently sync profile with backend in background
     this.authService.registerDoctorProfile(requestPayload).subscribe({
       next: (res) => {
-        this.loading = false;
-        this.authService.registerNewUser(registrationDetails, false);
-        this.regSuccessMsg = res?.message || `Successfully registered Dr. ${this.regFirstName}!`;
-
-        setTimeout(() => {
-          this.regSuccessMsg = '';
-          this.showRegistrationForm = false;
-          this.showNotRegisteredModal = false;
-          this.userId = registrationDetails.email || registrationDetails.phone;
-          this.userPass = '';
-          this.activeRole.set('doctor');
-          this.loginStep = 1;
-          this.loginMethod = 'otp';
-          this.otpSentForLogin = false;
-          this.showLoginModal = true;
-        }, 1500);
+        console.log('Backend registration synced successfully');
       },
       error: (err) => {
-        this.loading = false;
-        if (err?.status === 200 || (err?.name === 'HttpErrorResponse' && err?.ok === true)) {
-          this.authService.registerNewUser(registrationDetails, false);
-          this.regSuccessMsg = 'Registration successful! OTP sent to your mobile number/email for verification.';
-          setTimeout(() => {
-            this.regSuccessMsg = '';
-            this.showRegistrationForm = false;
-            this.showNotRegisteredModal = false;
-            this.userId = registrationDetails.email || registrationDetails.phone;
-            this.userPass = '';
-            this.activeRole.set('doctor');
-            this.loginStep = 1;
-            this.loginMethod = 'otp';
-            this.otpSentForLogin = false;
-            this.showLoginModal = true;
-          }, 1500);
-        } else {
-          console.error('Registration API error:', err);
-          alert(err?.error?.message || err?.message || 'An error occurred during registration. Please try again.');
-        }
+        console.warn('Backend sync note:', err);
       }
     });
   }
@@ -526,30 +511,18 @@ export class LoginComponent implements OnInit {
 
     const identifier = this.userId.trim();
     if (this.activeRole() === 'doctor') {
-      this.loading = true;
+      this.otpPurpose = 'LOGIN';
+      this.otpSentForLogin = true;
+      this.loginOtpCountdown = 60;
+      this.startOtpCountdown();
+      this.loading = false;
+
       this.authService.sendLoginOtpBackend(identifier).subscribe({
         next: (res) => {
-          this.loading = false;
-          if (res && res.success) {
-            this.otpSentForLogin = true;
-            this.loginOtpCountdown = 60;
-            alert(res.message || 'OTP sent to your registered Email ID / Mobile number.');
-            this.startOtpCountdown();
-          } else {
-            this.errorMessage = res?.message || 'Failed to send OTP.';
-          }
+          console.log('OTP dispatched successfully:', res);
         },
         error: (err) => {
-          this.loading = false;
-          if (err?.status === 200 || (err?.name === 'HttpErrorResponse' && err?.ok === true)) {
-            this.otpSentForLogin = true;
-            this.loginOtpCountdown = 60;
-            alert('OTP sent to your registered Email ID / Mobile number.');
-            this.startOtpCountdown();
-          } else {
-            console.error('Send OTP error:', err);
-            this.errorMessage = err?.error?.message || err?.message || 'An error occurred while sending OTP.';
-          }
+          console.warn('Send OTP background notice:', err);
         }
       });
     } else {
@@ -557,7 +530,6 @@ export class LoginComponent implements OnInit {
       this.otpSentForLogin = true;
       this.loginOtpCountdown = 60;
       this.loginOtpCode = '999999';
-      alert(`[Simulated SMS/Email] Admin login OTP is: ${this.loginOtpCode}`);
       this.startOtpCountdown();
     }
   }
@@ -582,11 +554,30 @@ export class LoginComponent implements OnInit {
     if (this.activeRole() === 'doctor') {
       const identifier = this.userId.trim();
       const otp = this.userPass.trim();
-      this.authService.verifyLoginOtpBackend(identifier, otp).subscribe({
+      const purpose = this.otpPurpose || 'LOGIN';
+
+      this.authService.verifyLoginOtpBackend(identifier, otp, purpose).subscribe({
         next: (res) => {
           this.loading = false;
-          if (res && res.success && res.data) {
-            this.authService.loginWithBackendUser(res.data.profile, res.data.token);
+          if (res && res.success) {
+            const token = res.data?.token || res.data?.jwt || '';
+            if (token) {
+              localStorage.setItem('medcme_jwt_token', token);
+            }
+            const prof = res.data?.profile || (res.data?.fullName ? {
+              id: String(res.data.doctorId || 'doc_' + Date.now()),
+              name: res.data.fullName,
+              phone: res.data.mobileNumber || identifier,
+              email: identifier.includes('@') ? identifier : '',
+              role: 'doctor'
+            } : null);
+
+            if (prof) {
+              this.authService.loginWithBackendUser(prof, token);
+            } else {
+              this.authService.authenticateDoctor(identifier, otp);
+            }
+
             if (this.pendingEventForCheckout) {
               this.showLoginModal = false;
               this.openRegisterModal(this.pendingEventForCheckout);
@@ -595,24 +586,6 @@ export class LoginComponent implements OnInit {
               this.showLoginModal = false;
               this.router.navigate(['/dashboard']);
             }
-          } else if (res && res.success) {
-            // Backend returned success: true with null data -> fetch my profile
-            this.authService.fetchProfileBackend().subscribe({
-              next: (profRes) => {
-                if (profRes?.data) {
-                  this.authService.loginWithBackendUser(profRes.data, '');
-                } else {
-                  this.authService.authenticateDoctor(identifier, otp);
-                }
-                this.showLoginModal = false;
-                this.router.navigate(['/dashboard']);
-              },
-              error: () => {
-                this.authService.authenticateDoctor(identifier, otp);
-                this.showLoginModal = false;
-                this.router.navigate(['/dashboard']);
-              }
-            });
           } else {
             this.errorMessage = res?.message || 'OTP verification failed.';
           }

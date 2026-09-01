@@ -36,7 +36,17 @@
               "raf",
               "rgbcolor",
               "core-js"
-            ]
+            ],
+            "optimization": {
+              "scripts": true,
+              "styles": {
+                "minify": true,
+                "inlineCritical": false
+              },
+              "fonts": {
+                "inline": false
+              }
+            }
           },
           "configurations": {
             "production": {
