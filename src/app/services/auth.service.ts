@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, throwError, timeout } from 'rxjs';
 import { UserProfile, Certificate, RegisterRequest, ApiResponse } from '../models/course.model';
 
 @Injectable({
@@ -214,6 +214,16 @@ export class AuthService {
     return `${this.backendUrl}${cleanPath}`;
   }
 
+  /** Admin Login via Backend API (POST /api/auth/admin/login) */
+  adminLoginBackend(username: string, password: string): Observable<any> {
+    const payload = { username: username.trim(), password: password.trim() };
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post<any>('/api/auth/admin/login', payload, { headers }).pipe(
+      timeout(1500),
+      catchError((err) => throwError(() => err))
+    );
+  }
+
   /** Register Doctor Profile via Backend API (POST /api/auth/register) */
   registerDoctorProfile(payload: RegisterRequest): Observable<ApiResponse<null>> {
     const headers = { 'Content-Type': 'application/json' };
@@ -381,6 +391,32 @@ export class AuthService {
         return updated;
       }
     });
+  }
+
+  /** Set backend authenticated admin user session & token */
+  loginWithAdminUser(adminProfile?: any, token?: string) {
+    const admin: UserProfile = adminProfile ? {
+      id: String(adminProfile.id || 'admin_001'),
+      name: adminProfile.fullName || adminProfile.name || 'Dr. Administrator (Chief CME Director)',
+      sirName: adminProfile.lastName || adminProfile.sirName || 'Director',
+      email: adminProfile.email || adminProfile.username || 'admin@medcme.org',
+      phone: adminProfile.mobileNumber || adminProfile.phone || '9999999999',
+      specialty: adminProfile.specialty || 'General Medicine',
+      registrationNo: adminProfile.medicalRegistrationNo || 'ADMIN-DIRECTOR-01',
+      creditPoints: adminProfile.creditPoints || 10,
+      purchasedCourseIds: adminProfile.purchasedCourseIds || ['course-1', 'course-2', 'course-3'],
+      completedCourseIds: adminProfile.completedCourseIds || ['course-1', 'course-2'],
+      certificates: adminProfile.certificates || [],
+      role: 'admin',
+      city: adminProfile.city || 'Delhi',
+      interests: []
+    } : { ...this.staticAdminAccount };
+
+    this.currentUserSignal.set(admin);
+    this.saveUserToStorage(admin);
+    if (this.isBrowser && token) {
+      localStorage.setItem('medcme_jwt_token', token);
+    }
   }
 
   // Doctor Static/Dynamic Authentication

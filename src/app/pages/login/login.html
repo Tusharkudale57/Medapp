@@ -340,16 +340,15 @@
               <!-- STEP 1: Account ID input -->
               <div *ngIf="loginStep === 1" class="form-step-content">
                 <div class="form-group">
-                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin ID / Email'
-                    }}</label>
+                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin Username / Email' }}</label>
                   <div class="input-icon-wrapper">
                     <span class="field-icon">👤</span>
-                    <input type="text" [(ngModel)]="userId" name="userId" placeholder="doctor@medcme.org or 9876543210"
+                    <input type="text" [(ngModel)]="userId" name="userId" [placeholder]="activeRole() === 'doctor' ? 'doctor@medcme.org or 9876543210' : 'admin@medcme.org'"
                       required />
                   </div>
                 </div>
                 <button type="button" class="btn-next-step" (click)="nextStep()">
-                  Continue to OTP Verification &rarr;
+                  {{ activeRole() === 'doctor' ? 'Continue to OTP Verification \u2192' : 'Continue to Password Authentication \u2192' }}
                 </button>
               </div>
 
@@ -359,13 +358,13 @@
                   <button type="button" class="btn-back-step" (click)="goToStep(1)">&larr; Back ({{ userId }})</button>
                 </div>
 
-                <div
-                  style="background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; padding: 0.75rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                  <span>📱 Secure Login via OTP Verification</span>
-                </div>
+                <!-- Doctor OTP Method -->
+                <div *ngIf="activeRole() === 'doctor' && loginMethod === 'otp'">
+                  <div
+                    style="background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; padding: 0.75rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📱 Secure Login via OTP Verification</span>
+                  </div>
 
-                <!-- OTP Method -->
-                <div *ngIf="loginMethod === 'otp'">
                   <div *ngIf="!otpSentForLogin" class="otp-request-box">
                     <p>We will send a 6-digit code to {{ userId }}</p>
                     <button type="button" class="btn-send-otp" (click)="sendLoginOtp()">Send Verification OTP</button>
@@ -373,8 +372,7 @@
                   <div *ngIf="otpSentForLogin" class="form-group">
                     <div
                       style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.75rem; line-height: 1.4;">
-                      📱 <strong>New Registration Verification:</strong> A 6-digit OTP has been dispatched to <strong>{{
-                        userId }}</strong>. Please enter the OTP code to complete authentication.
+                      📱 <strong>Verification OTP:</strong> A 6-digit OTP has been dispatched to <strong>{{ userId }}</strong>. Please enter the OTP code to complete authentication.
                     </div>
                     <label>Enter 6-Digit OTP Code *</label>
                     <div class="input-icon-wrapper">
@@ -392,6 +390,26 @@
                   </div>
                 </div>
 
+                <!-- Admin Password Method -->
+                <div *ngIf="activeRole() === 'admin' || loginMethod === 'password'">
+                  <div
+                    style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 0.75rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚡ Admin Authentication Endpoint: <code>POST /api/auth/admin/login</code></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Admin Password *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="field-icon">🔑</span>
+                      <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass"
+                        placeholder="Enter Admin Password" required />
+                      <button type="button" class="btn-toggle-pwd" (click)="togglePasswordVisibility()" style="background: transparent; border: none; font-size: 1rem; cursor: pointer; padding: 0 0.5rem;">
+                        {{ showPassword ? '🙈' : '👁️' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Keep Signed In -->
                 <label class="remember-checkbox">
                   <input type="checkbox" name="rememberDevice" />
@@ -399,8 +417,9 @@
                 </label>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn-submit-main" [disabled]="loading || !otpSentForLogin">
-                  <span *ngIf="!loading">Verify OTP &amp; Sign In &rarr;</span>
+                <button type="submit" class="btn-submit-main" [disabled]="loading || (activeRole() === 'doctor' && !otpSentForLogin) || (activeRole() === 'admin' && !userPass.trim())">
+                  <span *ngIf="!loading && activeRole() === 'doctor'">Verify OTP &amp; Sign In &rarr;</span>
+                  <span *ngIf="!loading && activeRole() === 'admin'">Authenticate Admin &amp; Sign In &rarr;</span>
                   <span *ngIf="loading" class="spinner"></span>
                 </button>
               </div>

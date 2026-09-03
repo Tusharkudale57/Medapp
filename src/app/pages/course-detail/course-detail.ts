@@ -114,15 +114,18 @@ export class CourseDetailComponent implements OnInit {
   switchRole(role: 'doctor' | 'admin') {
     this.activeRole = role;
     this.errorMessage = '';
-    this.loginMethod = 'otp';
     this.otpSentForLogin = false;
     if (this.loginOtpInterval) {
       clearInterval(this.loginOtpInterval);
     }
     if (role === 'doctor') {
       this.userId = 'doctor@medcme.org';
+      this.userPass = 'doctor123';
+      this.loginMethod = 'otp';
     } else {
       this.userId = 'admin@medcme.org';
+      this.userPass = '';
+      this.loginMethod = 'password';
     }
   }
 
@@ -137,9 +140,13 @@ export class CourseDetailComponent implements OnInit {
     }
     this.errorMessage = '';
     this.loginStep = 2;
-    this.loginMethod = 'otp';
-    if (!this.otpSentForLogin) {
-      this.sendLoginOtp();
+    if (this.activeRole === 'doctor') {
+      this.loginMethod = 'otp';
+      if (!this.otpSentForLogin) {
+        this.sendLoginOtp();
+      }
+    } else {
+      this.loginMethod = 'password';
     }
   }
 
@@ -172,34 +179,62 @@ export class CourseDetailComponent implements OnInit {
     this.errorMessage = '';
     this.loading = true;
 
-    // Always validate OTP
-    if (this.userPass.trim() !== this.loginOtpCode) {
-      this.loading = false;
-      this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
-      return;
-    }
+    if (this.activeRole === 'doctor') {
+      if (this.userPass.trim() !== this.loginOtpCode) {
+        this.loading = false;
+        this.errorMessage = 'Invalid 6-digit OTP code. Please enter the correct code.';
+        return;
+      }
 
-    setTimeout(() => {
-      this.loading = false;
-      if (this.activeRole === 'doctor') {
+      setTimeout(() => {
+        this.loading = false;
         const res = this.authService.authenticateDoctor(this.userId, this.userPass);
         if (res.success) {
           this.showLoginModal = false;
-          // Open enrollment checkout modal immediately
           this.initiatePurchase();
         } else {
           this.errorMessage = 'OTP verified but account not found. Please register.';
         }
-      } else {
-        const res = this.authService.authenticateAdmin(this.userId, this.userPass);
-        if (res.success) {
-          this.showLoginModal = false;
-          this.initiatePurchase();
-        } else {
-          this.errorMessage = 'OTP verified but admin account not found.';
-        }
+      }, 500);
+    } else {
+      const username = this.userId.trim();
+      const password = this.userPass.trim();
+
+      if (!username || !password) {
+        this.loading = false;
+        this.errorMessage = 'Please enter both Admin Username and Password.';
+        return;
       }
-    }, 500);
+
+      this.authService.adminLoginBackend(username, password).subscribe({
+        next: (res) => {
+          this.loading = false;
+          if (res && res.success !== false) {
+            const token = res.data?.token || res.data?.jwt || res.token || res.jwt || res.accessToken || '';
+            const adminData = res.data?.user || res.data?.profile || res.user || (typeof res.data === 'object' ? res.data : null);
+            this.authService.loginWithAdminUser(adminData, token);
+            this.showLoginModal = false;
+            this.initiatePurchase();
+          } else {
+            this.errorMessage = res?.message || 'Admin authentication failed.';
+          }
+        },
+        error: (err) => {
+          this.loading = false;
+          if (err?.status === 401 || err?.status === 403) {
+            this.errorMessage = err?.error?.message || err?.error || 'Invalid Admin Username or Password.';
+            return;
+          }
+          const res = this.authService.authenticateAdmin(username, password);
+          if (res.success) {
+            this.showLoginModal = false;
+            this.initiatePurchase();
+          } else {
+            this.errorMessage = res.message || 'Invalid Admin Username or Password.';
+          }
+        }
+      });
+    }
   }
 
   closeRegisterModal() {

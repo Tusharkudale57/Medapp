@@ -62,7 +62,7 @@ export class LoginComponent implements OnInit {
   userPass: string = 'doctor123';
   showPassword: boolean = false;
   loginStep: number = 1; // 1: Identifier, 2: Credentials
-  loginMethod: 'otp' = 'otp';
+  loginMethod: 'otp' | 'password' = 'otp';
   otpSentForLogin = false;
   loginOtpCountdown = 60;
   loginOtpInterval: any = null;
@@ -174,15 +174,18 @@ export class LoginComponent implements OnInit {
     this.activeRole.set(role);
     this.errorMessage = '';
     this.isNewRegistration = false;
-    this.loginMethod = 'otp';
     this.otpSentForLogin = false;
     if (this.loginOtpInterval) {
       clearInterval(this.loginOtpInterval);
     }
     if (role === 'doctor') {
       this.userId = 'doctor@medcme.org';
+      this.userPass = 'doctor123';
+      this.loginMethod = 'otp';
     } else {
       this.userId = 'admin@medcme.org';
+      this.userPass = '';
+      this.loginMethod = 'password';
     }
   }
 
@@ -197,7 +200,6 @@ export class LoginComponent implements OnInit {
   goToStep(step: number) {
     this.loginStep = step;
     if (step === 1) {
-      this.loginMethod = 'otp';
       this.otpSentForLogin = false;
       if (this.loginOtpInterval) {
         clearInterval(this.loginOtpInterval);
@@ -207,17 +209,24 @@ export class LoginComponent implements OnInit {
 
   nextStep() {
     if (!this.userId.trim()) {
-      this.errorMessage = 'Please enter your Registered Email or Mobile Number.';
+      this.errorMessage = this.activeRole() === 'doctor'
+        ? 'Please enter your Registered Email or Mobile Number.'
+        : 'Please enter your Admin Username / Email.';
       return;
     }
     this.errorMessage = '';
-    this.checkNumberPresent();
-    if (!this.showNotRegisteredModal) {
-      this.loginStep = 2;
-      this.loginMethod = 'otp';
-      if (!this.otpSentForLogin) {
-        this.sendLoginOtp();
+    if (this.activeRole() === 'doctor') {
+      this.checkNumberPresent();
+      if (!this.showNotRegisteredModal) {
+        this.loginStep = 2;
+        this.loginMethod = 'otp';
+        if (!this.otpSentForLogin) {
+          this.sendLoginOtp();
+        }
       }
+    } else {
+      this.loginStep = 2;
+      this.loginMethod = 'password';
     }
   }
 
@@ -225,13 +234,15 @@ export class LoginComponent implements OnInit {
     this.activeRole.set('doctor');
     this.userId = 'doctor@medcme.org';
     this.userPass = 'doctor123';
+    this.loginMethod = 'otp';
     this.loginStep = 1;
   }
 
   fillAdminDemo() {
     this.activeRole.set('admin');
     this.userId = 'admin@medcme.org';
-    this.userPass = 'admin123';
+    this.userPass = '';
+    this.loginMethod = 'password';
     this.loginStep = 1;
   }
 
@@ -602,22 +613,50 @@ export class LoginComponent implements OnInit {
         }
       });
     } else {
-      // Admin
-      if (this.userPass.trim() !== this.loginOtpCode && this.userPass.trim() !== 'admin123' && this.userPass.trim() !== '999999') {
+      // Admin Login via Backend API (POST /api/auth/admin/login)
+      const username = this.userId.trim();
+      const password = this.userPass.trim();
+
+      if (!username || !password) {
         this.loading = false;
-        this.errorMessage = 'Invalid 6-digit OTP code.';
+        this.errorMessage = 'Please enter both Admin Username and Password.';
         return;
       }
-      setTimeout(() => {
-        this.loading = false;
-        const adminRes = this.authService.authenticateAdmin(this.userId, this.userPass);
-        if (adminRes.success) {
-          this.showLoginModal = false;
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.errorMessage = 'Admin account not found.';
+
+      this.authService.adminLoginBackend(username, password).subscribe({
+        next: (res) => {
+          this.loading = false;
+          if (res && res.success !== false) {
+            const token = res.data?.token || res.data?.jwt || res.token || res.jwt || res.accessToken || '';
+            const adminData = res.data?.user || res.data?.profile || res.user || (typeof res.data === 'object' ? res.data : null);
+            this.authService.loginWithAdminUser(adminData, token);
+            this.showLoginModal = false;
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.errorMessage = res?.message || 'Admin authentication failed. Please check credentials.';
+          }
+        },
+        error: (err) => {
+          this.loading = false;
+          console.warn('Admin API login response/notice:', err);
+
+          // If backend API returns explicit 401 / 403 Unauthorized
+          if (err?.status === 401 || err?.status === 403) {
+            this.errorMessage = err?.error?.message || err?.error || 'Invalid Admin Username or Password.';
+            return;
+          }
+
+          // For proxy error, connection error, timeout, 500, 502, 504, 404, or status 0:
+          // Fall back gracefully to local admin authentication
+          const adminRes = this.authService.authenticateAdmin(username, password);
+          if (adminRes.success) {
+            this.showLoginModal = false;
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.errorMessage = adminRes.message || 'Invalid Admin Username or Password.';
+          }
         }
-      }, 500);
+      });
     }
   }
 
