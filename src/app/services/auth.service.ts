@@ -69,7 +69,7 @@ export class AuthService {
     id: 'admin_001',
     name: 'Dr. Administrator (Chief CME Director)',
     sirName: 'Director',
-    email: 'admin@medcme.org',
+    email: 'admin@medcme',
     phone: '9999999999',
     specialty: 'General Medicine',
     registrationNo: 'ADMIN-DIRECTOR-01',
@@ -143,7 +143,7 @@ export class AuthService {
   checkUserExists(idOrMobile: string): boolean {
     const clean = idOrMobile.trim().toLowerCase();
     // Admin is always considered present
-    if (clean === 'admin@medcme.org' || clean === '9999999999' || clean === 'admin') {
+    if (clean === 'admin@medcme' || clean === 'admin@medcme.org' || clean === '9999999999' || clean === 'admin') {
       return true;
     }
     // Check doctor accounts
@@ -399,7 +399,7 @@ export class AuthService {
       id: String(adminProfile.id || 'admin_001'),
       name: adminProfile.fullName || adminProfile.name || 'Dr. Administrator (Chief CME Director)',
       sirName: adminProfile.lastName || adminProfile.sirName || 'Director',
-      email: adminProfile.email || adminProfile.username || 'admin@medcme.org',
+      email: adminProfile.email || adminProfile.username || 'admin@medcme',
       phone: adminProfile.mobileNumber || adminProfile.phone || '9999999999',
       specialty: adminProfile.specialty || 'General Medicine',
       registrationNo: adminProfile.medicalRegistrationNo || 'ADMIN-DIRECTOR-01',
@@ -450,7 +450,7 @@ export class AuthService {
     const cleanId = idOrMobile.trim().toLowerCase();
     const cleanPass = passOrOtp.trim();
 
-    if ((cleanId === 'admin@medcme.org' || cleanId === '9999999999' || cleanId.includes('admin')) &&
+    if ((cleanId === 'admin@medcme' || cleanId === 'admin@medcme.org' || cleanId === '9999999999' || cleanId.includes('admin')) &&
         (cleanPass === 'admin123' || cleanPass === '999999' || cleanPass.length >= 4)) {
       
       const admin = { ...this.staticAdminAccount };
