@@ -160,7 +160,7 @@ export class CourseDetailComponent implements OnInit {
     this.loginOtpCountdown = 60;
     this.errorMessage = '';
     this.loginOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    alert(`[Simulated MedCME OTP] Your login verification code is: ${this.loginOtpCode}`);
+    alert(`[Simulated All India CME OTP] Your login verification code is: ${this.loginOtpCode}`);
     this.userPass = this.loginOtpCode;
 
     if (this.loginOtpInterval) {

@@ -254,9 +254,9 @@ export class MyLearningComponent implements OnInit {
     this.router.navigate(['/host-dashboard']);
   }
 
-  navigateToCredits() {
-    this.router.navigate(['/credits']);
-  }
+  // navigateToCredits() {
+  //   this.router.navigate(['/credits']);
+  // }
 
   navigateToKnowledge() {
     this.router.navigate(['/knowledge']);
@@ -321,7 +321,7 @@ export class MyLearningComponent implements OnInit {
   downloadNotes() {
     if (!this.activeLiveEvent) return;
     const blob = new Blob([
-      `MedCME Private Session Notes\n` +
+      `All India CME Private Session Notes\n` +
       `Event: ${this.activeLiveEvent.title}\n` +
       `Speaker: ${this.activeLiveEvent.speaker}\n` +
       `Date: ${this.activeLiveEvent.date}\n\n` +
@@ -396,7 +396,7 @@ export class MyLearningComponent implements OnInit {
         fetchAndDownload();
       } else {
         const finalFileName = fileName.toLowerCase().endsWith('.txt') ? fileName : fileName + '.txt';
-        const blob = new Blob(['MedCME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
+        const blob = new Blob(['All India CME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -434,7 +434,7 @@ export class MyLearningComponent implements OnInit {
       } else {
         const finalFileName = fileName.toLowerCase().endsWith('.txt') ? fileName : fileName + '.txt';
         const blob = new Blob([
-          `MedCME Mandatory CME Pre-Read Material\n` +
+          `All India CME Mandatory CME Pre-Read Material\n` +
           `=========================================\n` +
           `Event: ${event.title}\n` +
           `Speaker: ${event.speaker}\n` +

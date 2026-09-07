@@ -77,7 +77,7 @@ export class LoginComponent implements OnInit {
       icon: '≡ƒÅå',
       tag: 'Accredited CME Platform',
       title: 'Earn & Track CME Credit Points',
-      desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions and track your official credit ledger in real time.'
+      desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions in real time.'
     },
     {
       icon: '≡ƒô£',
@@ -216,13 +216,10 @@ export class LoginComponent implements OnInit {
     }
     this.errorMessage = '';
     if (this.activeRole() === 'doctor') {
-      this.checkNumberPresent();
-      if (!this.showNotRegisteredModal) {
-        this.loginStep = 2;
-        this.loginMethod = 'otp';
-        if (!this.otpSentForLogin) {
-          this.sendLoginOtp();
-        }
+      this.loginStep = 2;
+      this.loginMethod = 'otp';
+      if (!this.otpSentForLogin) {
+        this.sendLoginOtp();
       }
     } else {
       this.loginStep = 2;

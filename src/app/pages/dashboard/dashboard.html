@@ -4,9 +4,9 @@
   <header class="dash-navbar">
     <div class="nav-inner">
       <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
-        <img src="assets/logo.png" alt="MedCME Logo" style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 5px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);" />
+        <img src="assets/logo.png" alt="All India CME Logo" style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 5px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);" />
         <div>
-          <div class="brand-name">MedCME Academy</div>
+          <div class="brand-name">All India CME</div>
           <div class="brand-sub">Continuing Medical Education Platform</div>
         </div>
       </div>
@@ -117,7 +117,7 @@
         <button class="nav-link active">&#128197; CME Events</button>
         <!-- <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button> -->
         <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">&#128214; My Learning</button>
-        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button>
+        <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button> -->
         <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
         <button class="nav-link" (click)="navigateToProfile()">&#127891; My Profile</button>
         <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">&#9881; Admin Panel</button>
@@ -379,7 +379,7 @@
             <div class="card-content-coursera">
               <div class="partner-row-coursera">
                 <span class="partner-logo">🏫</span>
-                <span class="partner-name">MedCME Academy &middot; {{ event.category }}</span>
+                <span class="partner-name">All India CME &middot; {{ event.category }}</span>
               </div>
               <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
               
@@ -473,7 +473,7 @@
             <div class="card-content-coursera">
               <div class="partner-row-coursera">
                 <span class="partner-logo">🏫</span>
-                <span class="partner-name">MedCME Academy &middot; {{ event.category }}</span>
+                <span class="partner-name">All India CME &middot; {{ event.category }}</span>
               </div>
               <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
               
@@ -557,7 +557,7 @@
           <div class="card-content-coursera">
             <div class="partner-row-coursera">
               <span class="partner-logo">🏫</span>
-              <span class="partner-name">MedCME Academy &middot; {{ event.category }}</span>
+              <span class="partner-name">All India CME &middot; {{ event.category }}</span>
             </div>
             <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
             
@@ -619,7 +619,7 @@
       <div class="kb-header">
         <span class="kb-icon">📚</span>
         <div>
-          <h2>MedCME Knowledge Bank</h2>
+          <h2>All India CME Knowledge Bank</h2>
           <p>Official clinical protocols, best practice guidelines, and free downloadable slide presentations</p>
         </div>
       </div>
@@ -846,7 +846,7 @@
           <div style="margin-top: 1rem; text-align: left; border-top: 1px dotted #cbd5e1; padding-top: 0.75rem;">
             <label style="display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.76rem; color: #475569; cursor: pointer; line-height: 1.45;">
               <input type="checkbox" [(ngModel)]="agreeTermsCheckout" style="margin-top: 0.15rem; width: 14px; height: 14px; cursor: pointer; accent-color: #2563eb;" />
-              <span>I agree to the MedCME Event Terms &amp; Refund Policy. I understand that cancellation refund requests must be filed at least 48 hours prior to the event. *</span>
+              <span>I agree to the All India CME Event Terms &amp; Refund Policy. I understand that cancellation refund requests must be filed at least 48 hours prior to the event. *</span>
             </label>
           </div>
         </div>
