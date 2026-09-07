@@ -123,7 +123,7 @@ export class CourseDetailComponent implements OnInit {
       this.userPass = 'doctor123';
       this.loginMethod = 'otp';
     } else {
-      this.userId = 'admin@medcme.org';
+      this.userId = 'admin@medcme';
       this.userPass = '';
       this.loginMethod = 'password';
     }

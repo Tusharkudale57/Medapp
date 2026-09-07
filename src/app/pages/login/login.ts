@@ -183,7 +183,7 @@ export class LoginComponent implements OnInit {
       this.userPass = 'doctor123';
       this.loginMethod = 'otp';
     } else {
-      this.userId = 'admin@medcme.org';
+      this.userId = 'admin@medcme';
       this.userPass = '';
       this.loginMethod = 'password';
     }
@@ -240,7 +240,7 @@ export class LoginComponent implements OnInit {
 
   fillAdminDemo() {
     this.activeRole.set('admin');
-    this.userId = 'admin@medcme.org';
+    this.userId = 'admin@medcme';
     this.userPass = '';
     this.loginMethod = 'password';
     this.loginStep = 1;
