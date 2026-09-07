@@ -489,7 +489,7 @@ export class DashboardComponent implements OnInit {
   downloadNotes() {
     if (!this.activeLiveEvent) return;
     const blob = new Blob([
-      `MedCME Private Session Notes\n` +
+      `All India CME Private Session Notes\n` +
       `Event: ${this.activeLiveEvent.title}\n` +
       `Speaker: ${this.activeLiveEvent.speaker}\n` +
       `Date: ${this.activeLiveEvent.date}\n\n` +
@@ -624,7 +624,7 @@ export class DashboardComponent implements OnInit {
 
   downloadPPT(fileName: string) {
     if (typeof window !== 'undefined') {
-      const blob = new Blob(['MedCME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
+      const blob = new Blob(['All India CME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

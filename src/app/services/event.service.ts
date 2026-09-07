@@ -862,7 +862,7 @@ export class EventService {
       `CME Credits: ${event.creditPoints} Point(s)\n` +
       `Fee: ${event.price === 0 ? 'FREE' : 'Rs. ' + event.price}\n\n` +
       `Register here: ${event.paymentLink}\n\n` +
-      `Hosted by MedCME Academy`
+      `Hosted by All India CME`
     );
     return `https://wa.me/?text=${text}`;
   }

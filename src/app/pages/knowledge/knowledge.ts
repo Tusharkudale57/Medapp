@@ -179,7 +179,7 @@ export class KnowledgeBaseComponent implements OnInit {
       } else {
         const finalFileName = asset.fileName.toLowerCase().endsWith('.txt') ? asset.fileName : asset.fileName + '.txt';
         const blob = new Blob([
-          `MedCME Knowledge Base Resource File\n` +
+          `All India CME Knowledge Base Resource File\n` +
           `Title: ${asset.title}\n` +
           `Filename: ${asset.fileName}\n` +
           `Category: ${asset.category}\n` +
