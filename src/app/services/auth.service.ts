@@ -348,7 +348,7 @@ export class AuthService {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     };
 
-    const rawName = (user.name || '').replace(/^Dr\.\s*/i, '').trim();
+    const rawName = (user.name || '').replace(/^(?:dr\.)\s*/i, '').trim();
     const nameParts = rawName.split(' ');
     const firstName = nameParts[0] || '';
     const lastName = user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
@@ -373,14 +373,23 @@ export class AuthService {
       yearsOfExperience: user.experience || 0,
       clinicAddress: user.clinicAddress || '',
       practicingInterest: user.practicingInterest || (user.interests ? user.interests.join(', ') : ''),
+      cmeInterests:user.interests,
       emailOptIn: user.emailConsent ?? true,
       whatsappOptIn: user.whatsappConsent ?? true,
       termsAccepted: true,
       passwordConfirmed: true
     };
 
-    const url = this.getEndpoint('/api/profile/update-my-profile');
-    return this.http.put<any>(url, payload, { headers });
+    // const url = this.getEndpoint('/api/profile/update-my-profile');
+    // return this.http.put<any>(url, payload, { headers });
+     return this.http.put<any>('api/profile/update-my-profile',payload, { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}api/profile/update-my-profile`,payload, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   /** Map backend JSON profile to frontend UserProfile model */

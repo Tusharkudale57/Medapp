@@ -76,11 +76,12 @@ export class ProfileComponent implements OnInit {
     this.user = this.authService.currentUser();
     if (this.user) {
       let cleanName = this.user.name.trim();
-      if (cleanName.toLowerCase().startsWith('dr. ')) {
-        cleanName = cleanName.substring(4).trim();
-      }
+      // if (cleanName.toLowerCase().startsWith('dr. ')) {
+      //   cleanName = cleanName.substring(4).trim();
+      // }
+      cleanName = cleanName.replace(/^dr\.\s*/i, '').trim();
       const nameParts = cleanName.split(/\s+/);
-      this.editFirstName = nameParts[0] || '';
+      this.editFirstName = nameParts[1] || '';
       this.editMiddleName = this.user.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '');
       this.editLastName = this.user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
       this.editRegNo = this.user.registrationNo;
