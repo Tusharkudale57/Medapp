@@ -1005,9 +1005,9 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/host-dashboard']);
   }
 
-  navigateToCredits() {
-    this.router.navigate(['/credits']);
-  }
+  // navigateToCredits() {
+  //   this.router.navigate(['/credits']);
+  // }
 
   navigateToKnowledge() {
     this.router.navigate(['/knowledge']);

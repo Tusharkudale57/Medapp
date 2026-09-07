@@ -117,7 +117,7 @@
         <button class="nav-link active">&#128197; CME Events</button>
         <!-- <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button> -->
         <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">&#128214; My Learning</button>
-        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button>
+        <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button> -->
         <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
         <button class="nav-link" (click)="navigateToProfile()">&#127891; My Profile</button>
         <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">&#9881; Admin Panel</button>

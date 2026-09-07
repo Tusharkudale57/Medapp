@@ -7,6 +7,7 @@ import { EventService } from '../../services/event.service';
 import { CourseService } from '../../services/course.service';
 import { Certificate, CmeEvent, EventRegistration } from '../../models/course.model';
 
+/*
 interface LedgerItem {
   title: string;
   date: string;
@@ -15,6 +16,7 @@ interface LedgerItem {
   status: 'Approved' | 'Under Review' | 'Revoked';
   certificateId: string;
 }
+*/
 
 @Component({
   selector: 'app-credits',
@@ -24,6 +26,7 @@ interface LedgerItem {
   styleUrl: './credits.css'
 })
 export class CreditsComponent implements OnInit {
+  /*
   ledger: LedgerItem[] = [];
   
   // KPI summary
@@ -38,6 +41,7 @@ export class CreditsComponent implements OnInit {
   discrepancySubmitted = false;
 
   private isBrowser: boolean;
+  */
 
   constructor(
     public authService: AuthService,
@@ -46,18 +50,19 @@ export class CreditsComponent implements OnInit {
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
-    this.isBrowser = isPlatformBrowser(platformId);
+    // this.isBrowser = isPlatformBrowser(platformId);
   }
 
   ngOnInit() {
-    // Redirect if not logged in
-    if (!this.authService.currentUser()) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    this.buildLedger();
+    // Credit Ledger functionality disabled/commented out
+    // if (!this.authService.currentUser()) {
+    //   this.router.navigate(['/login']);
+    //   return;
+    // }
+    // this.buildLedger();
   }
 
+  /*
   buildLedger() {
     const user = this.authService.currentUser();
     if (!user) return;
@@ -146,4 +151,5 @@ export class CreditsComponent implements OnInit {
   navigateToProfile() {
     this.router.navigate(['/profile']);
   }
+  */
 }
