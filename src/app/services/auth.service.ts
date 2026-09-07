@@ -15,7 +15,53 @@ export class AuthService {
 
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
-
+  public user: UserProfile = {
+    id: '',
+    name: '',
+    sirName: '',
+    email: '',
+    phone: '',
+    specialty: '',
+    registrationNo: '',
+    creditPoints: 0,
+    purchasedCourseIds: [''],
+    completedCourseIds: [''],
+    certificates: [
+      {
+        id: '',
+        courseId: '',
+        courseTitle: '',
+        issueDate: '',
+        creditPoints: 0,
+        recipientName: '',
+        verificationCode: '',
+        issuer: ''
+      },
+      {
+        id: '',
+        courseId: '',
+        courseTitle: '',
+        issueDate: '',
+        creditPoints: 0,
+        recipientName: '',
+        verificationCode: '',
+        issuer: ''
+      }
+    ],
+    role: 'doctor',
+    city: '',
+    interests: [''],
+    gender: '',
+    dob: '',
+    designation: '',
+    department: '',
+    qualification: '',
+    hospital: '',
+    experience: 0,
+    language: '',
+    emailConsent: false,
+    whatsappConsent: false
+  };
   // Static Pre-defined Accounts
   public staticDoctorAccount: UserProfile = {
     id: 'doc_101',
@@ -117,8 +163,10 @@ export class AuthService {
           next: (res) => {
             if (res?.success && res?.data) {
               const freshUser = this.mapBackendProfileToUser(res.data);
+              console.log("The freshUser is ========",freshUser);
               const stored = this.currentUserSignal();
               const merged = { ...freshUser, role: stored?.role || 'doctor' };
+              this.user=merged;
               this.currentUserSignal.set(merged);
               this.saveUserToStorage(merged);
             }
@@ -277,10 +325,19 @@ export class AuthService {
 
   /** Fetch Doctor Profile from Backend API (GET /api/profile/get-my-profile) */
   fetchProfileBackend(): Observable<any> {
+    console.log("**** calling fetchprofile backend");
     const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    const url = this.getEndpoint('/api/profile/get-my-profile');
-    return this.http.get<any>(url, { headers });
+    // const url = this.getEndpoint('/api/profile/get-my-profile');
+    // return this.http.get<any>(url, { headers });
+    return this.http.get<any>('/api/profile/get-my-profile', { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}/api/profile/get-my-profile`, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   /** Update Doctor Profile on Backend API (PUT /api/profile/update-my-profile) */
@@ -331,8 +388,10 @@ export class AuthService {
     const firstName = bp.firstName || '';
     const middleName = bp.middleName ? bp.middleName.trim() + ' ' : '';
     const lastName = bp.lastName || '';
-    const fullName = bp.fullName || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
+    const fullName = bp.name || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
+    
 
+    console.log("The bp from the mapBackendProfileToUser @@@@@",bp);
     return {
       id: String(bp.id || 'doc_' + Date.now()),
       name: fullName,
@@ -365,9 +424,12 @@ export class AuthService {
     };
   }
 
+   
   /** Set backend authenticated user session & token */
   loginWithBackendUser(profile: any, token: string) {
-    const user = this.mapBackendProfileToUser(profile);
+    console.log("Inside loginWithBackendUSer  $$$$$$");
+    const user = this.user;
+    console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {
