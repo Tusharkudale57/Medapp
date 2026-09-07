@@ -134,9 +134,24 @@ export class AuthService {
   private saveUserToStorage(user: UserProfile | null) {
     if (!this.isBrowser) return;
     if (user) {
-      localStorage.setItem('medcme_user', JSON.stringify(user));
+      // Store ONLY required basic fields in session storage
+      const basicUser: UserProfile = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        specialty: user.specialty || '',
+        registrationNo: user.registrationNo || '',
+        creditPoints: user.creditPoints || 0,
+        purchasedCourseIds: [],
+        completedCourseIds: [],
+        certificates: []
+      };
+      localStorage.setItem('medcme_user', JSON.stringify(basicUser));
     } else {
       localStorage.removeItem('medcme_user');
+      localStorage.removeItem('medcme_jwt_token');
     }
   }
 
@@ -243,12 +258,8 @@ export class AuthService {
     const payload = clean.includes('@') ? { email: clean } : { mobileNumber: clean };
     const headers = { 'Content-Type': 'application/json' };
     return this.http.post<any>('/api/auth/login/send-otp', payload, { headers }).pipe(
-      catchError((err) => {
-        if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}/api/auth/login/send-otp`, payload, { headers });
-        }
-        return throwError(() => err);
-      })
+      timeout(2000),
+      catchError((err) => throwError(() => err))
     );
   }
 
@@ -266,12 +277,8 @@ export class AuthService {
     }
     const headers = { 'Content-Type': 'application/json' };
     return this.http.post<any>('/api/auth/verify-otp', payload, { headers }).pipe(
-      catchError((err) => {
-        if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}/api/auth/verify-otp`, payload, { headers });
-        }
-        return throwError(() => err);
-      })
+      timeout(2000),
+      catchError((err) => throwError(() => err))
     );
   }
 
@@ -476,6 +483,7 @@ export class AuthService {
     this.currentUserSignal.set(null);
     if (this.isBrowser) {
       localStorage.removeItem('medcme_user');
+      localStorage.removeItem('medcme_jwt_token');
     }
   }
 
