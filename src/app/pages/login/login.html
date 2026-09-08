@@ -188,11 +188,11 @@
         style="text-align: center; margin-top: 2rem;">
         <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()"
           style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
-          Show More ({{ filteredEvents.length - eventsLimit }} remaining) 📂
+          Show More ({{ filteredEvents.length - eventsLimit }} remaining) 
         </button>
         <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()"
           style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Show Less ↩️
+          Show Less 
         </button>
       </div>
 
@@ -241,11 +241,11 @@
       <div *ngIf="filteredCourses.length > 3" style="text-align: center; margin-top: 2rem;">
         <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()"
           style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
-          Show More ({{ filteredCourses.length - coursesLimit }} remaining) 📚
+          Show More ({{ filteredCourses.length - coursesLimit }} remaining) 
         </button>
         <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()"
           style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Show Less ↩️
+          Show Less 
         </button>
       </div>
     </div>

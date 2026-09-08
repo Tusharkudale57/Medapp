@@ -254,13 +254,13 @@
 /* ==================== HERO SECTION ==================== */
 .hero-section {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  padding: 4rem 1.5rem;
+  padding: 1.5rem;
   overflow: hidden;
 }
 
 .hero-inner {
   max-width: 1280px;
-  margin: 0 auto;
+  margin: 0 4.5rem;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   align-items: center;
@@ -282,7 +282,7 @@
   padding: 0.35rem 0.85rem;
   border-radius: 9999px;
   letter-spacing: 0.05em;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
 }
 
 .hero-title {
@@ -302,7 +302,7 @@
   font-size: 1.1rem;
   line-height: 1.5;
   color: #475569;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.5rem 0;
   max-width: 550px;
 }
 
@@ -310,14 +310,14 @@
 .hero-metrics {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
 .metric-card {
   background: #ffffff;
   border-radius: 12px;
-  padding: 0.85rem 1.15rem;
+  padding: 0.85rem 0.85rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
@@ -333,7 +333,7 @@
 }
 
 .metric-card h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #0f172a;
   margin: 0;
@@ -353,13 +353,13 @@
 }
 
 .btn-primary-hero {
-  padding: 0.85rem 1.85rem;
+  padding: 0.85rem 0.85rem;
   background-color: #2563eb;
   color: #ffffff;
   border: none;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   cursor: pointer;
   box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
   transition: all 0.2s ease;
@@ -405,16 +405,16 @@
 
 .graphic-bg-circle {
   position: absolute;
-  width: 320px;
-  height: 320px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, rgba(56,189,248,0.1) 100%);
   z-index: 1;
 }
 
 .doctor-img {
-  width: 300px;
-  height: 300px;
+  width: 280px;
+  height: 280px;
   object-fit: cover;
   border-radius: 50%;
   border: 8px solid #ffffff;
@@ -468,7 +468,7 @@
 
 /* ==================== EVENTS SECTION ==================== */
 .events-section {
-  padding: 4.5rem 1.5rem;
+  padding: 1.5rem 4.5rem;
 }
 
 .section-header-row {
@@ -498,7 +498,7 @@
   padding: 1rem;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -763,7 +763,7 @@
 /* ==================== COURSES SECTION ==================== */
 .courses-section {
   background-color: #ffffff;
-  padding: 4.5rem 1.5rem;
+  padding: 1.5rem 4.5rem;
 }
 
 .courses-grid {
@@ -931,7 +931,7 @@
 /* ==================== BENEFITS BANNER ==================== */
 .benefits-banner {
   background-color: #f1f5f9;
-  padding: 3rem 1.5rem;
+  padding: 1.5rem;
   border-top: 1px solid #e2e8f0;
 }
 
