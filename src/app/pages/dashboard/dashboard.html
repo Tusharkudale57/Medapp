@@ -187,7 +187,7 @@
           <input type="text" [(ngModel)]="searchQuery" placeholder="🔍 Search events by title, category, keyword, or speaker..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 1rem; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.9rem; box-sizing: border-box;" />
         </div>
         <button (click)="showFiltersPanel = !showFiltersPanel" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 1.25rem; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s;">
-          ⚙️ Filters
+           Filters
         </button>
         <button (click)="resetAllFilters()" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0 1rem; font-size: 0.82rem; cursor: pointer;">
           Reset
@@ -198,7 +198,7 @@
       <div *ngIf="authService.currentUser()?.interests && authService.currentUser()!.interests!.length > 0" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; background: #eff6ff; border: 1px dashed #bfdbfe; padding: 0.5rem 0.85rem; border-radius: 8px;">
         <input type="checkbox" id="showInterestedOnlyToggle" [(ngModel)]="showInterestedOnly" style="width: auto; cursor: pointer; height: auto; margin: 0;" />
         <label for="showInterestedOnlyToggle" style="font-size: 0.82rem; font-weight: 700; color: #1e40af; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.25rem; margin: 0;">
-          🎯 Filter by my CME Interests ({{ authService.currentUser()!.interests!.join(', ') }})
+           Filter by my CME Interests ({{ authService.currentUser()!.interests!.join(', ') }})
         </label>
       </div>
 
@@ -281,7 +281,7 @@
     <!-- Fast Filling Events Bar -->
     <div class="fast-filling-container" *ngIf="authService.isDoctor() && fastFillingEvents.length > 0">
       <div class="fast-filling-header">
-        <span class="fire-icon">🔥</span>
+        <span class="fire-icon"></span>
         <div>
           <h3>Fast Filling CME Events</h3>
           <span class="warning-sub">Register immediately before seats run out!</span>
@@ -290,11 +290,11 @@
       <div class="fast-filling-slider">
         <div class="fast-event-item" *ngFor="let fe of fastFillingEvents" (click)="openDetailModal(fe)">
           <div class="fe-tag-row">
-            <span class="fe-seats-badge">🚨 Only {{ seatsLeft(fe) }} seats left!</span>
+            <span class="fe-seats-badge"> Only {{ seatsLeft(fe) }} seats left!</span>
             <span class="fe-cat">{{ fe.category }}</span>
           </div>
           <h4 class="fe-title">{{ fe.title }}</h4>
-          <div class="fe-meta">📅 {{ formatDate(fe.date) }} &middot; {{ fe.time }}</div>
+          <div class="fe-meta">{{ formatDate(fe.date) }} &middot; {{ fe.time }}</div>
           <div class="fe-footer">
             <span class="fe-price" [class.free]="fe.price === 0">{{ fe.price === 0 ? 'FREE' : 'Rs. ' + fe.price }}</span>
             <button class="fe-btn" (click)="$event.stopPropagation(); openRegisterModal(fe)">Register</button>
@@ -312,7 +312,7 @@
                padding: 1rem 1.5rem; border-radius: 14px; box-shadow: 0 8px 30px rgba(239,68,68,0.4);
                font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 0.75rem;
                animation: slideDown 0.3s ease;">
-        <span style="font-size: 1.2rem;">🔒</span>
+        <span style="font-size: 1.2rem;"></span>
         <div>
           <div>Registration Required to Join Live</div>
           <div style="font-weight: 400; font-size: 0.78rem; margin-top: 0.2rem; opacity: 0.9;">Please enroll in this event first to access the live session.</div>
@@ -338,14 +338,14 @@
                 <span class="mode-badge-pill" [class]="event.mode.toLowerCase()">{{ event.mode }}</span>
               </div>
               <div class="credit-badge-overlay">
-                <span class="credits-count">⚡ {{ event.creditPoints }} CME Credits</span>
+                <span class="credits-count"> {{ event.creditPoints }} CME Credits</span>
               </div>
             </div>
 
             <!-- Content -->
             <div class="card-content-coursera">
               <div class="partner-row-coursera">
-                <span class="partner-logo">🏫</span>
+                <span class="partner-logo"></span>
                 <span class="partner-name">All India CME &middot; {{ event.category }}</span>
               </div>
               <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
@@ -367,7 +367,7 @@
               <div class="event-details-bar-coursera">
                 <div class="detail-item">🗓 {{ formatDate(event.date) }} &middot; {{ event.time }}</div>
                 <div class="detail-item-row">
-                  <span class="detail-item-left">📍 {{ event.venue }}</span>
+                  <span class="detail-item-left"> {{ event.venue }}</span>
                   <span class="detail-item-right" [class.low-seats]="seatsLeft(event) < 20">
                     {{ seatsLeft(event) }} Seats Left
                   </span>
@@ -406,7 +406,7 @@
         </div>
 
         <div class="no-recommendations-card" *ngIf="relevantEvents.length === 0">
-          <div class="no-rec-icon">🌟</div>
+          <div class="no-rec-icon"></div>
           <h4>No personalized recommendations yet</h4>
           <p>Update your interests or specialization in your profile to view tailored CME suggestions.</p>
           <button class="btn-rec-interests" (click)="showInterestPopup = true">Select Interests</button>
@@ -432,14 +432,14 @@
                 <span class="mode-badge-pill" [class]="event.mode.toLowerCase()">{{ event.mode }}</span>
               </div>
               <div class="credit-badge-overlay">
-                <span class="credits-count">⚡ {{ event.creditPoints }} CME Credits</span>
+                <span class="credits-count"> {{ event.creditPoints }} CME Credits</span>
               </div>
             </div>
 
             <!-- Content -->
             <div class="card-content-coursera">
               <div class="partner-row-coursera">
-                <span class="partner-logo">🏫</span>
+                <span class="partner-logo"></span>
                 <span class="partner-name">All India CME &middot; {{ event.category }}</span>
               </div>
               <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
@@ -461,7 +461,7 @@
               <div class="event-details-bar-coursera">
                 <div class="detail-item">🗓 {{ formatDate(event.date) }} &middot; {{ event.time }}</div>
                 <div class="detail-item-row">
-                  <span class="detail-item-left">📍 {{ event.venue }}</span>
+                  <span class="detail-item-left"> {{ event.venue }}</span>
                   <span class="detail-item-right" [class.low-seats]="seatsLeft(event) < 20">
                     {{ seatsLeft(event) }} Seats Left
                   </span>
@@ -516,14 +516,14 @@
               <span class="mode-badge-pill" [class]="event.mode.toLowerCase()">{{ event.mode }}</span>
             </div>
             <div class="credit-badge-overlay">
-              <span class="credits-count">⚡ {{ event.creditPoints }} CME Credits</span>
+              <span class="credits-count"> {{ event.creditPoints }} CME Credits</span>
             </div>
           </div>
 
           <!-- Content -->
           <div class="card-content-coursera">
             <div class="partner-row-coursera">
-              <span class="partner-logo">🏫</span>
+              <span class="partner-logo"></span>
               <span class="partner-name">All India CME &middot; {{ event.category }}</span>
             </div>
             <h3 class="event-title-coursera" [title]="event.title">{{ event.title }}</h3>
@@ -1147,18 +1147,18 @@
           <!-- Language Preference & Pre-Reads -->
           <div class="detail-section grid-section">
             <div>
-              <h5>🗣️ Language Preference</h5>
+              <h5> Language Preference</h5>
               <p>{{ selectedEventForDetail.language }}</p>
             </div>
             <div>
-              <h5>📚 Pre-Read Material</h5>
-              <p class="preread-link">📄 {{ selectedEventForDetail.preRead }}</p>
+              <h5> Pre-Read Material</h5>
+              <p class="preread-link"> {{ selectedEventForDetail.preRead }}</p>
             </div>
           </div>
 
           <!-- Speakers Profile -->
           <div class="detail-section">
-            <h4>👤 Speaker Profile</h4>
+            <h4> Speaker Profile</h4>
             <div class="modal-speaker-row">
               <span class="modal-speaker-avatar">{{ selectedEventForDetail.speaker[0] }}</span>
               <div>
@@ -1170,7 +1170,7 @@
 
           <!-- Event Outline -->
           <div class="detail-section">
-            <h4>📋 Event Outline & Schedule format</h4>
+            <h4>Event Outline & Schedule format</h4>
             <div class="outline-list">
               <div class="outline-step" *ngFor="let step of selectedEventForDetail.outline?.split('\n')">
                 {{ step }}
@@ -1180,7 +1180,7 @@
 
           <!-- Scope & Outcome -->
           <div class="detail-section">
-            <h4>🎯 Scope & Learning Outcome</h4>
+            <h4> Scope & Learning Outcome</h4>
             <div class="scope-box">
               <p><strong>Scope:</strong> {{ selectedEventForDetail.scopeDetails }}</p>
               <p style="margin-top: 0.5rem;"><strong>Outcome:</strong> {{ selectedEventForDetail.outcome }}</p>
@@ -1189,15 +1189,15 @@
 
           <!-- Video Assistance Details -->
           <div class="detail-section">
-            <h4>🎥 Video Assistance & Team Support</h4>
+            <h4> Video Assistance & Team Support</h4>
             <div class="video-assistance-box">
-              <p>🗣️ {{ selectedEventForDetail.videoAssistance }}</p>
+              <p> {{ selectedEventForDetail.videoAssistance }}</p>
             </div>
           </div>
 
           <!-- Attendees Registered Count -->
           <div class="detail-section registration-stats">
-            <h5>👥 Registration Count</h5>
+            <h5> Registration Count</h5>
             <p><strong>{{ selectedEventForDetail.registeredCount }} Attendees</strong> registered out of {{ selectedEventForDetail.maxSeats }} seats max capacity.</p>
           </div>
 
@@ -1225,7 +1225,7 @@
                 ✓ Enrolled
               </button>
               <button class="btn-enroll-action" (click)="openLiveRoom(selectedEventForDetail)" style="background: linear-gradient(135deg, #ef4444, #f43f5e); border: none; box-shadow: 0 4px 10px rgba(239,68,68,0.25);">
-                🔴 Join Live Room
+                 Join Live Room
               </button>
             </div>
           </ng-container>

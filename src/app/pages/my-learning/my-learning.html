@@ -248,8 +248,8 @@
             </div>
             <h3 class="learning-title" (click)="navigateToEvents()">{{ event.title }}</h3>
             <div class="event-date-row">
-              <span>📅 {{ event.date }} at {{ event.time }}</span>
-              <span>📍 {{ event.venue }}</span>
+              <span> {{ event.date }} at {{ event.time }}</span>
+              <span> {{ event.venue }}</span>
             </div>
             <div class="meta-points-row">
               <span class="points-badge yellow-badge">+{{ event.creditPoints }} CME Credits</span>
@@ -264,10 +264,10 @@
                <span style="font-size: 0.73rem; color: #0284c7; font-weight: 700; display: block; margin-bottom: 0.25rem;">📚 MANDATORY PRE-READ MATERIAL:</span>
                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
                  <span style="font-size: 0.78rem; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" [title]="event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'">
-                   📄 {{ event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf' }}
+                    {{ event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf' }}
                  </span>
                  <button (click)="downloadPreRead(event)" style="border: none; background: #0ea5e9; color: #fff; padding: 0.35rem 0.65rem; border-radius: 5px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;">
-                   ⬇️ Download
+                    Download
                  </button>
                </div>
              </div>
@@ -276,7 +276,7 @@
                 View Event Details
               </button>
               <button class="btn-resume-learning" (click)="openLiveRoom(event)" style="flex: 1; background: #ef4444; border-color: #ef4444; color: #fff;">
-                🔴 Join Live Room
+                Join Live Room
               </button>
             </div>
           </div>
@@ -323,7 +323,7 @@
           <tbody>
             <!-- Courses Completed -->
             <tr *ngFor="let course of completedCourses">
-              <td><span class="type-pill course-pill">🎓 Course</span></td>
+              <td><span class="type-pill course-pill"> Course</span></td>
               <td>
                 <div class="completed-title-col">
                   <strong>{{ course.title }}</strong>
@@ -342,7 +342,7 @@
 
             <!-- Events Completed (Attended) -->
             <tr *ngFor="let event of completedEvents">
-              <td><span class="type-pill event-pill">📅 Live Event</span></td>
+              <td><span class="type-pill event-pill">Live Event</span></td>
               <td>
                 <div class="completed-title-col">
                   <strong>{{ event.title }}</strong>
@@ -382,9 +382,9 @@
         <div class="cert-card" *ngFor="let cert of certificates">
           <div class="cert-card-header">
             <span class="cert-badge" [class.event-badge]="cert.type === 'event'">
-              {{ cert.type === 'event' ? '📅 Live Event' : '🎓 Course' }}
+              {{ cert.type === 'event' ? ' Live Event' : '🎓 Course' }}
             </span>
-            <span class="cert-credits">⭐ {{ cert.creditPoints }} CME Credit Point</span>
+            <span class="cert-credits"> {{ cert.creditPoints }} CME Credit Point</span>
           </div>
 
           <h3 class="cert-title">{{ cert.courseTitle }}</h3>
@@ -398,10 +398,10 @@
 
           <div class="cert-card-actions">
             <button class="btn-view-cert" (click)="openCertificate(cert)">
-              👁️ View Certificate
+             View Certificate
             </button>
             <button class="btn-download-cert" (click)="openCertificate(cert)">
-              ⬇️ Download PDF / PNG
+              ⬇Download PDF / PNG
             </button>
           </div>
         </div>
@@ -409,7 +409,7 @@
 
       <!-- Empty State Certificates -->
       <div class="empty-state-card" *ngIf="certificates.length === 0">
-        <div class="empty-vector">📜</div>
+        <div class="empty-vector"></div>
         <h3>No certificates issued yet</h3>
         <p>Complete a course or get marked as present in a registered CME live event to receive your accredited certificates.</p>
       </div>
@@ -430,25 +430,25 @@
 
           <!-- Event Description -->
           <div class="detail-section">
-            <h4>📝 Event Description</h4>
+            <h4> Event Description</h4>
             <p>{{ selectedEventForDetail.description }}</p>
           </div>
 
           <!-- Schedule & Location -->
           <div class="detail-section grid-section">
             <div>
-              <h5>📅 Date &amp; Time</h5>
+              <h5> Date &amp; Time</h5>
               <p>{{ selectedEventForDetail.date }} &middot; {{ selectedEventForDetail.time }}</p>
             </div>
             <div>
-              <h5>📍 Venue / Meeting Info</h5>
+              <h5> Venue / Meeting Info</h5>
               <p>{{ selectedEventForDetail.venue }} ({{ selectedEventForDetail.mode }} Type)</p>
             </div>
           </div>
 
           <!-- Zoho Backstage Link -->
           <div class="detail-section" *ngIf="selectedEventForDetail.zohoBackstageLink">
-            <h5>🎟️ Zoho Backstage</h5>
+            <h5> Zoho Backstage</h5>
             <p>
               <a [href]="selectedEventForDetail.zohoBackstageLink" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
                 Open Zoho Backstage Page <span style="font-size: 0.8rem;">↗</span>
@@ -459,18 +459,18 @@
           <!-- Language & Pre-Reads -->
           <div class="detail-section grid-section">
             <div>
-              <h5>🗣️ Language Preference</h5>
+              <h5> Language Preference</h5>
               <p>{{ selectedEventForDetail.language }}</p>
             </div>
             <div>
-              <h5>📚 Pre-Read Material</h5>
-              <p class="preread-link">📄 {{ selectedEventForDetail.preRead }}</p>
+              <h5> Pre-Read Material</h5>
+              <p class="preread-link"> {{ selectedEventForDetail.preRead }}</p>
             </div>
           </div>
 
           <!-- Speaker Profile -->
           <div class="detail-section">
-            <h4>👤 Speaker Profile</h4>
+            <h4> Speaker Profile</h4>
             <div class="modal-speaker-row">
               <span class="modal-speaker-avatar">{{ selectedEventForDetail.speaker[0] }}</span>
               <div>

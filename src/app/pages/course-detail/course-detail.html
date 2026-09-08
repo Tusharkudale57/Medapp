@@ -274,9 +274,9 @@
         <p class="modal-event-title" style="font-weight: 700; color: #0f172a; margin-bottom: 1rem; font-size: 0.95rem;">{{ course.title }}</p>
         
         <div class="modal-details" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; text-align: left; font-size: 0.85rem; color: #475569; display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem;">
-          <div>⏱️ <strong>Duration:</strong> {{ course.duration }}</div>
-          <div>👨‍🏫 <strong>Instructor:</strong> {{ course.instructor }}</div>
-          <div>⭐ <strong>Credits:</strong> +{{ course.creditPoints }} CME Credit Point</div>
+          <div><strong>Duration:</strong> {{ course.duration }}</div>
+          <div> <strong>Instructor:</strong> {{ course.instructor }}</div>
+          <div> <strong>Credits:</strong> +{{ course.creditPoints }} CME Credit Point</div>
           <div style="font-weight: 700; color: #1e3a8a; font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 0.4rem; margin-top: 0.2rem;">
             Price: ₹{{ course.price | number }}
           </div>
