@@ -114,17 +114,16 @@
       </div>
 
       <nav class="nav-links">
-        <button class="nav-link" (click)="navigateToEvents()">&#128197; CME Events</button>
-        <!-- <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button> -->
-        <button *ngIf="!authService.isAdmin()" class="nav-link active">&#128214; My Learning</button>
-        <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button> -->
-        <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
-        <button class="nav-link" (click)="navigateToProfile()">&#127891; My Profile</button>
-        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">&#9881; Admin Panel</button>
+        <button class="nav-link" (click)="navigateToEvents()">CME Events</button>
+        <!-- <button class="nav-link" (click)="navigateToCourses()">Online Courses</button> -->
+        <button *ngIf="!authService.isAdmin()" class="nav-link active">My Learning</button>
+        <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">Credits Ledger</button> -->
+        <button class="nav-link" (click)="navigateToKnowledge()">Library</button>
+        <button class="nav-link" (click)="navigateToProfile()">My Profile</button>
+        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">Admin Panel</button>
       </nav>
       <div class="nav-right">
         <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;" title="Click to instantly switch between Doctor & Admin roles">
-          <div class="avatar">{{ (authService.currentUser()?.name || 'D')[3] || 'D' }}</div>
           <span class="user-name">{{ authService.currentUser()?.name }}</span>
           <span class="role-badge" [class.admin-badge]="authService.isAdmin()">
             {{ authService.isAdmin() ? 'Admin 🔄' : 'Doctor 🔄' }}

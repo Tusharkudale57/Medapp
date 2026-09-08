@@ -142,7 +142,8 @@
       <div class="events-grid">
         <div class="event-card animate-fade-in" *ngFor="let event of visibleEvents">
           <div class="card-image-wrapper">
-            <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img" (error)="onImgError($event, event.category, event.title)" />
+            <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img"
+              (error)="onImgError($event, event.category, event.title)" />
             <div class="event-poster-overlay"></div>
             <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'"
               [class.hybrid]="event.mode === 'Hybrid'">
@@ -208,7 +209,8 @@
       <div class="courses-grid">
         <div class="course-card" *ngFor="let course of visibleCourses">
           <div class="course-thumb-wrapper">
-            <img [src]="getCoursePoster(course)" [alt]="course.title" class="course-thumbnail" (error)="onImgError($event, course.category, course.title)" />
+            <img [src]="getCoursePoster(course)" [alt]="course.title" class="course-thumbnail"
+              (error)="onImgError($event, course.category, course.title)" />
             <div class="course-poster-overlay"></div>
             <span class="course-category-tag">{{ course.category }}</span>
           </div>
@@ -340,15 +342,18 @@
               <!-- STEP 1: Account ID input -->
               <div *ngIf="loginStep === 1" class="form-step-content">
                 <div class="form-group">
-                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin Username / Email' }}</label>
+                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin Username / Email'
+                    }}</label>
                   <div class="input-icon-wrapper">
                     <span class="field-icon">👤</span>
-                    <input type="text" [(ngModel)]="userId" name="userId" [placeholder]="activeRole() === 'doctor' ? 'doctor@medcme.org or 9876543210' : 'admin@medcme'"
+                    <input type="text" [(ngModel)]="userId" name="userId"
+                      [placeholder]="activeRole() === 'doctor' ? 'doctor@medcme.org or 9876543210' : 'admin@medcme'"
                       required />
                   </div>
                 </div>
                 <button type="button" class="btn-next-step" (click)="nextStep()">
-                  {{ activeRole() === 'doctor' ? 'Continue to OTP Verification \u2192' : 'Continue to Password Authentication \u2192' }}
+                  {{ activeRole() === 'doctor' ? 'Continue to OTP Verification \u2192' : 'Continue to Password
+                  Authentication \u2192' }}
                 </button>
               </div>
 
@@ -372,7 +377,8 @@
                   <div *ngIf="otpSentForLogin" class="form-group">
                     <div
                       style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.75rem; line-height: 1.4;">
-                      📱 <strong>Verification OTP:</strong> A 6-digit OTP has been dispatched to <strong>{{ userId }}</strong>. Please enter the OTP code to complete authentication.
+                      📱 <strong>Verification OTP:</strong> A 6-digit OTP has been dispatched to <strong>{{ userId
+                        }}</strong>. Please enter the OTP code to complete authentication.
                     </div>
                     <label>Enter 6-Digit OTP Code *</label>
                     <div class="input-icon-wrapper">
@@ -403,7 +409,8 @@
                       <span class="field-icon">🔑</span>
                       <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass"
                         placeholder="Enter Admin Password" required />
-                      <button type="button" class="btn-toggle-pwd" (click)="togglePasswordVisibility()" style="background: transparent; border: none; font-size: 1rem; cursor: pointer; padding: 0 0.5rem;">
+                      <button type="button" class="btn-toggle-pwd" (click)="togglePasswordVisibility()"
+                        style="background: transparent; border: none; font-size: 1rem; cursor: pointer; padding: 0 0.5rem;">
                         {{ showPassword ? '🙈' : '👁️' }}
                       </button>
                     </div>
@@ -417,7 +424,8 @@
                 </label>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn-submit-main" [disabled]="loading || (activeRole() === 'doctor' && !otpSentForLogin) || (activeRole() === 'admin' && !userPass.trim())">
+                <button type="submit" class="btn-submit-main"
+                  [disabled]="loading || (activeRole() === 'doctor' && !otpSentForLogin) || (activeRole() === 'admin' && !userPass.trim())">
                   <span *ngIf="!loading && activeRole() === 'doctor'">Verify OTP &amp; Sign In &rarr;</span>
                   <span *ngIf="!loading && activeRole() === 'admin'">Authenticate Admin &amp; Sign In &rarr;</span>
                   <span *ngIf="loading" class="spinner"></span>
@@ -572,7 +580,8 @@
 
           <div class="form-group" style="grid-column: span 2;">
             <label>Clinic Address</label>
-            <textarea [(ngModel)]="regClinicAddress" name="regClinicAddress" placeholder="Clinic / Office Address" rows="2"></textarea>
+            <textarea [(ngModel)]="regClinicAddress" name="regClinicAddress" placeholder="Clinic / Office Address"
+              rows="2"></textarea>
           </div>
 
           <div class="form-group"
@@ -609,7 +618,8 @@
             </div>
           </div>
 
-          <div class="registration-consents" style="grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.35rem;">
+          <div class="registration-consents"
+            style="grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.35rem;">
             <label>
               <input type="checkbox" [(ngModel)]="regEmailConsent" name="regEmailConsent" required />
               <span>I consent to receive emails regarding CME updates and courses *</span>

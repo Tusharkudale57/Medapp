@@ -114,17 +114,16 @@
       </div>
 
       <nav class="nav-links">
-        <button class="nav-link active">&#128197; CME Events</button>
-        <!-- <button class="nav-link" (click)="navigateToCourses()">&#127891; Online Courses</button> -->
-        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">&#128214; My Learning</button>
-        <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">⚡ Credits Ledger</button> -->
-        <button class="nav-link" (click)="navigateToKnowledge()">📚 Library</button>
-        <button class="nav-link" (click)="navigateToProfile()">&#127891; My Profile</button>
-        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">&#9881; Admin Panel</button>
+        <button class="nav-link active">CME Events</button>
+        <!-- <button class="nav-link" (click)="navigateToCourses()">Online Courses</button> -->
+        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">My Learning</button>
+        <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">Credits Ledger</button> -->
+        <button class="nav-link" (click)="navigateToKnowledge()">Library</button>
+        <button class="nav-link" (click)="navigateToProfile()">My Profile</button>
+        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">Admin Panel</button>
       </nav>
       <div class="nav-right">
         <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;" title="Click to instantly switch between Doctor & Admin roles">
-          <div class="avatar">{{ (authService.currentUser()?.name || 'D')[3] || 'D' }}</div>
           <span class="user-name">{{ authService.currentUser()?.name }}</span>
           <span class="role-badge" [class.admin-badge]="authService.isAdmin()">
             {{ authService.isAdmin() ? 'Admin 🔄' : 'Doctor 🔄' }}
@@ -179,39 +178,7 @@
       </div>
     </div>
 
-    <!-- Doctor KPIs & Pending Actions -->
-    <div *ngIf="authService.isDoctor()" class="doctor-kpis-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; margin-bottom: 1.5rem; text-align: left;">
-      <div style="background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; padding: 1.25rem; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(14,165,233,0.15);">
-        <div>
-          <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; opacity: 0.9;">🏆 Preserved CME Credits</span>
-          <h3 style="margin: 0.25rem 0 0 0; font-size: 1.8rem; font-weight: 800;">{{ authService.currentUser()?.creditPoints || 0 }}.0</h3>
-          <span style="font-size: 0.72rem; opacity: 0.8;">Earned points towards accreditation</span>
-        </div>
-        <div style="font-size: 2.2rem; opacity: 0.85;">⚡</div>
-      </div>
-      <div style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 1.25rem; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(16,185,129,0.15);">
-        <div>
-          <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; opacity: 0.9;">📜 Certificates Awarded</span>
-          <h3 style="margin: 0.25rem 0 0 0; font-size: 1.8rem; font-weight: 800;">{{ authService.getUserCertificates().length }}</h3>
-          <span style="font-size: 0.72rem; opacity: 0.8;">Downloadable official PDFs</span>
-        </div>
-        <div style="font-size: 2.2rem; opacity: 0.85;">🎓</div>
-      </div>
-      <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-        <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #64748b; display: block; margin-bottom: 0.4rem;">⚠️ Pending Actions</span>
-        <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.75rem;">
-          <div *ngIf="!authService.currentUser()?.dob" style="color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
-            🔴 Complete Profile Setup (DOB/Gender missing)
-          </div>
-          <div *ngIf="authService.getUserCertificates().length === 0" style="color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
-            🟡 Register for a live event to earn your first certificate
-          </div>
-          <div *ngIf="authService.currentUser()?.dob" style="color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
-            ✓ Your credentials are in active standing
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Search and Advanced Filters Section -->
     <div *ngIf="authService.isDoctor()" class="advanced-search-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: left;">
@@ -355,7 +322,7 @@
       <!-- Recommended Events Section -->
       <div class="events-section" style="margin-bottom: 3rem;">
         <div class="section-header-coursera" style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #eff6ff; padding-bottom: 0.75rem; margin-bottom: 1.5rem; text-align: left;">
-          <span style="font-size: 1.5rem; color: #f59e0b;">🌟</span>
+          <span style="font-size: 1.5rem; color: #f59e0b;"></span>
           <div>
             <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Recommended CME For You</h3>
             <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #64748b;">Based on your specialization and selected areas of interest</p>
@@ -449,7 +416,7 @@
       <!-- Other CME Events Section -->
       <div class="events-section">
         <div class="section-header-coursera" style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #eff6ff; padding-bottom: 0.75rem; margin-bottom: 1.5rem; text-align: left;">
-          <span style="font-size: 1.5rem; color: #3b82f6;">🌐</span>
+          <span style="font-size: 1.5rem; color: #3b82f6;"></span>
           <div>
             <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">Other CME Events</h3>
             <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #64748b;">Explore all generic medical education opportunities</p>
@@ -617,7 +584,7 @@
     <!-- Knowledge Bank & Resources Section -->
     <div class="knowledge-bank-section" *ngIf="authService.isDoctor()">
       <div class="kb-header">
-        <span class="kb-icon">📚</span>
+        <span class="kb-icon"></span>
         <div>
           <h2>All India CME Knowledge Bank</h2>
           <p>Official clinical protocols, best practice guidelines, and free downloadable slide presentations</p>

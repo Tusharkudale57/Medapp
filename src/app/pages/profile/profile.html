@@ -27,13 +27,13 @@
 
       <div class="profile-details">
         <div *ngIf="uploadError" style="color: #ef4444; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.5rem; text-align: left;">
-          ⚠️ {{ uploadError }}
+          {{ uploadError }}
         </div>
         <div class="name-row">
           <h2>{{ user.name }}</h2>
           <span class="role-badge">{{ user.role === 'admin' ? 'Administrator' : 'Verified Medical Doctor' }}</span>
           <button class="btn-edit" (click)="isEditing = !isEditing">
-            {{ isEditing ? 'Cancel Edit' : '✏️ Edit Profile' }}
+            {{ isEditing ? 'Cancel Edit' : ' Edit Profile' }}
           </button>
         </div>
 
@@ -43,28 +43,28 @@
         </p>
 
         <div class="contact-strip">
-          <span>📱 Mobile: +91 {{ user.phone }}</span>
-          <span>✉️ Email: {{ user.email }}</span>
-          <span>📍 City: {{ user.city || 'Mumbai' }}</span>
+          <span> Mobile: +91 {{ user.phone }}</span>
+          <span> Email: {{ user.email }}</span>
+          <span> City: {{ user.city || 'Mumbai' }}</span>
         </div>
 
         <div class="contact-strip" style="margin-top: 0.5rem; color: #475569; font-size: 0.8rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">
-          <span>🧑 Gender: {{ user.gender || 'Male' }}</span>
-          <span>🎂 DOB: {{ user.dob || '1990-08-15' }}</span>
-          <span>💼 Role: {{ user.designation || 'Senior Cardiologist' }} ({{ user.department || 'Cardiology' }})</span>
+          <span> Gender: {{ user.gender || 'Male' }}</span>
+          <span> DOB: {{ user.dob || '1990-08-15' }}</span>
+          <span> Role: {{ user.designation || 'Senior Cardiologist' }} ({{ user.department || 'Cardiology' }})</span>
         </div>
 
         <div class="contact-strip" style="margin-top: 0.3rem; color: #475569; font-size: 0.8rem;">
-          <span>🎓 Qualification: {{ user.qualification || 'MD, DM Cardiology' }}</span>
-          <span>🏢 Hospital: {{ user.hospital || 'Fortis Hospital Mumbai' }}</span>
-          <span>🏫 Org: {{ user.organization || 'N/A' }}</span>
-          <span>⏳ Exp: {{ user.experience || 8 }} Years</span>
-          <span>🗣️ Language: {{ user.language || 'English' }}</span>
+          <span> Qualification: {{ user.qualification || 'MD, DM Cardiology' }}</span>
+          <span> Hospital: {{ user.hospital || 'Fortis Hospital Mumbai' }}</span>
+          <span> Org: {{ user.organization || 'N/A' }}</span>
+          <span> Exp: {{ user.experience || 8 }} Years</span>
+          <span> Language: {{ user.language || 'English' }}</span>
         </div>
 
         <div class="contact-strip" style="margin-top: 0.3rem; color: #475569; font-size: 0.8rem; border-top: 1px dashed #e2e8f0; padding-top: 0.3rem;">
-          <span>🏥 Clinic: {{ user.clinicAddress || 'N/A' }}</span>
-          <span>🎯 Practicing Interest: {{ user.practicingInterest || 'N/A' }}</span>
+          <span> Clinic: {{ user.clinicAddress || 'N/A' }}</span>
+          <span> Practicing Interest: {{ user.practicingInterest || 'N/A' }}</span>
         </div>
 
         <div class="interests-strip" style="margin-top: 0.65rem; text-align: left;" *ngIf="user.interests && user.interests.length > 0">
@@ -238,7 +238,7 @@
 
       <!-- Preserved Credit Points Preserved Badge Card -->
       <div class="credit-summary-card">
-        <div class="trophy-icon">🏆</div>
+        <div class="trophy-icon"></div>
         <div class="credit-num">{{ totalCreditPoints }}</div>
         <div class="credit-label">Preserved CME Credit Points</div>
         <div class="credit-sub">Earned via Courses & Event Attendance</div>
@@ -247,7 +247,7 @@
 
     <!-- Certificates Section -->
     <div class="section-title-row">
-      <h3>📜 Earned CME Certificates ({{ certificates.length }})</h3>
+      <h3> Earned CME Certificates ({{ certificates.length }})</h3>
       <p>All certificates are official, verified, and downloadable for medical council submission.</p>
     </div>
 
@@ -255,9 +255,9 @@
       <div class="cert-card" *ngFor="let cert of certificates">
         <div class="cert-card-header">
           <span class="cert-code" [style.background]="cert.type === 'event' ? '#fef3c7' : '#dcfce7'" [style.color]="cert.type === 'event' ? '#92400e' : '#166534'">
-            {{ cert.type === 'event' ? '📅 Event' : '🎓 Course' }} • {{ cert.verificationCode }}
+            {{ cert.type === 'event' ? ' Event' : ' Course' }} • {{ cert.verificationCode }}
           </span>
-          <span class="cert-points">⭐ {{ cert.creditPoints }} CME Credit Point</span>
+          <span class="cert-points"> {{ cert.creditPoints }} CME Credit Point</span>
         </div>
 
         <h4 class="cert-course-title">{{ cert.courseTitle }}</h4>
@@ -270,17 +270,17 @@
 
         <div class="cert-card-actions">
           <button class="btn-view-cert" (click)="openCertificate(cert)">
-            👁️ View Certificate
+             View Certificate
           </button>
           <button class="btn-download-cert" (click)="openCertificate(cert)">
-            ⬇️ Download PNG / PDF
+             Download PNG / PDF
           </button>
         </div>
       </div>
     </div>
 
     <div class="empty-certs" *ngIf="certificates.length === 0">
-      <div class="empty-icon">📜</div>
+      <div class="empty-icon"></div>
       <h4>No certificates earned yet</h4>
       <p>Attend a CME Event or complete an online Course to earn CME Credit Points and your certificates!</p>
       <button class="btn-primary" (click)="backToDashboard()">Browse CME Events →</button>
@@ -302,10 +302,10 @@
       <div class="cert-dialog-footer">
         <button class="btn-secondary" (click)="closeCertificateModal()">Close</button>
         <button class="btn-download-action" (click)="downloadCertificate()">
-          ⬇️ Download PNG
+           Download PNG
         </button>
         <button class="btn-download-pdf-action" (click)="downloadCertificatePdf()">
-          ⬇️ Download PDF
+           Download PDF
         </button>
       </div>
     </div>

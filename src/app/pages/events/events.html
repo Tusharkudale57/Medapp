@@ -5,7 +5,8 @@
     <div class="nav-inner">
       <button class="back-btn" (click)="backToDashboard()">&#8592; CME Events</button>
       <div class="nav-brand" style="display: flex; align-items: center; gap: 0.65rem;">
-        <img src="assets/logo.png" alt="All India CME Logo" style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 5px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);" />
+        <img src="assets/logo.png" alt="All India CME Logo"
+          style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 5px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);" />
         <div>
           <div class="brand-name">Online CME Courses</div>
           <div class="brand-sub">Self-Paced Accredited Medical Education</div>
@@ -24,13 +25,16 @@
           <div class="mega-menu-inner">
             <!-- Left Sidebar -->
             <div class="mega-sidebar">
-              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'" (mouseenter)="activeSubMenu = 'specialties'">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'"
+                (mouseenter)="activeSubMenu = 'specialties'">
                 Medical Specialties <span class="sidebar-arrow">&#8250;</span>
               </button>
-              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'" (mouseenter)="activeSubMenu = 'degrees'">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'"
+                (mouseenter)="activeSubMenu = 'degrees'">
                 Degrees & Fellowships <span class="sidebar-arrow">&#8250;</span>
               </button>
-              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'" (mouseenter)="activeSubMenu = 'conferences'">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'"
+                (mouseenter)="activeSubMenu = 'conferences'">
                 Live Conferences <span class="sidebar-arrow">&#8250;</span>
               </button>
             </div>
@@ -68,19 +72,23 @@
               <div class="details-content" *ngIf="activeSubMenu === 'degrees'">
                 <h4>Accredited Fellowships & Diplomas</h4>
                 <div class="details-grid">
-                  <div class="details-item-card" (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
                     <h5>Fellowship in Clinical Cardiology</h5>
                     <p>6-Month Advanced clinical diagnostics certification.</p>
                   </div>
-                  <div class="details-item-card" (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
                     <h5>Postgraduate Diploma in Pediatrics</h5>
                     <p>Accredited specialization in child health care.</p>
                   </div>
-                  <div class="details-item-card" (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
                     <h5>Certificate in Emergency Medicine</h5>
                     <p>Hands-on training for emergency rooms.</p>
                   </div>
-                  <div class="details-item-card" (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
                     <h5>Master of Hospital Administration</h5>
                     <p>Advanced healthcare management degree.</p>
                   </div>
@@ -91,7 +99,8 @@
               <div class="details-content" *ngIf="activeSubMenu === 'conferences'">
                 <h4>Live CME Conferences</h4>
                 <div class="details-grid">
-                  <div class="details-item-card" (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
                     <h5>National Health Summit 2026</h5>
                     <p>Live offline event on healthcare policies.</p>
                   </div>
@@ -114,11 +123,11 @@
         </div>
       </div>
       <div class="nav-right">
-        <button *ngIf="!authService.isAdmin()" class="btn-my-learning" (click)="navigateToMyLearning()" style="background: transparent; border: 1px solid rgba(255,255,255,0.25); color: #e2e8f0; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; margin-right: 0.5rem;">
-          &#128214; My Learning
+        <button *ngIf="!authService.isAdmin()" class="btn-my-learning" (click)="navigateToMyLearning()"
+          style="background: transparent; border: 1px solid rgba(255,255,255,0.25); color: #e2e8f0; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; margin-right: 0.5rem;">
+          My Learning
         </button>
         <div class="user-pill">
-          <div class="avatar">{{ (authService.currentUser()?.name || 'D')[3] || 'D' }}</div>
           <span>{{ authService.currentUser()?.name }}</span>
         </div>
         <button *ngIf="authService.isAdmin()" class="btn-add-course" (click)="openCreateCourseModal()">
@@ -160,9 +169,7 @@
           placeholder="Search courses by title, specialty or instructor..." />
       </div>
       <div class="category-tabs">
-        <button
-          *ngFor="let cat of categories"
-          [class.active]="selectedCategory === cat"
+        <button *ngFor="let cat of categories" [class.active]="selectedCategory === cat"
           (click)="onCategorySelect(cat)">
           {{ cat }}
         </button>
@@ -216,23 +223,17 @@
               <span class="price-label">Incl. Certificate</span>
             </div>
 
-            <button
-              *ngIf="!authService.isCoursePurchased(course.id)"
-              class="btn-action btn-purchase"
+            <button *ngIf="!authService.isCoursePurchased(course.id)" class="btn-action btn-purchase"
               (click)="viewCourse(course.id)">
               Purchase Now
             </button>
 
-            <button
-              *ngIf="authService.isCoursePurchased(course.id) && !authService.isCourseCompleted(course.id)"
-              class="btn-action btn-learning"
-              (click)="viewCourse(course.id)">
+            <button *ngIf="authService.isCoursePurchased(course.id) && !authService.isCourseCompleted(course.id)"
+              class="btn-action btn-learning" (click)="viewCourse(course.id)">
               Continue Learning &#8594;
             </button>
 
-            <button
-              *ngIf="authService.isCourseCompleted(course.id)"
-              class="btn-action btn-completed"
+            <button *ngIf="authService.isCourseCompleted(course.id)" class="btn-action btn-completed"
               (click)="viewCourse(course.id)">
               &#10003; Completed (1 Credit)
             </button>
@@ -246,7 +247,8 @@
       <div class="empty-icon">&#128218;</div>
       <h3>No courses match your search</h3>
       <p>Try clearing filters or searching for another medical topic.</p>
-      <button class="btn-secondary" (click)="onCategorySelect('All'); searchQuery = ''; loadCourses()">Reset Filters</button>
+      <button class="btn-secondary" (click)="onCategorySelect('All'); searchQuery = ''; loadCourses()">Reset
+        Filters</button>
     </div>
 
   </main>
@@ -261,7 +263,8 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Course Title</label>
-          <input type="text" [(ngModel)]="newCourseTitle" placeholder="e.g. Advanced Oncology & Targeted Immunotherapy" />
+          <input type="text" [(ngModel)]="newCourseTitle"
+            placeholder="e.g. Advanced Oncology & Targeted Immunotherapy" />
         </div>
         <div class="form-grid-2">
           <div class="form-group">
@@ -292,12 +295,14 @@
         </div>
         <div class="form-group">
           <label>Course Description</label>
-          <textarea rows="3" [(ngModel)]="newCourseDescription" placeholder="Overview of clinical protocols..."></textarea>
+          <textarea rows="3" [(ngModel)]="newCourseDescription"
+            placeholder="Overview of clinical protocols..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" (click)="closeCreateCourseModal()">Cancel</button>
-        <button class="btn-primary" (click)="saveCourse()">{{ editingCourseId ? 'Save Changes' : 'Publish New Course' }}</button>
+        <button class="btn-primary" (click)="saveCourse()">{{ editingCourseId ? 'Save Changes' : 'Publish New Course'
+          }}</button>
       </div>
     </div>
   </div>
