@@ -278,17 +278,17 @@ export class LoginComponent implements OnInit {
   submitRegistration() {
     this.loading = false;
     // 1. Mandatory Field presence checks
-    if (!this.regFirstName.trim() || 
-        !this.regLastName.trim() || 
-        !this.regMobileNumber.trim() || 
-        !this.regEmail.trim() ||
-        !this.regCity.trim() ||
-        !this.regDesignation.trim() ||
-        !this.regSpecialty.trim() ||
-        !this.regQualification.trim() ||
-        !this.regHospital.trim() ||
-        !this.regLanguage.trim() ||
-        !this.regMmcNo.trim()) {
+    if (!this.regFirstName.trim() ||
+      !this.regLastName.trim() ||
+      !this.regMobileNumber.trim() ||
+      !this.regEmail.trim() ||
+      !this.regCity.trim() ||
+      !this.regDesignation.trim() ||
+      !this.regSpecialty.trim() ||
+      !this.regQualification.trim() ||
+      !this.regHospital.trim() ||
+      !this.regLanguage.trim() ||
+      !this.regMmcNo.trim()) {
       alert('Please fill in all required fields (marked with *).');
       return;
     }
@@ -572,19 +572,29 @@ export class LoginComponent implements OnInit {
             if (token) {
               localStorage.setItem('medcme_jwt_token', token);
             }
-            const prof = res.data?.profile || (res.data?.fullName ? {
-              id: String(res.data.doctorId || 'doc_' + Date.now()),
-              name: res.data.fullName,
-              phone: res.data.mobileNumber || identifier,
-              email: identifier.includes('@') ? identifier : '',
-              role: 'doctor'
-            } : null);
+            // const prof = res.data?.profile || (res.data?.fullName ? {
+            //   id: String(res.data.doctorId || 'doc_' + Date.now()),
+            //   name: res.data.fullName,
+            //   phone: res.data.mobileNumber || identifier,
+            //   email: identifier.includes('@') ? identifier : '',
+            //   role: 'doctor'
+            // } : null);
+            this.authService.fetchProfileBackend().subscribe({
+              next: (res) => {
+                if (res?.success && res?.data) {
+                  const freshUser = this.authService.mapBackendProfileToUser(res.data);
+                  if (freshUser) {
+                    this.authService.loginWithBackendUser(freshUser, token);
+                  } else {
+                    this.authService.authenticateDoctor(identifier, otp);
+                  }
+                }
+              },
+              error: () => { }
+            });
 
-            if (prof) {
-              this.authService.loginWithBackendUser(prof, token);
-            } else {
-              this.authService.authenticateDoctor(identifier, otp);
-            }
+
+
 
             if (this.pendingEventForCheckout) {
               this.showLoginModal = false;

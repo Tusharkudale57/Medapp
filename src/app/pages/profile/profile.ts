@@ -74,6 +74,7 @@ export class ProfileComponent implements OnInit {
   }
   ngOnInit() {
     this.user = this.authService.currentUser();
+    console.log("the user inside ngOnin it inside profile.ts",this.user);
     if (this.user) {
       let cleanName = this.user.name.trim();
       // if (cleanName.toLowerCase().startsWith('dr. ')) {
