@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable,BehaviorSubject, catchError, throwError, timeout } from 'rxjs';
+import { Observable, catchError, throwError, timeout } from 'rxjs';
 import { UserProfile, Certificate, RegisterRequest, ApiResponse } from '../models/course.model';
 
 @Injectable({
@@ -12,13 +12,6 @@ export class AuthService {
 
   private currentUserSignal = signal<UserProfile | null>(null);
   public currentUser = computed(() => this.currentUserSignal());
-
-
-  private currentUserSubject =
-  new BehaviorSubject<UserProfile | null>(null);
-
-public currentUser$ =
-  this.currentUserSubject.asObservable();
   
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
@@ -177,7 +170,6 @@ public currentUser$ =
               this.user=merged;
               console.log("The merged user is ",merged);
               this.currentUserSignal.set(merged);
-              this.currentUserSubject.next(merged);
               this.saveUserToStorage(merged);
             }
           },
@@ -457,7 +449,6 @@ public currentUser$ =
     const user = profile;
     console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
-     this.currentUserSubject.next(user);
     console.log("The seted current user signal is ",this.currentUserSignal());
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {

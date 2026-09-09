@@ -1,11 +1,10 @@
-import { Component, OnInit, ElementRef, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, Inject, PLATFORM_ID, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Certificate, UserProfile } from '../../models/course.model';
 import { jsPDF } from 'jspdf';
-import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-profile',
@@ -70,31 +69,19 @@ export class ProfileComponent implements OnInit {
     public authService: AuthService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object,
-    private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (!user) {
+        return;
+      }
+
+      this.user = user;
+      this.initializeProfileFields();
+    });
   }
  ngOnInit(): void {
-  
-
-  this.authService.currentUser$.subscribe(user => {
-
-    if (!user) {
-      return;
-    }
-
-    console.log(
-      'ProfileComponent user:',
-      user
-    );
-
-    this.user = user;
-
-    this.initializeProfileFields();
-
-    this.cdr.detectChanges();
-  });
-
     if (this.isBrowser) {
       const savedPhoto = localStorage.getItem('medcme_profile_photo');
       if (savedPhoto) {
