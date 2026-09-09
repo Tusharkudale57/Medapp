@@ -175,6 +175,7 @@ currentUser$ = this.currentUserSubject.asObservable();
               this.user=merged;
               console.log("The merged user is ",merged);
               this.currentUserSignal.set(merged);
+              this.currentUserSubject.next(merged);
               this.saveUserToStorage(merged);
             }
           },
