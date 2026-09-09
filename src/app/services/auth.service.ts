@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError, timeout } from 'rxjs';
+import { Observable,BehaviorSubject, catchError, throwError, timeout } from 'rxjs';
 import { UserProfile, Certificate, RegisterRequest, ApiResponse } from '../models/course.model';
 
 @Injectable({
@@ -13,6 +13,13 @@ export class AuthService {
   private currentUserSignal = signal<UserProfile | null>(null);
   public currentUser = computed(() => this.currentUserSignal());
 
+
+  private currentUserSubject =
+  new BehaviorSubject<UserProfile | null>(null);
+
+public currentUser$ =
+  this.currentUserSubject.asObservable();
+  
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
   public user: UserProfile = {
