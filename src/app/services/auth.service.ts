@@ -454,7 +454,7 @@ public currentUser$ =
   /** Set backend authenticated user session & token */
   loginWithBackendUser(profile: any, token: string) {
     console.log("Inside loginWithBackendUSer  $$$$$$");
-    const user = this.user;
+    const user = profile;
     console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
      this.currentUserSubject.next(user);
