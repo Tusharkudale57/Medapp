@@ -165,8 +165,10 @@ export class AuthService {
               const freshUser = this.mapBackendProfileToUser(res.data);
               console.log("The freshUser is ========",freshUser);
               const stored = this.currentUserSignal();
+              console.log("The current stored user is ",stored);
               const merged = { ...freshUser, role: stored?.role || 'doctor' };
               this.user=merged;
+              console.log("The merged user is ",merged);
               this.currentUserSignal.set(merged);
               this.saveUserToStorage(merged);
             }
