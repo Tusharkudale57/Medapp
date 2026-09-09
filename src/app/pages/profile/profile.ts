@@ -95,18 +95,16 @@ export class ProfileComponent implements OnInit {
     this.cdr.detectChanges();
   });
 
-  if (this.isBrowser) {
-
-    const savedPhoto =
-      localStorage.getItem('medcme_profile_photo');
-
-    if (savedPhoto) {
-      this.profilePhotoUrl = savedPhoto;
+    if (this.isBrowser) {
+      const savedPhoto = localStorage.getItem('medcme_profile_photo');
+      if (savedPhoto) {
+        this.profilePhotoUrl = savedPhoto;
+      }
     }
   }
-}
 
-private initializeProfileFields(): void {
+
+  private initializeProfileFields(): void {
 
   if (!this.user) {
     return;

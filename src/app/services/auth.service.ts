@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable,of, BehaviorSubject,catchError,tap, throwError, timeout } from 'rxjs';
+import { Observable,BehaviorSubject, catchError, throwError, timeout } from 'rxjs';
 import { UserProfile, Certificate, RegisterRequest, ApiResponse } from '../models/course.model';
 
 @Injectable({
@@ -13,10 +13,13 @@ export class AuthService {
   private currentUserSignal = signal<UserProfile | null>(null);
   public currentUser = computed(() => this.currentUserSignal());
 
-  private currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
 
-currentUser$ = this.currentUserSubject.asObservable();
+  private currentUserSubject =
+  new BehaviorSubject<UserProfile | null>(null);
 
+public currentUser$ =
+  this.currentUserSubject.asObservable();
+  
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
   public user: UserProfile = {
@@ -167,7 +170,6 @@ currentUser$ = this.currentUserSubject.asObservable();
           next: (res) => {
             if (res?.success && res?.data) {
               const freshUser = this.mapBackendProfileToUser(res.data);
-               this.currentUserSubject.next(freshUser);
               console.log("The freshUser is ========",freshUser);
               const stored = this.currentUserSignal();
               console.log("The current stored user is ",stored);
@@ -340,34 +342,20 @@ currentUser$ = this.currentUserSubject.asObservable();
 
   /** Fetch Doctor Profile from Backend API (GET /api/profile/get-my-profile) */
   fetchProfileBackend(): Observable<any> {
-
-  console.log('**** calling fetchprofile backend');
-
-  // SSR → don't call authenticated API
-  if (!this.isBrowser) {
-    console.log('**** SSR: skipping profile API');
-    return of(null);
+    console.log("**** calling fetchprofile backend");
+    const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+    // const url = this.getEndpoint('/api/profile/get-my-profile');
+    // return this.http.get<any>(url, { headers });
+    return this.http.get<any>('/api/profile/get-my-profile', { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}/api/profile/get-my-profile`, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
-
-  const token = localStorage.getItem('medcme_jwt_token');
-
-  console.log('**** token exists:', !!token);
-
-  // Browser but not logged in/token not ready
-  if (!token) {
-    console.log('**** No JWT token available');
-    return of(null);
-  }
-
-  const headers = {
-    Authorization: `Bearer ${token}`
-  };
-
-  return this.http.get<any>(
-    '/api/profile/get-my-profile',
-    { headers }
-  );
-}
 
   /** Update Doctor Profile on Backend API (PUT /api/profile/update-my-profile) */
   updateProfileBackend(user: UserProfile): Observable<any> {
@@ -466,7 +454,7 @@ currentUser$ = this.currentUserSubject.asObservable();
   /** Set backend authenticated user session & token */
   loginWithBackendUser(profile: any, token: string) {
     console.log("Inside loginWithBackendUSer  $$$$$$");
-    const user = profile;
+    const user = this.user;
     console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
      this.currentUserSubject.next(user);
