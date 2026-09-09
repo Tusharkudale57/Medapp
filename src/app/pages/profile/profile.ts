@@ -72,49 +72,26 @@ export class ProfileComponent implements OnInit {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
-  ngOnInit() {
-    this.user = this.authService.currentUser();
-    console.log("the user inside ngOnin it inside profile.ts",this.user);
-    if (this.user) {
-      let cleanName = this.user.name.trim();
-      // if (cleanName.toLowerCase().startsWith('dr. ')) {
-      //   cleanName = cleanName.substring(4).trim();
-      // }
-      cleanName = cleanName.replace(/^dr\.\s*/i, '').trim();
-      const nameParts = cleanName.split(/\s+/);
-      this.editFirstName = nameParts[1] || '';
-      this.editMiddleName = this.user.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '');
-      this.editLastName = this.user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
-      this.editRegNo = this.user.registrationNo;
-      this.editEmail = this.user.email;
-      this.editPhone = this.user.phone;
-      this.editCity = this.user.city || '';
+ ngOnInit(): void {
+  
 
-      const knownSpecialties = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'General Medicine'];
-      if (knownSpecialties.includes(this.user.specialty)) {
-        this.editSpecialtyDropdown = this.user.specialty;
-        this.editSpecialtyOther = '';
-      } else {
-        this.editSpecialtyDropdown = 'Others';
-        this.editSpecialtyOther = this.user.specialty;
-      }
+  this.authService.currentUser$.subscribe(user => {
 
-      // Initialize expanded fields
-      this.editGender = this.user.gender || 'Male';
-      this.editDob = this.user.dob || '';
-      this.editDesignation = this.user.designation || '';
-      this.editDepartment = this.user.department || '';
-      this.editQualification = this.user.qualification || '';
-      this.editHospital = this.user.hospital || '';
-      this.editOrganization = this.user.organization || '';
-      this.editClinicAddress = this.user.clinicAddress || '';
-      this.editPracticingInterest = this.user.practicingInterest || '';
-      this.editExperience = this.user.experience || 0;
-      this.editLanguage = this.user.language || 'English';
-      this.editEmailConsent = this.user.emailConsent !== false;
-      this.editWhatsappConsent = this.user.whatsappConsent !== false;
-      this.selectedInterests = [...(this.user.interests || [])];
+    if (!user) {
+      return;
     }
+
+    console.log(
+      'ProfileComponent user:',
+      user
+    );
+
+    this.user = user;
+
+    this.initializeProfileFields();
+
+    this.cdr.detectChanges();
+  });
 
     if (this.isBrowser) {
       const savedPhoto = localStorage.getItem('medcme_profile_photo');

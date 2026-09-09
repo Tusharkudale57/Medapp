@@ -449,6 +449,8 @@ export class AuthService {
     const user = this.user;
     console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
+     this.currentUserSubject.next(user);
+    console.log("The seted current user signal is ",this.currentUserSignal());
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {
       localStorage.setItem('medcme_jwt_token', token);
