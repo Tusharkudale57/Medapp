@@ -141,10 +141,7 @@
           <div class="profile-avatar">{{ (authService.currentUser()?.name || 'T')[0].toUpperCase() }}</div>
           <div class="welcome-text-col">
             <h1>{{ greeting }}, {{ authService.currentUser()?.name }}</h1>
-            <p class="goal-subtext">
-              Your career goal is to grow in your role as an <strong>{{ userCareerGoal }}</strong>
-              <a href="javascript:void(0)" class="edit-link" (click)="openGoalModal()">Edit goal</a>
-            </p>
+
           </div>
         </div>
       </div>
