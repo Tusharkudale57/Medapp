@@ -468,6 +468,7 @@ currentUser$ = this.currentUserSubject.asObservable();
     const user = profile;
     console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
+     this.currentUserSubject.next(user);
     console.log("The seted current user signal is ",this.currentUserSignal());
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {
