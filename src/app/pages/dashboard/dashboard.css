@@ -16,11 +16,50 @@
   font-family: "Inter", "Segoe UI", sans-serif;
 }
 
+/* ===== COVELIS TOP BAR (Sony-style) ======================================= */
+.covelis-topbar {
+  background: linear-gradient(90deg, #1a237e 0%, #1565c0 100%);
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.covelis-topbar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.covelis-tagline {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.55);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+.covelis-brand {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.covelis-brand strong {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f5c518;
+  letter-spacing: 0.14em;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  text-shadow: 0 0 12px rgba(245, 197, 24, 0.4);
+}
+
 /* ===== NAVBAR =============================================================== */
 .dash-navbar {
   background: #ffffff;
   border-bottom: 1px solid #cbd5e1;
-  padding: 0 2rem;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -30,6 +69,7 @@
 .nav-inner {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   height: 68px;
   display: flex;
   align-items: center;

@@ -1,13 +1,19 @@
 <div class="my-learning-container">
 
-  <!-- MedCME Brand Navbar styled for White/Light-Blue Theme -->
+  <!-- Covelis Brand Navbar -->
   <header class="dash-navbar">
+    <!-- Covelis Top Bar (Sony-style) -->
+    <div class="covelis-topbar">
+      <div class="covelis-topbar-inner">
+        <span class="covelis-tagline">India's Official MMC &amp; NMC Accredited CME Platform</span>
+        <span class="covelis-brand">powered by <strong>COVELIS</strong></span>
+      </div>
+    </div>
+    <!-- Main White Nav -->
     <div class="nav-inner">
-      <div class="nav-brand" (click)="navigateToEvents()" style="cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
+      <div class="nav-brand" (click)="navigateToEvents()"
+        style="cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
         <img src="assets/logo.png" alt="All India CME Logo" style="height: 34px; width: auto; object-fit: contain;" />
-        <div>
-          <div class="brand-sub" style="font-size: 0.72rem; color: #64748b; font-weight: 500; white-space: nowrap;">Continuing Medical Education Platform</div>
-        </div>
       </div>
 
       <!-- Explore Dropdown Container -->
@@ -22,13 +28,16 @@
           <div class="mega-menu-inner">
             <!-- Left Sidebar -->
             <div class="mega-sidebar">
-              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'" (mouseenter)="activeSubMenu = 'specialties'">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'specialties'"
+                (mouseenter)="activeSubMenu = 'specialties'">
                 Medical Specialties <span class="sidebar-arrow">&#8250;</span>
               </button>
-              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'" (mouseenter)="activeSubMenu = 'degrees'">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'degrees'"
+                (mouseenter)="activeSubMenu = 'degrees'">
                 Degrees & Fellowships <span class="sidebar-arrow">&#8250;</span>
               </button>
-              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'" (mouseenter)="activeSubMenu = 'conferences'">
+              <button class="sidebar-item" [class.active]="activeSubMenu === 'conferences'"
+                (mouseenter)="activeSubMenu = 'conferences'">
                 Live Conferences <span class="sidebar-arrow">&#8250;</span>
               </button>
             </div>
@@ -66,19 +75,23 @@
               <div class="details-content" *ngIf="activeSubMenu === 'degrees'">
                 <h4>Accredited Fellowships & Diplomas</h4>
                 <div class="details-grid">
-                  <div class="details-item-card" (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
                     <h5>Fellowship in Clinical Cardiology</h5>
                     <p>6-Month Advanced clinical diagnostics certification.</p>
                   </div>
-                  <div class="details-item-card" (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
                     <h5>Postgraduate Diploma in Pediatrics</h5>
                     <p>Accredited specialization in child health care.</p>
                   </div>
-                  <div class="details-item-card" (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
                     <h5>Certificate in Emergency Medicine</h5>
                     <p>Hands-on training for emergency rooms.</p>
                   </div>
-                  <div class="details-item-card" (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('Master of Hospital Administration', 'General Medicine')">
                     <h5>Master of Hospital Administration</h5>
                     <p>Advanced healthcare management degree.</p>
                   </div>
@@ -89,7 +102,8 @@
               <div class="details-content" *ngIf="activeSubMenu === 'conferences'">
                 <h4>Live CME Conferences</h4>
                 <div class="details-grid">
-                  <div class="details-item-card" (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
+                  <div class="details-item-card"
+                    (click)="selectDemoEvent('National Health Summit 2026', 'General Medicine')">
                     <h5>National Health Summit 2026</h5>
                     <p>Live offline event on healthcare policies.</p>
                   </div>
@@ -119,10 +133,12 @@
         <!-- <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToCredits()">Credits Ledger</button> -->
         <button class="nav-link" (click)="navigateToKnowledge()">Library</button>
         <button class="nav-link" (click)="navigateToProfile()">My Profile</button>
-        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">Admin Panel</button>
+        <button *ngIf="authService.isAdmin()" class="nav-link admin-link" (click)="navigateToHostDashboard()">Admin
+          Panel</button>
       </nav>
       <div class="nav-right">
-        <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;" title="Click to instantly switch between Doctor & Admin roles">
+        <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;"
+          title="Click to instantly switch between Doctor & Admin roles">
           <span class="user-name">{{ authService.currentUser()?.name }}</span>
           <span class="role-badge" [class.admin-badge]="authService.isAdmin()">
             {{ authService.isAdmin() ? 'Admin 🔄' : 'Doctor 🔄' }}
@@ -196,11 +212,13 @@
 
       <!-- In Progress Lists -->
       <div class="learning-grid" *ngIf="inProgressCourses.length > 0 || inProgressEvents.length > 0">
-        
+
         <!-- Courses In Progress -->
         <div class="learning-card" *ngFor="let course of inProgressCourses">
           <div class="card-thumb-wrapper" (click)="resumeCourse(course.id)">
-            <img [src]="course.thumbnail || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80'" [alt]="course.title" />
+            <img
+              [src]="course.thumbnail || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80'"
+              [alt]="course.title" />
             <div class="card-category-tag">{{ course.category }}</div>
           </div>
           <div class="card-info-content">
@@ -213,7 +231,7 @@
               <span class="points-badge">+{{ course.creditPoints }} CME Credit</span>
               <span class="duration-badge">&#9202; {{ course.duration }}</span>
             </div>
-            
+
             <!-- Progress bar -->
             <div class="progress-container">
               <div class="progress-bar-track">
@@ -252,26 +270,34 @@
               <span class="status-pill-progress">Registered</span>
             </div>
             <div class="progress-container text-only">
-              <p class="status-msg">Event starts soon. Make sure to attend to claim credit points and get your certificate.</p>
+              <p class="status-msg">Event starts soon. Make sure to attend to claim credit points and get your
+                certificate.</p>
             </div>
 
-             <!-- Mandatory Pre-Read Section displayed right after Registration -->
-             <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 8px; padding: 0.65rem; margin-bottom: 0.85rem; text-align: left;">
-               <span style="font-size: 0.73rem; color: #0284c7; font-weight: 700; display: block; margin-bottom: 0.25rem;">📚 MANDATORY PRE-READ MATERIAL:</span>
-               <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                 <span style="font-size: 0.78rem; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" [title]="event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'">
-                    {{ event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf' }}
-                 </span>
-                 <button (click)="downloadPreRead(event)" style="border: none; background: #0ea5e9; color: #fff; padding: 0.35rem 0.65rem; border-radius: 5px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;">
-                    Download
-                 </button>
-               </div>
-             </div>
+            <!-- Mandatory Pre-Read Section displayed right after Registration -->
+            <div
+              style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 8px; padding: 0.65rem; margin-bottom: 0.85rem; text-align: left;">
+              <span
+                style="font-size: 0.73rem; color: #0284c7; font-weight: 700; display: block; margin-bottom: 0.25rem;">📚
+                MANDATORY PRE-READ MATERIAL:</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <span
+                  style="font-size: 0.78rem; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;"
+                  [title]="event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'">
+                  {{ event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf' }}
+                </span>
+                <button (click)="downloadPreRead(event)"
+                  style="border: none; background: #0ea5e9; color: #fff; padding: 0.35rem 0.65rem; border-radius: 5px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;">
+                  Download
+                </button>
+              </div>
+            </div>
             <div style="display: flex; gap: 0.5rem;">
               <button class="btn-resume-learning btn-event-view" (click)="openEventDetail(event)" style="flex: 1;">
                 View Event Details
               </button>
-              <button class="btn-resume-learning" (click)="openLiveRoom(event)" style="flex: 1; background: #ef4444; border-color: #ef4444; color: #fff;">
+              <button class="btn-resume-learning" (click)="openLiveRoom(event)"
+                style="flex: 1; background: #ef4444; border-color: #ef4444; color: #fff;">
                 Join Live Room
               </button>
             </div>
@@ -284,11 +310,13 @@
       <div class="empty-state-card" *ngIf="inProgressCourses.length === 0 && inProgressEvents.length === 0">
         <div class="empty-vector">
           <svg viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="#94a3b8" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
           </svg>
         </div>
         <h3>No learning in progress right now</h3>
-        <p>Explore our catalog of accredited medical conferences, live events, or self-paced courses to start earning CME points.</p>
+        <p>Explore our catalog of accredited medical conferences, live events, or self-paced courses to start earning
+          CME points.</p>
         <div class="empty-actions">
           <button class="btn-empty-primary" (click)="navigateToEvents()">Browse CME Events</button>
           <!-- <button class="btn-empty-secondary" (click)="navigateToCourses()">Browse Online Courses</button> -->
@@ -300,7 +328,8 @@
     <section class="tab-content-panel" *ngIf="activeTab() === 'completed'">
       <div class="section-header">
         <h2>Your Completed Education</h2>
-        <p>A history of all courses completed and live events attended. Certificates have been issued for these items.</p>
+        <p>A history of all courses completed and live events attended. Certificates have been issued for these items.
+        </p>
       </div>
 
       <!-- Completed List -->
@@ -384,17 +413,18 @@
           </div>
 
           <h3 class="cert-title">{{ cert.courseTitle }}</h3>
-          
+
           <div class="cert-meta-info">
             <div class="meta-item"><span>Recipient:</span> <strong>{{ cert.recipientName }}</strong></div>
             <div class="meta-item"><span>Issue Date:</span> <strong>{{ cert.issueDate }}</strong></div>
             <div class="meta-item"><span>Issuer:</span> <strong>{{ cert.issuer }}</strong></div>
-            <div class="meta-item text-code"><span>Verification Code:</span> <code>{{ cert.verificationCode }}</code></div>
+            <div class="meta-item text-code"><span>Verification Code:</span> <code>{{ cert.verificationCode }}</code>
+            </div>
           </div>
 
           <div class="cert-card-actions">
             <button class="btn-view-cert" (click)="openCertificate(cert)">
-             View Certificate
+              View Certificate
             </button>
             <button class="btn-download-cert" (click)="openCertificate(cert)">
               ⬇Download PDF / PNG
@@ -407,15 +437,18 @@
       <div class="empty-state-card" *ngIf="certificates.length === 0">
         <div class="empty-vector"></div>
         <h3>No certificates issued yet</h3>
-        <p>Complete a course or get marked as present in a registered CME live event to receive your accredited certificates.</p>
+        <p>Complete a course or get marked as present in a registered CME live event to receive your accredited
+          certificates.</p>
       </div>
     </section>
   </main>
 
   <!-- Event Detail Modal -->
-  <div class="modal-overlay cme-details-overlay" *ngIf="showEventDetailModal && selectedEventForDetail" (click)="closeEventDetail()">
+  <div class="modal-overlay cme-details-overlay" *ngIf="showEventDetailModal && selectedEventForDetail"
+    (click)="closeEventDetail()">
     <div class="modal-box detail-modal-box" (click)="$event.stopPropagation()">
-      <div class="detail-modal-header" [style.background]="'linear-gradient(135deg, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + 'dd, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + '55)'">
+      <div class="detail-modal-header"
+        [style.background]="'linear-gradient(135deg, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + 'dd, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + '55)'">
         <span class="detail-modal-category">{{ selectedEventForDetail.category }}</span>
         <h3 style="color: #1e3a8a;">{{ selectedEventForDetail.title }}</h3>
         <button class="close-detail-btn" (click)="closeEventDetail()">✕</button>
@@ -446,7 +479,8 @@
           <div class="detail-section" *ngIf="selectedEventForDetail.zohoBackstageLink">
             <h5> Zoho Backstage</h5>
             <p>
-              <a [href]="selectedEventForDetail.zohoBackstageLink" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
+              <a [href]="selectedEventForDetail.zohoBackstageLink" target="_blank"
+                style="color: #2563eb; text-decoration: underline; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
                 Open Zoho Backstage Page <span style="font-size: 0.8rem;">↗</span>
               </a>
             </p>
@@ -479,13 +513,15 @@
           <!-- CME Credits -->
           <div class="detail-section registration-stats">
             <h5>⚡ CME Credits Awarded</h5>
-            <p><strong>{{ selectedEventForDetail.creditPoints }} CME Credit Point(s)</strong> upon attendance and assessment completion.</p>
+            <p><strong>{{ selectedEventForDetail.creditPoints }} CME Credit Point(s)</strong> upon attendance and
+              assessment completion.</p>
           </div>
 
           <!-- Registration Info -->
           <div class="detail-section registration-stats">
             <h5>👥 Registration Status</h5>
-            <p>You are <strong>registered</strong> for this event. {{ selectedEventForDetail.registeredCount }} total attendees registered.</p>
+            <p>You are <strong>registered</strong> for this event. {{ selectedEventForDetail.registeredCount }} total
+              attendees registered.</p>
           </div>
 
         </div>
@@ -494,7 +530,8 @@
       <div class="detail-modal-footer">
         <div class="detail-actions">
           <button class="btn-cancel" (click)="closeEventDetail()">Close Details</button>
-          <button class="btn-resume-learning" (click)="openLiveRoom(selectedEventForDetail); closeEventDetail()" style="background: #ef4444; border-color: #ef4444; color: #fff; padding: 0.6rem 1.25rem;">
+          <button class="btn-resume-learning" (click)="openLiveRoom(selectedEventForDetail); closeEventDetail()"
+            style="background: #ef4444; border-color: #ef4444; color: #fff; padding: 0.6rem 1.25rem;">
             🔴 Join Live Room
           </button>
         </div>
@@ -510,10 +547,12 @@
         <button class="close-btn" (click)="closeGoalModal()">&#10005;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-instructions">Customize your career profile. We will update your learning recommendations to match.</p>
+        <p class="modal-instructions">Customize your career profile. We will update your learning recommendations to
+          match.</p>
         <div class="form-group">
           <label>Define Your Career Goal</label>
-          <input type="text" #goalInput [value]="userCareerGoal" placeholder="e.g. IT Project Manager or Chief Cardiologist" />
+          <input type="text" #goalInput [value]="userCareerGoal"
+            placeholder="e.g. IT Project Manager or Chief Cardiologist" />
         </div>
       </div>
       <div class="modal-footer">
@@ -555,7 +594,8 @@
           <span class="live-badge-pulse">🔴 Live Session</span>
           <h3>{{ activeLiveEvent.title }}</h3>
         </div>
-        <button class="close-detail-btn" (click)="closeLiveRoom()" style="color: #cbd5e1; border: none; background: transparent; font-size: 1.2rem; cursor: pointer;">✕</button>
+        <button class="close-detail-btn" (click)="closeLiveRoom()"
+          style="color: #cbd5e1; border: none; background: transparent; font-size: 1.2rem; cursor: pointer;">✕</button>
       </div>
 
       <div class="live-room-body">
@@ -566,12 +606,13 @@
             <div class="video-mock-feed">
               <div class="video-speaker-anim">🎙️</div>
               <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">{{ activeLiveEvent.speaker }}</h4>
-              <p style="margin: 0.15rem 0 0 0; color: #38bdf8; font-size: 0.75rem;">{{ activeLiveEvent.speakerRole }}</p>
-              
+              <p style="margin: 0.15rem 0 0 0; color: #38bdf8; font-size: 0.75rem;">{{ activeLiveEvent.speakerRole }}
+              </p>
+
               <p style="margin: 0.85rem 0 0 0; color: #94a3b8; font-size: 0.7rem; font-style: italic; max-width: 80%;">
                 "Next clinical guideline details will cover emergency administration sequences..."
               </p>
-              
+
               <div class="video-wave-bars">
                 <span class="wave-bar"></span>
                 <span class="wave-bar"></span>
@@ -585,62 +626,75 @@
           <!-- Video Assistance / Team Support Box -->
           <div class="video-assist-team-box">
             <h5>👥 Video Assistance & Support Active</h5>
-            <p><strong>Moderators:</strong> 2 Active &bull; <strong>Consultants:</strong> 1-2 Active (answering Q&A chat below)</p>
+            <p><strong>Moderators:</strong> 2 Active &bull; <strong>Consultants:</strong> 1-2 Active (answering Q&A chat
+              below)</p>
           </div>
 
           <!-- Event Conducting Format Timeline -->
           <div class="conducting-outline-container">
             <h4>📋 Event Conduct Format & Live Progress</h4>
-            
+
             <div class="conducting-step-item completed">
               <strong>1. Introduction & Panel Details (Completed)</strong>
-              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #94a3b8;">Welcome address and faculty introductions.</p>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #94a3b8;">Welcome address and faculty
+                introductions.</p>
             </div>
 
             <!-- Basic MCQ interactive area -->
             <div class="conducting-step-item active">
               <strong>2. Basic MCQ (Pre-Test) - Interactive</strong>
-              
+
               <!-- Quiz form -->
               <div class="live-conducting-quiz-box" *ngIf="!basicMcqAnswered">
-                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
+                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless
+                  ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
                 <button class="quiz-option-button" (click)="submitBasicMcq(0)">A. Amiodarone 300mg IV Bolus</button>
-                <button class="quiz-option-button" (click)="submitBasicMcq(1)">B. Epinephrine 1mg IV/IO every 3-5 mins</button>
+                <button class="quiz-option-button" (click)="submitBasicMcq(1)">B. Epinephrine 1mg IV/IO every 3-5
+                  mins</button>
                 <button class="quiz-option-button" (click)="submitBasicMcq(2)">C. Atropine 1mg IV every 5 mins</button>
                 <button class="quiz-option-button" (click)="submitBasicMcq(3)">D. Adenosine 6mg rapid IV push</button>
               </div>
 
               <!-- Quiz result -->
               <div class="live-conducting-quiz-box" *ngIf="basicMcqAnswered">
-                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
+                <p class="quiz-question-txt">Q1: What is the first-line medication for a patient in pulseless
+                  ventricular tachycardia (VF/pVT) after the second defibrillation shock?</p>
                 <div class="quiz-result-msg success" *ngIf="basicMcqIsCorrect">
                   ✓ Correct! Epinephrine 1mg is administered after the second shock, followed every 3-5 minutes.
                 </div>
                 <div class="quiz-result-msg error" *ngIf="!basicMcqIsCorrect">
-                  ✕ Incorrect. Epinephrine 1mg IV/IO (Option B) is correct after the second shock. Amiodarone is given after the third shock.
+                  ✕ Incorrect. Epinephrine 1mg IV/IO (Option B) is correct after the second shock. Amiodarone is given
+                  after the third shock.
                 </div>
               </div>
             </div>
 
             <div class="conducting-step-item">
               <strong>3. Lecture Session 1 - Core Resuscitation masterclass (Ongoing)</strong>
-              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #64748b;">Live streaming slides on ACLS algorithms.</p>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.72rem; color: #64748b;">Live streaming slides on ACLS
+                algorithms.</p>
             </div>
 
             <!-- Mid MCQ interactive area -->
             <div class="conducting-step-item active">
               <strong>4. Mid-Session MCQ (Knowledge Check) - Interactive</strong>
-              
+
               <div class="live-conducting-quiz-box" *ngIf="!midMcqAnswered">
-                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the correct compression-to-ventilation ratio for newborn resuscitation?</p>
-                <button class="quiz-option-button" (click)="submitMidMcq(0)">A. 15:2 ratio (15 compressions, 2 breaths)</button>
-                <button class="quiz-option-button" (click)="submitMidMcq(1)">B. 30:2 ratio (30 compressions, 2 breaths)</button>
-                <button class="quiz-option-button" (click)="submitMidMcq(2)">C. 3:1 ratio (90 compressions, 30 breaths/min)</button>
-                <button class="quiz-option-button" (click)="submitMidMcq(3)">D. 5:1 ratio (50 compressions, 10 breaths/min)</button>
+                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the
+                  correct compression-to-ventilation ratio for newborn resuscitation?</p>
+                <button class="quiz-option-button" (click)="submitMidMcq(0)">A. 15:2 ratio (15 compressions, 2
+                  breaths)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(1)">B. 30:2 ratio (30 compressions, 2
+                  breaths)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(2)">C. 3:1 ratio (90 compressions, 30
+                  breaths/min)</button>
+                <button class="quiz-option-button" (click)="submitMidMcq(3)">D. 5:1 ratio (50 compressions, 10
+                  breaths/min)</button>
               </div>
 
               <div class="live-conducting-quiz-box" *ngIf="midMcqAnswered">
-                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the correct compression-to-ventilation ratio for newborn resuscitation?</p>
+                <p class="quiz-question-txt">Q2: According to neonatal resuscitation guidelines (NRP), what is the
+                  correct compression-to-ventilation ratio for newborn resuscitation?</p>
                 <div class="quiz-result-msg success" *ngIf="midMcqIsCorrect">
                   ✓ Correct! In NRP, a 3:1 ratio (90 compressions + 30 breaths per minute) is recommended.
                 </div>
@@ -659,47 +713,64 @@
             </div>
 
             <!-- Session Resource Center -->
-            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
-              <h5 style="margin: 0 0 0.75rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📚 Resource Center (Downloads)</h5>
+            <div
+              style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+              <h5 style="margin: 0 0 0.75rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📚 Resource Center
+                (Downloads)</h5>
               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <a href="#" (click)="$event.preventDefault(); downloadPPT('ACLS_Mastery_Presentation_2026.pptx')" style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
+                <a href="#" (click)="$event.preventDefault(); downloadPPT('ACLS_Mastery_Presentation_2026.pptx')"
+                  style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
                   <span>📊</span> ACLS Mastery Slides (PPTX)
                 </a>
-                <a href="#" (click)="$event.preventDefault(); downloadPPT('Resuscitation_Algorithms_Guide.pdf')" style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
+                <a href="#" (click)="$event.preventDefault(); downloadPPT('Resuscitation_Algorithms_Guide.pdf')"
+                  style="color: #f8fafc; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 6px; transition: background 0.2s;">
                   <span>📄</span> Resuscitation Algorithms Guide (PDF)
                 </a>
               </div>
             </div>
 
             <!-- Personal Notes Panel -->
-            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+            <div
+              style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                <h5 style="margin: 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📝 Personal Private Notes</h5>
+                <h5 style="margin: 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">📝 Personal Private Notes
+                </h5>
                 <span style="font-size: 0.65rem; color: #94a3b8; font-style: italic;">Auto-saved locally</span>
               </div>
-              <textarea [(ngModel)]="liveRoomNotes" (keyup)="saveNotes()" placeholder="Take private notes during the live lecture..." style="width: 100%; height: 100px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
-              <button (click)="downloadNotes()" style="margin-top: 0.75rem; background: #0ea5e9; color: #fff; border: none; padding: 0.45rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.2s;">
+              <textarea [(ngModel)]="liveRoomNotes" (keyup)="saveNotes()"
+                placeholder="Take private notes during the live lecture..."
+                style="width: 100%; height: 100px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+              <button (click)="downloadNotes()"
+                style="margin-top: 0.75rem; background: #0ea5e9; color: #fff; border: none; padding: 0.45rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.2s;">
                 ⬇️ Export Notes (.txt)
               </button>
             </div>
 
             <!-- Feedback & Attendance Verification -->
-            <div style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
+            <div
+              style="background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid #334155; text-align: left;">
 
               <!-- SUCCESS SCREEN: shown after submission -->
-              <div *ngIf="liveSessionCompleted" style="text-align: center; padding: 1.5rem 0.5rem; animation: fadeInUp 0.4s ease;">
+              <div *ngIf="liveSessionCompleted"
+                style="text-align: center; padding: 1.5rem 0.5rem; animation: fadeInUp 0.4s ease;">
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎉</div>
-                <h4 style="margin: 0 0 0.4rem 0; color: #10b981; font-size: 1.05rem; font-weight: 800;">Session Completed!</h4>
-                <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Your attendance has been verified and CME credits recorded.</p>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; border-radius: 10px; padding: 0.85rem; margin: 1rem 0;">
-                  <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: block;">⚡ +{{ activeLiveEvent.creditPoints || 1 }} CME Credit(s) Earned</span>
+                <h4 style="margin: 0 0 0.4rem 0; color: #10b981; font-size: 1.05rem; font-weight: 800;">Session
+                  Completed!</h4>
+                <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Your attendance
+                  has been verified and CME credits recorded.</p>
+                <div
+                  style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; border-radius: 10px; padding: 0.85rem; margin: 1rem 0;">
+                  <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: block;">⚡ +{{
+                    activeLiveEvent.creditPoints || 1 }} CME Credit(s) Earned</span>
                   <span style="font-size: 0.72rem; color: #94a3b8;">📜 Certificate will appear in My Learning</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; flex-direction: column;">
-                  <button (click)="closeCompletedSession()" style="background: #0ea5e9; color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; width: 100%; transition: background 0.2s;">
+                  <button (click)="closeCompletedSession()"
+                    style="background: #0ea5e9; color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; width: 100%; transition: background 0.2s;">
                     📜 Go to My Learning & View Certificate
                   </button>
-                  <button (click)="closeLiveRoom()" style="background: transparent; color: #64748b; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.78rem; cursor: pointer; width: 100%;">
+                  <button (click)="closeLiveRoom()"
+                    style="background: transparent; color: #64748b; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.78rem; cursor: pointer; width: 100%;">
                     Close Session
                   </button>
                 </div>
@@ -707,18 +778,25 @@
 
               <!-- FEEDBACK FORM: shown before submission -->
               <div *ngIf="!liveSessionCompleted">
-                <h5 style="margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">⭐ Session Feedback & Attendance</h5>
-                <p style="margin: 0 0 0.75rem 0; font-size: 0.72rem; color: #94a3b8; line-height: 1.3;">Rate this event to verify attendance and unlock credits.</p>
-                
+                <h5 style="margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 0.9rem; font-weight: 700;">⭐ Session
+                  Feedback & Attendance</h5>
+                <p style="margin: 0 0 0.75rem 0; font-size: 0.72rem; color: #94a3b8; line-height: 1.3;">Rate this event
+                  to verify attendance and unlock credits.</p>
+
                 <div style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem;">
-                  <span *ngFor="let star of [1, 2, 3, 4, 5]" (click)="liveFeedbackRating = star" style="font-size: 1.4rem; cursor: pointer; transition: all 0.15s;" [style.color]="liveFeedbackRating >= star ? '#f59e0b' : '#64748b'">
+                  <span *ngFor="let star of [1, 2, 3, 4, 5]" (click)="liveFeedbackRating = star"
+                    style="font-size: 1.4rem; cursor: pointer; transition: all 0.15s;"
+                    [style.color]="liveFeedbackRating >= star ? '#f59e0b' : '#64748b'">
                     ★
                   </span>
                 </div>
 
-                <textarea [(ngModel)]="liveFeedbackText" placeholder="Write feedback comments (optional)..." style="width: 100%; height: 60px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: inherit;"></textarea>
-                
-                <button (click)="submitFeedback()" [disabled]="liveFeedbackSubmitted" style="margin-top: 0.75rem; background: #ef4444; color: #fff; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; width: 100%; transition: all 0.2s;" [style.opacity]="liveFeedbackSubmitted ? '0.6' : '1'">
+                <textarea [(ngModel)]="liveFeedbackText" placeholder="Write feedback comments (optional)..."
+                  style="width: 100%; height: 60px; padding: 0.6rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: inherit;"></textarea>
+
+                <button (click)="submitFeedback()" [disabled]="liveFeedbackSubmitted"
+                  style="margin-top: 0.75rem; background: #ef4444; color: #fff; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; width: 100%; transition: all 0.2s;"
+                  [style.opacity]="liveFeedbackSubmitted ? '0.6' : '1'">
                   <span *ngIf="!liveFeedbackSubmitted">Submit Feedback &amp; Verify Attendance</span>
                   <span *ngIf="liveFeedbackSubmitted">⏳ Verifying attendance...</span>
                 </button>
@@ -734,7 +812,8 @@
           </div>
 
           <div class="chat-msg-history" id="chat-history-scroll-ml">
-            <div class="chat-msg-row" *ngFor="let msg of liveChatMessages" [class.self]="msg.isUser" [class.other]="!msg.isUser">
+            <div class="chat-msg-row" *ngFor="let msg of liveChatMessages" [class.self]="msg.isUser"
+              [class.other]="!msg.isUser">
               <span class="chat-msg-sender">{{ msg.sender }}</span>
               <div class="chat-msg-bubble">
                 {{ msg.text }}
@@ -744,7 +823,8 @@
           </div>
 
           <div class="chat-input-area">
-            <input type="text" [(ngModel)]="newChatMessageText" (keyup.enter)="sendLiveChatMessage()" placeholder="Ask the consultants a question..." class="chat-text-input" />
+            <input type="text" [(ngModel)]="newChatMessageText" (keyup.enter)="sendLiveChatMessage()"
+              placeholder="Ask the consultants a question..." class="chat-text-input" />
             <button class="btn-send-chat" (click)="sendLiveChatMessage()">Send</button>
           </div>
         </div>

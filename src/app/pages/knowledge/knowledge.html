@@ -1,10 +1,17 @@
 <div class="knowledge-page-layout">
   <!-- Navbar Header -->
   <div class="top-nav">
+    <!-- Covelis Top Bar (Sony-style) -->
+    <div class="covelis-topbar">
+      <div class="covelis-topbar-inner">
+        <span class="covelis-tagline">India's Official MMC &amp; NMC Accredited CME Platform</span>
+        <span class="covelis-brand">powered by <strong>COVELIS</strong></span>
+      </div>
+    </div>
+    <!-- Main White Nav -->
     <div class="container nav-inner">
       <button class="nav-brand" (click)="backToDashboard()" aria-label="Go to CME Events">
         <img src="assets/logo.png" alt="All India CME Logo" />
-        <span>Continuing Medical Education Platform</span>
       </button>
       <nav class="nav-links" aria-label="Main navigation">
         <button class="nav-link" (click)="backToDashboard()">CME Events</button>
@@ -99,7 +106,7 @@
           <!-- Category -->
           <span
             style="font-size: 0.72rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 0.1rem 0.45rem; border-radius: 4px; display: inline-block; margin-bottom: 0.75rem;">
-             {{ asset.category }}
+            {{ asset.category }}
           </span>
 
           <!-- Description -->
@@ -112,7 +119,7 @@
         <div
           style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: 0.5rem;">
           <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">
-             {{ asset.downloadCount }} downloads
+            {{ asset.downloadCount }} downloads
           </span>
           <button (click)="downloadAsset(asset)"
             style="background: #0ea5e9; color: #fff; border: none; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 0.35rem;">
