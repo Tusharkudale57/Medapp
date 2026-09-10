@@ -1,14 +1,21 @@
 <div class="profile-page-layout">
   <!-- Navbar Header -->
   <div class="top-nav">
-    <div class="container flex-between">
-      <div style="display: flex; gap: 0.5rem;">
-        <button class="btn-back" (click)="backToDashboard()">
-          ← Back to Event Dashboard
-        </button>
-
+    <div class="container nav-inner">
+      <button class="nav-brand" (click)="backToDashboard()" aria-label="Go to CME Events">
+        <img src="assets/logo.png" alt="All India CME Logo" />
+        <span>Continuing Medical Education Platform</span>
+      </button>
+      <nav class="nav-links" aria-label="Main navigation">
+        <button class="nav-link" (click)="backToDashboard()">CME Events</button>
+        <button *ngIf="!authService.isAdmin()" class="nav-link" (click)="navigateToMyLearning()">My Learning</button>
+        <button class="nav-link" (click)="navigateToKnowledge()">Library</button>
+        <button class="nav-link active">My Profile</button>
+      </nav>
+      <div class="nav-right">
+        <span class="user-name">{{ authService.currentUser()?.name }}</span>
+        <button class="btn-logout" (click)="logout()">Logout</button>
       </div>
-      <div class="nav-title">Physician Profile & CME Certificates</div>
     </div>
   </div>
 

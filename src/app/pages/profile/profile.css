@@ -21,9 +21,96 @@
 .top-nav {
   background: #ffffff;
   color: #1e293b;
-  padding: 0.85rem 0;
+  padding: 0 2rem;
   border-bottom: 1px solid #cbd5e1;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1e293b;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-brand img {
+  width: auto;
+  height: 34px;
+  object-fit: contain;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0.4rem;
+  flex: 1;
+  margin-left: 1.5rem;
+}
+
+.nav-link {
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: rgba(0, 86, 210, 0.1);
+  color: #0056d2;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.user-name {
+  max-width: 150px;
+  overflow: hidden;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .btn-back {
@@ -47,6 +134,34 @@
 
 .main-container {
   margin-top: 2rem;
+}
+
+@media (max-width: 640px) {
+  .nav-inner {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .nav-brand {
+    width: 100%;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    flex: 0 0 auto;
+  }
+
+  .nav-right {
+    margin-left: auto;
+  }
 }
 
 /* Profile Header Card */

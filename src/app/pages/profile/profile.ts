@@ -81,6 +81,15 @@ export class ProfileComponent implements OnInit {
       this.initializeProfileFields();
     });
   }
+
+  navigateToKnowledge() {
+    this.router.navigate(['/knowledge']);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
  ngOnInit(): void {
     if (this.isBrowser) {
       const savedPhoto = localStorage.getItem('medcme_profile_photo');
