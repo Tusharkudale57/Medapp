@@ -680,98 +680,6 @@
   color: #ffffff;
 }
 
-/* ===== TABLE FOR COMPLETED RECORDS ===== */
-.completed-list-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background-color: #ffffff;
-}
-
-.completed-items-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.88rem;
-}
-
-.completed-items-table th, 
-.completed-items-table td {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.completed-items-table th {
-  background-color: #f9fafb;
-  font-weight: 700;
-  color: #374151;
-}
-
-.completed-items-table tr:last-child td {
-  border-bottom: none;
-}
-
-.type-pill {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-}
-
-.type-pill.course-pill {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.type-pill.event-pill {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.completed-title-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.completed-title-col strong {
-  color: #111827;
-  font-size: 0.92rem;
-}
-
-.completed-title-col span {
-  font-size: 0.78rem;
-  color: #6b7280;
-}
-
-.credit-color {
-  color: #385723;
-  font-weight: 700;
-}
-
-.status-success {
-  color: #16a34a;
-  font-weight: 700;
-}
-
-.btn-table-action {
-  background: none;
-  border: 1px solid #d1d5db;
-  padding: 0.4rem 0.85rem;
-  border-radius: 4px;
-  font-weight: 600;
-  color: #4b5563;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.8rem;
-}
-
-.btn-table-action:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-}
-
 /* ===== CERTIFICATES GRID ===== */
 .certificates-grid {
   display: grid;
@@ -939,13 +847,19 @@
 }
 
 .btn-empty-primary {
-  background-color: #0056D2;
-  border: 1px solid #0056D2;
+  width: min(228px, 100%);
+  min-height: 49px;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 7px;
+  background-color: #075bd3;
   color: #ffffff;
+  font-size: 1.1rem;
+  line-height: 1.2;
 }
 
 .btn-empty-primary:hover {
-  background-color: #00419e;
+  background-color: #004bb8;
 }
 
 .btn-empty-secondary {

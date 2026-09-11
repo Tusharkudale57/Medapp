@@ -165,7 +165,7 @@
     </div>
 
     <!-- Doctor Hero Banner -->
-    <div *ngIf="authService.isDoctor()" class="hero-banner">
+    <!-- <div *ngIf="authService.isDoctor()" class="hero-banner">
       <div class="hero-content">
         <div class="cme-tag">&#127891; Accredited Continuing Medical Education</div>
         <h1>Upcoming CME Events</h1>
@@ -192,7 +192,7 @@
           <span class="seal-text">Official CME Accreditation</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
 
 
@@ -285,17 +285,6 @@
 
     <!-- Filter Bar -->
     <div class="filter-section">
-      <div class="filter-tabs">
-        <button *ngFor="let f of filters" class="filter-btn" [class.active]="activeFilter() === f"
-          (click)="setFilter(f)">
-          <span *ngIf="f === 'All'">&#127968;</span>
-          <span *ngIf="f === 'Online'">&#128187;</span>
-          <span *ngIf="f === 'Offline'">&#127979;</span>
-          <span *ngIf="f === 'Hybrid'">&#127760;</span>
-          <span *ngIf="f === 'Free'">&#127381;</span>
-          {{ f }}
-        </button>
-      </div>
       <div class="event-count">
         Showing <strong>{{ filteredEvents.length }}</strong> upcoming CME events
       </div>

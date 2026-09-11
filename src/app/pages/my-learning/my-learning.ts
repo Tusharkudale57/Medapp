@@ -16,7 +16,7 @@ import { jsPDF } from 'jspdf';
   styleUrl: './my-learning.css'
 })
 export class MyLearningComponent implements OnInit {
-  activeTab = signal<'in_progress' | 'completed' | 'certificates'>('in_progress');
+  activeTab = signal<'in_progress' | 'certificates'>('in_progress');
   
   // Greeting state
   greeting: string = 'Welcome';
@@ -118,7 +118,7 @@ export class MyLearningComponent implements OnInit {
   }
 
   // --- Filtering Methods ---
-  setTab(tab: 'in_progress' | 'completed' | 'certificates') {
+  setTab(tab: 'in_progress' | 'certificates') {
     this.activeTab.set(tab);
   }
 
@@ -126,13 +126,6 @@ export class MyLearningComponent implements OnInit {
     const allCourses = this.courseService.getCourses();
     return allCourses.filter(c => 
       this.authService.isCoursePurchased(c.id) && !this.authService.isCourseCompleted(c.id)
-    );
-  }
-
-  get completedCourses(): Course[] {
-    const allCourses = this.courseService.getCourses();
-    return allCourses.filter(c => 
-      this.authService.isCourseCompleted(c.id)
     );
   }
 
@@ -155,16 +148,6 @@ export class MyLearningComponent implements OnInit {
     return this.registeredEvents.filter(e => {
       const reg = this.eventService.getRegistration(e.id, user.id);
       return reg ? !reg.attended : true;
-    });
-  }
-
-  get completedEvents(): CmeEvent[] {
-    const user = this.authService.currentUser();
-    if (!user) return [];
-
-    return this.registeredEvents.filter(e => {
-      const reg = this.eventService.getRegistration(e.id, user.id);
-      return reg ? reg.attended : false;
     });
   }
 
