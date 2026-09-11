@@ -194,9 +194,6 @@
         <button class="tab-button" [class.active]="activeTab() === 'in_progress'" (click)="setTab('in_progress')">
           In Progress
         </button>
-        <button class="tab-button" [class.active]="activeTab() === 'completed'" (click)="setTab('completed')">
-          Completed
-        </button>
         <button class="tab-button" [class.active]="activeTab() === 'certificates'" (click)="setTab('certificates')">
           CME Event Certificates
         </button>
@@ -318,80 +315,9 @@
         <p>Explore our catalog of accredited medical conferences, live events, or self-paced courses to start earning
           CME points.</p>
         <div class="empty-actions">
-          <button class="btn-empty-primary" (click)="navigateToEvents()">Browse CME Events</button>
+          <button class="btn-empty-primary" (click)="navigateToEvents()">Browse CME Event</button>
           <!-- <button class="btn-empty-secondary" (click)="navigateToCourses()">Browse Online Courses</button> -->
         </div>
-      </div>
-    </section>
-
-    <!-- Tab Section: Completed -->
-    <section class="tab-content-panel" *ngIf="activeTab() === 'completed'">
-      <div class="section-header">
-        <h2>Your Completed Education</h2>
-        <p>A history of all courses completed and live events attended. Certificates have been issued for these items.
-        </p>
-      </div>
-
-      <!-- Completed List -->
-      <div class="completed-list-table-wrapper" *ngIf="completedCourses.length > 0 || completedEvents.length > 0">
-        <table class="completed-items-table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Topic / Title</th>
-              <th>Date Completed</th>
-              <th>CME Credits</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Courses Completed -->
-            <tr *ngFor="let course of completedCourses">
-              <td><span class="type-pill course-pill"> Course</span></td>
-              <td>
-                <div class="completed-title-col">
-                  <strong>{{ course.title }}</strong>
-                  <span>{{ course.instructor }}</span>
-                </div>
-              </td>
-              <td>Recent</td>
-              <td><strong class="credit-color">+{{ course.creditPoints }} CME Point</strong></td>
-              <td><span class="status-success">✓ Verified Pass</span></td>
-              <td>
-                <button class="btn-table-action" (click)="viewCourseDetail(course.id)">
-                  Review Course
-                </button>
-              </td>
-            </tr>
-
-            <!-- Events Completed (Attended) -->
-            <tr *ngFor="let event of completedEvents">
-              <td><span class="type-pill event-pill">Live Event</span></td>
-              <td>
-                <div class="completed-title-col">
-                  <strong>{{ event.title }}</strong>
-                  <span>Speaker: {{ event.speaker }}</span>
-                </div>
-              </td>
-              <td>{{ event.date }}</td>
-              <td><strong class="credit-color">+{{ event.creditPoints }} CME Points</strong></td>
-              <td><span class="status-success">✓ Attended</span></td>
-              <td>
-                <button class="btn-table-action" (click)="navigateToEvents()">
-                  View Details
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Empty State Completed -->
-      <div class="empty-state-card" *ngIf="completedCourses.length === 0 && completedEvents.length === 0">
-        <div class="empty-vector">&#127891;</div>
-        <h3>No completed records found</h3>
-        <p>Once you attend events or pass course quizzes, your completions and credits will show up here.</p>
       </div>
     </section>
 

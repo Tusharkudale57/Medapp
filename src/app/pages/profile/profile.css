@@ -300,6 +300,24 @@
   cursor: pointer;
 }
 
+.empty-certs .btn-primary {
+  width: min(228px, 100%);
+  min-height: 49px;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 7px;
+  background: #075bd3;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.empty-certs .btn-primary:hover {
+  background: #004bb8;
+}
+
 /* Credit Summary Card */
 .credit-summary-card {
   background: linear-gradient(135deg, #fef3c7, #fde047);
