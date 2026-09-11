@@ -233,22 +233,22 @@
 
         <!-- Events In Progress (Registered but not attended) -->
         <div class="learning-card event-card-type" *ngFor="let event of inProgressEvents">
-          <div class="card-thumb-wrapper event-header" [style.background]="event.bannerColor || '#2563eb'">
+          <div class="card-thumb-wrapper event-header" [style.background]="event.cardAccentColor || '#2563eb'">
             <div class="event-type-badge">&#128197; Live Event</div>
             <div class="event-mode">{{ event.mode }}</div>
           </div>
           <div class="card-info-content">
             <div class="educator-row">
-              <span class="educator-name">{{ event.speaker }}</span>
+              <span class="educator-name">{{ event.speakerName }}</span>
               <span class="educator-sub" *ngIf="event.speakerRole">({{ event.speakerRole }})</span>
             </div>
             <h3 class="learning-title" (click)="navigateToEvents()">{{ event.title }}</h3>
             <div class="event-date-row">
-              <span> {{ event.date }} at {{ event.time }}</span>
-              <span> {{ event.venue }}</span>
+              <span> {{ event.eventDateTime | date:'dd MMM yyyy' }} at {{ event.eventDateTime | date:'hh:mm a' }}</span>
+              <span> {{ event.joinLink || 'Online' }}</span>
             </div>
             <div class="meta-points-row">
-              <span class="points-badge yellow-badge">+{{ event.creditPoints }} CME Credits</span>
+              <span class="points-badge yellow-badge">+{{ event.cmeCreditPoints ?? 0 }} CME Credits</span>
               <span class="status-pill-progress">Registered</span>
             </div>
             <div class="progress-container text-only">
@@ -259,8 +259,8 @@
              <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 8px; padding: 0.65rem; margin-bottom: 0.85rem; text-align: left;">
                <span style="font-size: 0.73rem; color: #0284c7; font-weight: 700; display: block; margin-bottom: 0.25rem;">📚 MANDATORY PRE-READ MATERIAL:</span>
                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                 <span style="font-size: 0.78rem; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" [title]="event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf'">
-                    {{ event.preRead || 'ACLS_Standard_Protocols_Guideline.pdf' }}
+                 <span style="font-size: 0.78rem; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" [title]="event.documents[0]?.fileName || 'No document available'">
+                    {{ event.documents[0]?.fileName || 'No document available' }}
                  </span>
                  <button (click)="downloadPreRead(event)" style="border: none; background: #0ea5e9; color: #fff; padding: 0.35rem 0.65rem; border-radius: 5px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;">
                     Download
@@ -342,11 +342,11 @@
               <td>
                 <div class="completed-title-col">
                   <strong>{{ event.title }}</strong>
-                  <span>Speaker: {{ event.speaker }}</span>
+                  <span>Speaker: {{ event.speakerName }}</span>
                 </div>
               </td>
-              <td>{{ event.date }}</td>
-              <td><strong class="credit-color">+{{ event.creditPoints }} CME Points</strong></td>
+              <td>{{ event.eventDateTime | date:'dd MMM yyyy' }}</td>
+              <td><strong class="credit-color">+{{ event.cmeCreditPoints }} CME Points</strong></td>
               <td><span class="status-success">✓ Attended</span></td>
               <td>
                 <button class="btn-table-action" (click)="navigateToEvents()">
@@ -415,7 +415,7 @@
   <!-- Event Detail Modal -->
   <div class="modal-overlay cme-details-overlay" *ngIf="showEventDetailModal && selectedEventForDetail" (click)="closeEventDetail()">
     <div class="modal-box detail-modal-box" (click)="$event.stopPropagation()">
-      <div class="detail-modal-header" [style.background]="'linear-gradient(135deg, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + 'dd, ' + (selectedEventForDetail.bannerColor || '#bae6fd') + '55)'">
+      <div class="detail-modal-header" [style.background]="'linear-gradient(135deg, ' + (selectedEventForDetail.cardAccentColor || '#bae6fd') + 'dd, ' + (selectedEventForDetail.cardAccentColor || '#bae6fd') + '55)'">
         <span class="detail-modal-category">{{ selectedEventForDetail.category }}</span>
         <h3 style="color: #1e3a8a;">{{ selectedEventForDetail.title }}</h3>
         <button class="close-detail-btn" (click)="closeEventDetail()">✕</button>
@@ -434,11 +434,11 @@
           <div class="detail-section grid-section">
             <div>
               <h5> Date &amp; Time</h5>
-              <p>{{ selectedEventForDetail.date }} &middot; {{ selectedEventForDetail.time }}</p>
+              <p>{{ selectedEventForDetail.eventDateTime | date:'dd MMM yyyy' }} &middot; {{ selectedEventForDetail.eventDateTime | date:'hh:mm a' }}</p>
             </div>
             <div>
               <h5> Venue / Meeting Info</h5>
-              <p>{{ selectedEventForDetail.venue }} ({{ selectedEventForDetail.mode }} Type)</p>
+              <p>{{ selectedEventForDetail.joinLink || 'No meeting link provided' }} ({{ selectedEventForDetail.mode }} Type)</p>
             </div>
           </div>
 
@@ -456,11 +456,11 @@
           <div class="detail-section grid-section">
             <div>
               <h5> Language Preference</h5>
-              <p>{{ selectedEventForDetail.language }}</p>
+              <p>{{ selectedEventForDetail.category }}</p>
             </div>
             <div>
               <h5> Pre-Read Material</h5>
-              <p class="preread-link"> {{ selectedEventForDetail.preRead }}</p>
+              <p class="preread-link"> {{ selectedEventForDetail.documents[0]?.fileName || 'No document available' }}</p>
             </div>
           </div>
 
@@ -468,9 +468,9 @@
           <div class="detail-section">
             <h4> Speaker Profile</h4>
             <div class="modal-speaker-row">
-              <span class="modal-speaker-avatar">{{ selectedEventForDetail.speaker[0] }}</span>
+              <span class="modal-speaker-avatar">{{ selectedEventForDetail.speakerName.charAt(0) }}</span>
               <div>
-                <h5>{{ selectedEventForDetail.speaker }}</h5>
+                <h5>{{ selectedEventForDetail.speakerName }}</h5>
                 <p *ngIf="selectedEventForDetail.speakerRole">{{ selectedEventForDetail.speakerRole }}</p>
               </div>
             </div>
@@ -479,13 +479,13 @@
           <!-- CME Credits -->
           <div class="detail-section registration-stats">
             <h5>⚡ CME Credits Awarded</h5>
-            <p><strong>{{ selectedEventForDetail.creditPoints }} CME Credit Point(s)</strong> upon attendance and assessment completion.</p>
+            <p><strong>{{ selectedEventForDetail.cmeCreditPoints ?? 0 }} CME Credit Point(s)</strong> upon attendance and assessment completion.</p>
           </div>
 
           <!-- Registration Info -->
           <div class="detail-section registration-stats">
             <h5>👥 Registration Status</h5>
-            <p>You are <strong>registered</strong> for this event. {{ selectedEventForDetail.registeredCount }} total attendees registered.</p>
+            <p>You are <strong>registered</strong> for this event.</p>
           </div>
 
         </div>
@@ -565,7 +565,7 @@
           <div class="mock-video-container">
             <div class="video-mock-feed">
               <div class="video-speaker-anim">🎙️</div>
-              <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">{{ activeLiveEvent.speaker }}</h4>
+              <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">{{ activeLiveEvent.speakerName }}</h4>
               <p style="margin: 0.15rem 0 0 0; color: #38bdf8; font-size: 0.75rem;">{{ activeLiveEvent.speakerRole }}</p>
               
               <p style="margin: 0.85rem 0 0 0; color: #94a3b8; font-size: 0.7rem; font-style: italic; max-width: 80%;">
@@ -692,7 +692,7 @@
                 <h4 style="margin: 0 0 0.4rem 0; color: #10b981; font-size: 1.05rem; font-weight: 800;">Session Completed!</h4>
                 <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Your attendance has been verified and CME credits recorded.</p>
                 <div style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; border-radius: 10px; padding: 0.85rem; margin: 1rem 0;">
-                  <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: block;">⚡ +{{ activeLiveEvent.creditPoints || 1 }} CME Credit(s) Earned</span>
+                  <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: block;">⚡ +{{ activeLiveEvent.cmeCreditPoints ?? 1 }} CME Credit(s) Earned</span>
                   <span style="font-size: 0.72rem; color: #94a3b8;">📜 Certificate will appear in My Learning</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; flex-direction: column;">

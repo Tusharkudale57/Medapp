@@ -95,19 +95,19 @@
 
       <!-- Event Cards -->
       <div *ngIf="hostEvents.length > 0" class="hec-list">
-        <div *ngFor="let event of hostEvents" class="hec-card" [style.border-left-color]="event.bannerColor">
+        <div *ngFor="let event of hostEvents" class="hec-card" [style.border-left-color]="event.cardAccentColor || '#0ea5e9'">
 
           <!-- Card Header -->
           <div class="hec-header"
-            [style.background]="'linear-gradient(135deg,' + event.bannerColor + '22,' + event.bannerColor + '08)'">
+            [style.background]="'linear-gradient(135deg,' + (event.cardAccentColor || '#0ea5e9') + '22,' + (event.cardAccentColor || '#0ea5e9') + '08)'">
             <div class="hec-meta">
-              <span class="hec-mode-badge" [style.background]="event.bannerColor">{{ event.mode }}</span>
+              <span class="hec-mode-badge" [style.background]="event.cardAccentColor || '#0ea5e9'">{{ event.mode }}</span>
               <span class="hec-cat">{{ event.category }}</span>
             </div>
             <h3 class="hec-title">{{ event.title }}</h3>
             <div class="hec-subline">
-              <span>&#128197; {{ formatDate(event.date) }} at {{ event.time }}</span>
-              <span>&#128205; {{ event.venue }}</span>
+              <span>&#128197; {{ formatDate(event.eventDateTime) }} at {{ event.eventDateTime | date:'hh:mm a' }}</span>
+              <span>&#128205; {{ event.joinLink }}</span>
             </div>
           </div>
 
@@ -116,19 +116,19 @@
             <!-- Left side: Speaker and tags -->
             <div class="hec-body-left">
               <div class="hec-speaker">
-                <div class="spk-avatar">{{ event.speaker[4] || 'D' }}</div>
+                <div class="spk-avatar">{{ event.speakerName.charAt(4) || 'D' }}</div>
                 <div class="spk-info">
-                  <div class="spk-name">{{ event.speaker }}</div>
+                  <div class="spk-name">{{ event.speakerName }}</div>
                   <div class="spk-role">{{ event.speakerRole }}</div>
                 </div>
               </div>
 
               <div class="hec-info-row">
-                <span class="info-tag price-tag" [class.free]="event.price === 0">
-                  {{ event.price === 0 ? 'FREE' : 'Rs. ' + (event.price | number) }}
+                <span class="info-tag price-tag" [class.free]="event.registrationFee === 0">
+                  {{ event.registrationFee === 0 ? 'FREE' : 'Rs. ' + (event.registrationFee | number) }}
                 </span>
                 <span class="info-tag seats-tag">{{ event.maxSeats }} seats &bull; {{ seatsLeft(event) }} left</span>
-                <span class="info-tag credit-tag">&#127891; {{ event.creditPoints }} CME Credit(s)</span>
+                <span class="info-tag credit-tag">&#127891; {{ event.cmeCreditPoints }} CME Credit(s)</span>
               </div>
             </div>
 
@@ -420,8 +420,8 @@
         <div>
           <div class="modal-tag">Attendance Sheet</div>
           <h2>{{ selectedEventForAttendance.title }}</h2>
-          <p class="modal-sub">{{ formatDate(selectedEventForAttendance.date) }} &bull; {{
-            selectedEventForAttendance.venue }}</p>
+          <p class="modal-sub">{{ formatDate(selectedEventForAttendance.eventDateTime) }} at {{ selectedEventForAttendance.eventDateTime | date:'hh:mm a' }} &bull; {{
+            selectedEventForAttendance.joinLink || 'No meeting link' }}</p>
         </div>
         <button class="close-btn" (click)="closeAttendanceModal()">&#10005;</button>
       </div>
@@ -588,7 +588,7 @@
         </div>
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" [(ngModel)]="newDate" />
+          <input type="date" [(ngModel)]="newDate"  [min]="minEventDate" />
         </div>
         <div class="form-group">
           <label>Time</label>

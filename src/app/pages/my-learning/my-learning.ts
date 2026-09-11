@@ -5,8 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
-import { Course, CmeEvent, Certificate, EventRegistration } from '../../models/course.model';
-import { jsPDF } from 'jspdf';
+import { Course, Certificate, EventResponse } from '../../models/course.model';import { jsPDF } from 'jspdf';
 
 @Component({
   selector: 'app-my-learning',
@@ -18,6 +17,9 @@ import { jsPDF } from 'jspdf';
 export class MyLearningComponent implements OnInit {
   activeTab = signal<'in_progress' | 'completed' | 'certificates'>('in_progress');
   
+
+  events: EventResponse[] = [];
+
   // Greeting state
   greeting: string = 'Welcome';
 
@@ -34,11 +36,11 @@ export class MyLearningComponent implements OnInit {
 
   // Event Detail Modal state
   showEventDetailModal = false;
-  selectedEventForDetail: CmeEvent | null = null;
+  selectedEventForDetail: EventResponse  | null = null;
 
   // Live Room State
   showLiveRoomModal = false;
-  activeLiveEvent: CmeEvent | null = null;
+  activeLiveEvent: EventResponse  | null = null;
   liveChatMessages: Array<{ sender: string; text: string; time: string; isUser: boolean }> = [];
   newChatMessageText = '';
 
@@ -96,7 +98,20 @@ export class MyLearningComponent implements OnInit {
         this.userCareerGoal = savedGoal;
       }
     }
+     this.loadUpcomingEvents();
   }
+
+  loadUpcomingEvents(): void {
+  this.eventService.getUpcomingEvents().subscribe({
+    next: (response) => {
+      this.events = response.data;
+    },
+    error: (error) => {
+      console.error('Failed to load upcoming events:', error);
+      this.events = [];
+    }
+  });
+}
 
   // --- Career Goal ---
   openGoalModal() {
@@ -136,37 +151,43 @@ export class MyLearningComponent implements OnInit {
     );
   }
 
-  get registeredEvents(): CmeEvent[] {
-    const user = this.authService.currentUser();
-    if (!user) return [];
-    
-    // Get all events from service
-    const allEvents = this.eventService.getUpcomingEvents();
-    
-    // Filter events where registration exists for user
-    return allEvents.filter(e => this.eventService.isRegistered(e.id, user.id));
+  get registeredEvents(): EventResponse[] {
+  const user = this.authService.currentUser();
+
+  if (!user) {
+    return [];
   }
 
-  get inProgressEvents(): CmeEvent[] {
-    // An event is in progress if registered, but not yet attended/completed
-    const user = this.authService.currentUser();
-    if (!user) return [];
+  return this.events.filter((e: EventResponse) =>
+    this.eventService.isRegistered(String(e.id), user.id)
+  );
+}
 
-    return this.registeredEvents.filter(e => {
-      const reg = this.eventService.getRegistration(e.id, user.id);
-      return reg ? !reg.attended : true;
-    });
+  get inProgressEvents(): EventResponse[] {
+  const user = this.authService.currentUser();
+
+  if (!user) {
+    return [];
   }
 
-  get completedEvents(): CmeEvent[] {
-    const user = this.authService.currentUser();
-    if (!user) return [];
+  return this.registeredEvents.filter((e: EventResponse) => {
+    const reg = this.eventService.getRegistration(String(e.id), user.id);
+    return reg ? !reg.attended : true;
+  });
+}
 
-    return this.registeredEvents.filter(e => {
-      const reg = this.eventService.getRegistration(e.id, user.id);
-      return reg ? reg.attended : false;
-    });
+ get completedEvents(): EventResponse[] {
+  const user = this.authService.currentUser();
+
+  if (!user) {
+    return [];
   }
+
+  return this.registeredEvents.filter((e: EventResponse) => {
+    const reg = this.eventService.getRegistration(String(e.id), user.id);
+    return reg ? reg.attended : false;
+  });
+}
 
   get certificates(): Certificate[] {
     return this.authService.getUserCertificates();
@@ -182,7 +203,7 @@ export class MyLearningComponent implements OnInit {
   }
 
   // --- Navigation Header Links ---
-  openEventDetail(event: CmeEvent) {
+  openEventDetail(event: EventResponse) {
     this.selectedEventForDetail = event;
     this.showEventDetailModal = true;
   }
@@ -276,7 +297,7 @@ export class MyLearningComponent implements OnInit {
     }
   }
 
-  openLiveRoom(event: CmeEvent) {
+  openLiveRoom(event: EventResponse ) {
     this.activeLiveEvent = event;
     this.showLiveRoomModal = true;
     
@@ -319,23 +340,27 @@ export class MyLearningComponent implements OnInit {
   }
 
   downloadNotes() {
-    if (!this.activeLiveEvent) return;
-    const blob = new Blob([
-      `All India CME Private Session Notes\n` +
-      `Event: ${this.activeLiveEvent.title}\n` +
-      `Speaker: ${this.activeLiveEvent.speaker}\n` +
-      `Date: ${this.activeLiveEvent.date}\n\n` +
-      `My Private Notes:\n` +
-      `=========================\n` +
-      `${this.liveRoomNotes}`
-    ], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `CME_Notes_${this.activeLiveEvent.id}.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }
+  if (!this.activeLiveEvent) return;
+
+  const blob = new Blob([
+    `All India CME Private Session Notes\n` +
+    `Event: ${this.activeLiveEvent.title}\n` +
+    `Speaker: ${this.activeLiveEvent.speakerName}\n` +
+    `Date: ${this.activeLiveEvent.eventDateTime}\n\n` +
+    `My Private Notes:\n` +
+    `=========================\n` +
+    `${this.liveRoomNotes}`
+  ], { type: 'text/plain' });
+
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+
+  a.href = url;
+  a.download = `CME_Notes_${this.activeLiveEvent.id}.txt`;
+  a.click();
+
+  window.URL.revokeObjectURL(url);
+}
 
 
 
@@ -352,11 +377,11 @@ export class MyLearningComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user && this.activeLiveEvent) {
       this.authService.issueEventCertificate(
-        user.id,
-        this.activeLiveEvent.id,
-        this.activeLiveEvent.title,
-        this.activeLiveEvent.creditPoints || 1
-      );
+  user.id,
+  String(this.activeLiveEvent.id),
+  this.activeLiveEvent.title,
+  this.activeLiveEvent.cmeCreditPoints || 1
+);
     }
   }
 
@@ -437,8 +462,8 @@ export class MyLearningComponent implements OnInit {
           `All India CME Mandatory CME Pre-Read Material\n` +
           `=========================================\n` +
           `Event: ${event.title}\n` +
-          `Speaker: ${event.speaker}\n` +
-          `CME Credits: ${event.creditPoints}\n\n` +
+          `Speaker: ${event.speakerName}\n` +
+          `CME Credits: ${event.cmeCreditPoints }\n\n` +
           `Please review this document carefully before attending the live session.\n` +
           `Reference ID: PR-${event.id}`
         ], { type: 'text/plain' });

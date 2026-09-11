@@ -165,3 +165,62 @@ export interface ApiResponse<T = any> {
   data: T;
 }
 
+export interface EventDocument {
+  id: number;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  downloadUrl: string;
+}
+
+export interface EventResponse {
+  id: number;
+  speakerName: string;
+  speakerRole: string;
+  title: string;
+  description: string;
+  sequenceNo: number;
+  eventDateTime: string;
+  joinLink: string | null;
+  zohoBackstageLink: string | null;
+  mode: string;
+  category: string;
+  mandatory: boolean;
+  createdAt: string;
+  cmeCreditPoints: number | null;
+  registrationFee: number;
+  maxSeats: number | null;
+  cardAccentColor: string | null;
+  photoUrl: string | null;
+  documents: EventDocument[];
+}
+
+export interface EventPageResponse {
+  content: EventResponse[];
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  size: number;
+  number: number;
+  numberOfElements: number;
+}
+
+export interface CreateEventRequest {
+  speakerName?: string;
+  speakerRole?: string;
+  title: string;
+  description?: string;
+  sequenceNo?: number;
+  eventDate: string;
+  eventTime: string;
+  joinLink?: string;
+  zohoBackstageLink?: string;
+  mode: string;
+  category: string;
+  mandatory?: boolean;
+  cmeCreditPoints?: number;
+  registrationFee?: number;
+  maxSeats?: number;
+  cardAccentColor?: string;
+}
