@@ -448,7 +448,7 @@
           <div class="no-rec-icon"></div>
           <h4>No personalized recommendations yet</h4>
           <p>Update your interests or specialization in your profile to view tailored CME suggestions.</p>
-          <button class="btn-rec-interests" (click)="showInterestPopup = true">Select Interests</button>
+          <button class="btn-rec-interests" (click)="selectInterests()">Select Interests</button>
         </div>
       </div>
 
@@ -625,7 +625,9 @@
       <div class="empty-icon">&#128197;</div>
       <h3>No events match the selected filter</h3>
       <p>Try a different filter or check back later for upcoming CME events.</p>
-      <button class="btn-secondary" (click)="setFilter('All')">View All Events</button>
+      <button class="btn-secondary" (click)="navigateToEvents()">
+  View All Events
+</button>
     </div>
 
     <!-- Knowledge Bank & Resources Section -->

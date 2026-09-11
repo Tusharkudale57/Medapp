@@ -29,6 +29,11 @@ export class DashboardComponent implements OnInit {
   charityInterests = ['Rural Healthcare Camps', 'Free Pediatric Screening', 'Free Cardiac Clinics', 'NGO Medical Relief'];
   selectedInterests: string[] = [];
 
+  selectInterests() {
+  this.showInterestPopup = false;
+  this.router.navigate(['/profile']);
+}
+
   // Details Modal state
   selectedEventForDetail: CmeEvent | null = null;
   showDetailModal = false;
@@ -984,10 +989,9 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  navigateToEvents() {
-    this.activeFilter.set('All');
-    this.activeCategory.set('All');
-  }
+ navigateToEvents() {
+  this.resetAllFilters();
+}
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
