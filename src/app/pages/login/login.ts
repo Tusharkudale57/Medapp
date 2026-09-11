@@ -7,7 +7,7 @@ import { EmailService } from '../../services/email.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
 import { RazorpayService } from '../../services/razorpay.service';
-import { Course, CmeEvent, RegisterRequest } from '../../models/course.model';
+import { Course, EventResponse, RegisterRequest } from '../../models/course.model';
 
 @Component({
   selector: 'app-login',
@@ -27,13 +27,14 @@ export class LoginComponent implements OnInit {
   eventsLimit = 4;
   coursesLimit = 3;
   showExploreDropdown = false;
+  events: EventResponse[] = [];
 
   // Selected event details modal
-  selectedEventForDetail: CmeEvent | null = null;
+  selectedEventForDetail: EventResponse | null = null;
   showEventDetailModal = false;
 
   // Checkout states for Event Registration
-  selectedEvent: CmeEvent | null = null;
+  selectedEvent: EventResponse | null = null;
   showRegisterModal = false;
   agreeTermsCheckout = false;
   showSponsorInput = false;
@@ -55,7 +56,7 @@ export class LoginComponent implements OnInit {
   showLoginModal = false;
 
   // Pending guest actions
-  pendingEventForCheckout: CmeEvent | null = null;
+  pendingEventForCheckout: EventResponse | null = null;
 
   // Form Fields
   userId: string = 'doctor@medcme.org';
@@ -164,10 +165,24 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
+
+    this.loadUpcomingEvents();
+  }
+
+  loadUpcomingEvents(): void {
+    this.eventService.getUpcomingEvents().subscribe({
+      next: (response) => {
+        this.events = response.data ?? [];
+      },
+      error: (error) => {
+        console.error('Failed to load upcoming events:', error);
+        this.events = [];
+      }
+    });
   }
 
   switchRole(role: 'doctor' | 'admin') {
@@ -668,27 +683,36 @@ export class LoginComponent implements OnInit {
   }
 
   // --- Dynamic Search, Filters & Checkout Helpers ---
-  get filteredEvents(): CmeEvent[] {
-    let list = this.eventService.getUpcomingEvents();
+  get filteredEvents(): EventResponse[] {
+    let list: EventResponse[] = [...this.events];
+
     if (this.selectedSpecialty !== 'All') {
-      list = list.filter(e => e.category.toLowerCase() === this.selectedSpecialty.toLowerCase());
+      list = list.filter((e: EventResponse) =>
+        e.category?.toLowerCase() === this.selectedSpecialty.toLowerCase()
+      );
     }
+
     if (this.selectedFormat !== 'All') {
-      list = list.filter(e => e.mode === this.selectedFormat);
+      list = list.filter((e: EventResponse) =>
+        e.mode === this.selectedFormat
+      );
     }
+
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
-      list = list.filter(e =>
+
+      list = list.filter((e: EventResponse) =>
         (e.title || '').toLowerCase().includes(q) ||
         (e.description || '').toLowerCase().includes(q) ||
-        (e.speaker || '').toLowerCase().includes(q) ||
+        (e.speakerName || '').toLowerCase().includes(q) ||
         (e.category || '').toLowerCase().includes(q)
       );
     }
+
     return list;
   }
 
-  get visibleEvents(): CmeEvent[] {
+  get visibleEvents(): EventResponse[] {
     return this.filteredEvents.slice(0, this.eventsLimit);
   }
 
@@ -770,7 +794,7 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/course', courseId]);
   }
 
-  openEventDetail(event: CmeEvent) {
+  openEventDetail(event: EventResponse) {
     this.selectedEventForDetail = event;
     this.showEventDetailModal = true;
   }
@@ -794,7 +818,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  openRegisterModal(event: CmeEvent) {
+  openRegisterModal(event: EventResponse) {
     this.selectedEvent = event;
     this.registrationSuccess = false;
     this.showRegisterModal = true;
@@ -847,9 +871,9 @@ export class LoginComponent implements OnInit {
     const user = this.authService.currentUser();
     if (!user || !this.selectedEvent) return;
 
-    if (this.selectedEvent.price === 0) {
+    if (this.selectedEvent.registrationFee === 0) {
       const success = this.eventService.registerForEvent(
-        this.selectedEvent.id,
+        String(this.selectedEvent.id),
         user.id,
         user.name,
         user.email,
@@ -862,7 +886,7 @@ export class LoginComponent implements OnInit {
       }
     } else if (this.sponsorNameDetected) {
       const success = this.eventService.registerForEvent(
-        this.selectedEvent.id,
+        String(this.selectedEvent.id),
         user.id,
         user.name,
         user.email,
@@ -876,9 +900,9 @@ export class LoginComponent implements OnInit {
       }
     } else {
       const details = {
-        courseId: this.selectedEvent.id,
+        courseId: String(this.selectedEvent.id),
         courseTitle: this.selectedEvent.title,
-        amount: this.selectedEvent.price,
+        amount: this.selectedEvent.registrationFee,
         userName: user.name,
         userEmail: user.email,
         userPhone: user.phone || '9876543210'
@@ -915,7 +939,7 @@ export class LoginComponent implements OnInit {
     if (!user || !this.selectedEvent) return;
 
     this.eventService.registerForEvent(
-      this.selectedEvent.id,
+      String(this.selectedEvent.id),
       user.id,
       user.name,
       user.email,
@@ -978,7 +1002,7 @@ export class LoginComponent implements OnInit {
     this.showRegistrationForm = true;
   }
 
-  getEventPoster(event: CmeEvent): string {
+  getEventPoster(event: EventResponse): string {
     return this.courseService.getCategoryPoster(event.category, event.title);
   }
 

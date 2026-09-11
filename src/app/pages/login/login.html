@@ -154,20 +154,20 @@
           </div>
           <div class="card-body">
             <div class="card-date-badge">
-              <span class="date-day">{{ event.date | date:'dd' }}</span>
-              <span class="date-month">{{ event.date | date:'MMM' | uppercase }}</span>
+              <span class="date-day">{{ event.eventDateTime | date:'dd' }}</span>
+              <span class="date-month">{{ event.eventDateTime | date:'MMM' | uppercase }}</span>
             </div>
             <div class="card-main-content">
               <h3 class="card-title">{{ event.title }}</h3>
               <div class="card-meta">
-                <span>👤 {{ event.speaker }}</span>
-                <span>🕒 {{ event.time }}</span>
-                <span>📍 {{ event.venue }}</span>
+                <span>👤 {{ event.speakerName }}</span>
+                <span>🕒 {{ event.eventDateTime | date:'hh:mm a' }}</span>
+                <span>📍 {{ event.joinLink || 'Online' }}</span>
               </div>
               <div class="card-footer-row">
-                <span class="credits-badge">{{ event.creditPoints }} CME Credits</span>
-                <span class="card-price" [class.free-green]="event.price === 0">{{ event.price === 0 ? 'FREE' : '₹' +
-                  event.price }}</span>
+                <span class="credits-badge">{{ event.cmeCreditPoints ?? 0 }} CME Credits</span>
+                <span class="card-price" [class.free-green]="event.registrationFee === 0">{{ event.registrationFee === 0 ? 'FREE' : '₹' +
+                  event.registrationFee }}</span>
               </div>
               <button class="btn-view-details" (click)="openEventDetail(event)">View Details</button>
             </div>
@@ -692,7 +692,7 @@
     <div class="detail-modal-box animate-scale-up" (click)="$event.stopPropagation()">
       <button class="btn-close-modal" (click)="closeEventDetail()">&#10005;</button>
 
-      <div class="detail-header" [style.background]="selectedEventForDetail?.bannerColor || '#1e3a8a'">
+      <div class="detail-header" [style.background]="selectedEventForDetail?.cardAccentColor || '#1e3a8a'">
         <span class="detail-format-tag">{{ selectedEventForDetail?.mode }} Event</span>
         <h2 class="detail-title">{{ selectedEventForDetail?.title }}</h2>
       </div>
@@ -701,21 +701,21 @@
         <div class="detail-meta-grid">
           <div class="meta-cell">
             <span class="cell-label">🗓️ DATE & TIME</span>
-            <span class="cell-val">{{ selectedEventForDetail?.date | date:'mediumDate' }} • {{
-              selectedEventForDetail?.time }}</span>
+            <span class="cell-val">{{ selectedEventForDetail?.eventDateTime | date:'mediumDate' }} • {{
+              selectedEventForDetail?.eventDateTime | date:'hh:mm a' }}</span>
           </div>
           <div class="meta-cell">
             <span class="cell-label">📍 VENUE / PLATFORM</span>
-            <span class="cell-val">{{ selectedEventForDetail?.venue }}</span>
+            <span class="cell-val">{{ selectedEventForDetail?.joinLink || 'Online' }}</span>
           </div>
           <div class="meta-cell">
             <span class="cell-label">👤 SPEAKER</span>
-            <span class="cell-val"><strong>{{ selectedEventForDetail?.speaker }}</strong> ({{
+            <span class="cell-val"><strong>{{ selectedEventForDetail?.speakerName }}</strong> ({{
               selectedEventForDetail?.speakerRole }})</span>
           </div>
           <div class="meta-cell">
             <span class="cell-label">🎖️ ACCREDITATION</span>
-            <span class="cell-val">{{ selectedEventForDetail?.creditPoints }} MMC/NMC Accredited CME Points</span>
+            <span class="cell-val">{{ selectedEventForDetail?.cmeCreditPoints ?? 0 }} MMC/NMC Accredited CME Points</span>
           </div>
         </div>
 
@@ -727,16 +727,16 @@
         <div class="detail-price-row">
           <div class="price-info">
             <span class="price-lbl">REGISTRATION FEE</span>
-            <span class="price-val" [class.free-green]="selectedEventForDetail?.price === 0">
-              {{ selectedEventForDetail?.price === 0 ? 'FREE' : '₹' + selectedEventForDetail?.price }}
+            <span class="price-val" [class.free-green]="selectedEventForDetail?.registrationFee === 0">
+              {{ selectedEventForDetail?.registrationFee === 0 ? 'FREE' : '₹' + selectedEventForDetail?.registrationFee }}
             </span>
           </div>
 
-          <button *ngIf="!isRegistered(selectedEventForDetail?.id || '')" class="btn-register-action-trigger"
+          <button *ngIf="!isRegistered(selectedEventForDetail?.id?.toString() || '')" class="btn-register-action-trigger"
             (click)="registerForEventFromDetail()">
             Register for Event &rarr;
           </button>
-          <button *ngIf="isRegistered(selectedEventForDetail?.id || '')" class="btn-registered-badge" disabled>
+          <button *ngIf="isRegistered(selectedEventForDetail?.id?.toString() || '')" class="btn-registered-badge" disabled>
             ✓ Already Enrolled
           </button>
         </div>
@@ -768,13 +768,13 @@
           <h4>Event Selection</h4>
           <p class="summary-title">{{ selectedEvent?.title }}</p>
           <div class="summary-details">
-            <span>📅 {{ selectedEvent?.date | date:'mediumDate' }}</span>
-            <span>📍 {{ selectedEvent?.venue }}</span>
+            <span>📅 {{ selectedEvent?.eventDateTime | date:'mediumDate' }}</span>
+            <span>📍 {{ selectedEvent?.joinLink || 'Online' }}</span>
           </div>
           <div class="summary-price-row">
             <span>Price</span>
-            <strong [class.free-green]="selectedEvent?.price === 0">
-              {{ selectedEvent?.price === 0 ? 'FREE' : '₹' + selectedEvent?.price }}
+            <strong [class.free-green]="selectedEvent?.registrationFee === 0">
+              {{ selectedEvent?.registrationFee === 0 ? 'FREE' : '₹' + selectedEvent?.registrationFee }}
             </strong>
           </div>
         </div>
@@ -817,8 +817,8 @@
         </label>
 
         <button class="btn-checkout-confirm" [disabled]="!agreeTermsCheckout" (click)="confirmRegister()">
-          {{ selectedEvent?.price === 0 || sponsorNameDetected ? 'Complete Free Registration' : 'Proceed to Payment (₹'
-          + selectedEvent?.price + ')' }}
+          {{ selectedEvent?.registrationFee === 0 || sponsorNameDetected ? 'Complete Free Registration' : 'Proceed to Payment (₹'
+          + selectedEvent?.registrationFee + ')' }}
         </button>
       </div>
 
@@ -826,7 +826,7 @@
       <div *ngIf="showSimulatedRazorpay" class="simulated-payment-body">
         <div class="payment-card-header">
           <div class="razorpay-logo">💳 Razorpay Secure Checkout</div>
-          <div class="payment-amount-display">Payable: ₹{{ selectedEvent?.price }}</div>
+          <div class="payment-amount-display">Payable: ₹{{ selectedEvent?.registrationFee }}</div>
         </div>
 
         <div class="payment-options-tabs">

@@ -2,10 +2,10 @@ import { Component, OnInit, signal, computed, HostListener } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
-import { CmeEvent } from '../../models/course.model';
 import { RazorpayService } from '../../services/razorpay.service';
+import { EventService } from '../../services/event.service';
+import { EventResponse, CreateEventRequest } from '../../models/course.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,7 +30,7 @@ export class DashboardComponent implements OnInit {
   selectedInterests: string[] = [];
 
   // Details Modal state
-  selectedEventForDetail: CmeEvent | null = null;
+  selectedEventForDetail: EventResponse | null = null;
   showDetailModal = false;
 
   // Protocol Modal state
@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit {
 
   // Live Room State
   showLiveRoomModal = false;
-  activeLiveEvent: CmeEvent | null = null;
+  activeLiveEvent: EventResponse | null = null;
   liveChatMessages: Array<{ sender: string; text: string; time: string; isUser: boolean }> = [];
   newChatMessageText = '';
   showJoinLiveAlert = false;  // shown when non-registered user clicks Join Live
@@ -54,7 +54,7 @@ export class DashboardComponent implements OnInit {
   midMcqIsCorrect: boolean | null = null;
 
   showRegisterModal = false;
-  selectedEvent: CmeEvent | null = null;
+  selectedEvent: EventResponse | null = null;
   registrationSuccess = false;
   agreeTermsCheckout = false;
 
@@ -72,6 +72,8 @@ export class DashboardComponent implements OnInit {
   maxCreditsFilter = 5;
   sortByFilter = 'Date';
   visibleCount = 6;
+
+  events: EventResponse[] = [];
 
   // Live Room Notes & Feedback states
   liveRoomNotes = '';
@@ -93,7 +95,7 @@ export class DashboardComponent implements OnInit {
 
   // Admin: create event modal
   showCreateModal = false;
-  editingEventId: string | null = null;
+  editingEventId: number | null = null;
   newTitle = '';
   newDescription = '';
   newDate = '';
@@ -175,6 +177,8 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadUpcomingEvents();
+
     if (!this.authService.currentUser()) {
       this.router.navigate(['/login']);
       return;
@@ -201,8 +205,21 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  get filteredEvents(): CmeEvent[] {
-    let events = this.eventService.getUpcomingEvents();
+  loadUpcomingEvents(): void {
+    this.eventService.getUpcomingEvents().subscribe({
+      next: (response) => {
+        this.events = response.data ?? [];
+      },
+      error: (error) => {
+        console.error('Failed to load upcoming events:', error);
+        this.events = [];
+      }
+    });
+  }
+
+  get filteredEvents(): EventResponse[] {
+
+    let events: EventResponse[] = [...this.events];
     
     // Filter by interests if enabled, otherwise prioritize interests by sorting them first
     const user = this.authService.currentUser();
@@ -225,7 +242,7 @@ export class DashboardComponent implements OnInit {
 
     const filter = this.activeFilter();
     if (filter === 'Free') {
-      events = events.filter(e => e.price === 0);
+      events = events.filter(e => e.registrationFee === 0);
     } else if (filter !== 'All') {
       events = events.filter(e => e.mode === filter);
     }
@@ -236,39 +253,40 @@ export class DashboardComponent implements OnInit {
       events = events.filter(e => 
         (e.title || '').toLowerCase().includes(q) ||
         (e.description || '').toLowerCase().includes(q) ||
-        (e.speaker || '').toLowerCase().includes(q) ||
+        (e.speakerName || '').toLowerCase().includes(q) ||
         (e.category || '').toLowerCase().includes(q)
       );
     }
 
     // Language Filter
     if (this.selectedLanguages.length > 0) {
-      events = events.filter(e => {
-        const lang = e.language || 'English';
-        return this.selectedLanguages.includes(lang);
+      events = events.filter((e: EventResponse) => {
+        // EventResponse currently has no language field.
+        // Keep English as the only available language until the backend exposes it.
+        return this.selectedLanguages.includes('English');
       });
     }
 
     // Date Range Filter
     if (this.startDateFilter) {
-      events = events.filter(e => e.date >= this.startDateFilter);
+      events = events.filter(e => e.eventDateTime >= this.startDateFilter);
     }
     if (this.endDateFilter) {
-      events = events.filter(e => e.date <= this.endDateFilter);
+      events = events.filter(e => e.eventDateTime <= this.endDateFilter);
     }
 
     // Credits range Filter
-    events = events.filter(e => e.creditPoints >= this.minCreditsFilter && e.creditPoints <= this.maxCreditsFilter);
+    events = events.filter((e: EventResponse) => (e.cmeCreditPoints ?? 0) >= this.minCreditsFilter && (e.cmeCreditPoints ?? 0) <= this.maxCreditsFilter);
 
     // Sorting
     if (this.sortByFilter === 'Date') {
-      events = events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      events = events.sort((a, b) => new Date(a.eventDateTime).getTime() - new Date(b.eventDateTime).getTime());
     } else if (this.sortByFilter === 'Newest') {
-      events = events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      events = events.sort((a, b) => new Date(b.eventDateTime).getTime() - new Date(a.eventDateTime).getTime());
     } else if (this.sortByFilter === 'Price') {
-      events = events.sort((a, b) => a.price - b.price);
+      events = events.sort((a, b) => a.registrationFee - b.registrationFee);
     } else if (this.sortByFilter === 'Popularity') {
-      events = events.sort((a, b) => b.registeredCount - a.registeredCount);
+      events = [...events];
     } else if (this.sortByFilter === 'Relevance') {
       const user = this.authService.currentUser();
       const spec = user ? (user.specialty || '').toLowerCase() : '';
@@ -294,21 +312,10 @@ export class DashboardComponent implements OnInit {
       });
     }
 
-    // Prioritize newly created custom events to the top!
-    events = [...events].sort((a, b) => {
-      const aNum = Number(a.id.replace('evt-', ''));
-      const bNum = Number(b.id.replace('evt-', ''));
-      const aNew = (user && a.hostId === user.id) || (!isNaN(aNum) && aNum > 1000000000);
-      const bNew = (user && b.hostId === user.id) || (!isNaN(bNum) && bNum > 1000000000);
-      if (aNew && !bNew) return -1;
-      if (!aNew && bNew) return 1;
-      return 0;
-    });
-
     return events;
   }
 
-  get relevantEvents(): CmeEvent[] {
+  get relevantEvents(): EventResponse[] {
     const user = this.authService.currentUser();
     if (!user || user.role === 'admin') return [];
     
@@ -319,19 +326,17 @@ export class DashboardComponent implements OnInit {
       const cat = (event.category || '').toLowerCase();
       const title = (event.title || '').toLowerCase();
       
-      const evtNum = Number(event.id.replace('evt-', ''));
-      const isUserCreated = (user && event.hostId === user.id) || (!isNaN(evtNum) && evtNum > 1000000000);
       const matchesSpecialty = specialty.includes(cat) || cat.includes(specialty);
       const matchesInterests = interests.some(interest => {
         const clean = interest.toLowerCase();
         return cat.includes(clean) || title.includes(clean);
       });
       
-      return isUserCreated || matchesSpecialty || matchesInterests;
+      return matchesSpecialty || matchesInterests;
     });
   }
 
-  get genericEvents(): CmeEvent[] {
+  get genericEvents(): EventResponse[] {
     const relevant = this.relevantEvents;
     if (relevant.length === 0) {
       return this.filteredEvents;
@@ -339,21 +344,21 @@ export class DashboardComponent implements OnInit {
     return this.filteredEvents.filter(event => !relevant.some(r => r.id === event.id));
   }
 
-  get paginatedRelevantEvents(): CmeEvent[] {
+  get paginatedRelevantEvents(): EventResponse[] {
     return this.relevantEvents.slice(0, this.visibleCount);
   }
 
-  get paginatedGenericEvents(): CmeEvent[] {
+  get paginatedGenericEvents(): EventResponse[] {
     return this.genericEvents.slice(0, this.visibleCount);
   }
 
-  get fastFillingEvents(): CmeEvent[] {
-    return this.eventService.getUpcomingEvents()
-      .filter(e => {
+  get fastFillingEvents(): EventResponse[] {
+    return [...this.events]
+      .filter((e: EventResponse) => {
         const left = this.seatsLeft(e);
         return left > 0 && left < 30;
       })
-      .sort((a, b) => this.seatsLeft(a) - this.seatsLeft(b));
+      .sort((a: EventResponse, b: EventResponse) => this.seatsLeft(a) - this.seatsLeft(b));
   }
 
   toggleLanguageFilter(lang: string) {
@@ -418,7 +423,7 @@ export class DashboardComponent implements OnInit {
     this.showInterestPopup = false;
   }
 
-  openDetailModal(event: CmeEvent) {
+  openDetailModal(event: EventResponse) {
     this.selectedEventForDetail = event;
     this.showDetailModal = true;
   }
@@ -428,11 +433,11 @@ export class DashboardComponent implements OnInit {
     this.selectedEventForDetail = null;
   }
 
-  openLiveRoom(event: CmeEvent) {
+  openLiveRoom(event: EventResponse) {
     // Access check: only registered users can join the live room
     const user = this.authService.currentUser();
     if (!user) return;
-    const registered = this.eventService.isRegistered(event.id, user.id);
+    const registered = this.eventService.isRegistered(event.id.toString(), user.id);
     if (!registered) {
       this.showJoinLiveAlert = true;
       setTimeout(() => this.showJoinLiveAlert = false, 4000);
@@ -451,7 +456,7 @@ export class DashboardComponent implements OnInit {
     // Pre-populate chat messages
     this.liveChatMessages = [
       { sender: 'Moderator 1 (Dr. Anjali Sharma)', text: `Welcome to the Live CME: ${event.title}! Use this chat for Q&A with our panel.`, time: '10:00 AM', isUser: false },
-      { sender: `Consultant 1 (Dr. ${event.speaker})`, text: `Hello doctors. I am online to answer your questions regarding today's session: ${event.title}.`, time: '10:02 AM', isUser: false },
+      { sender: `Consultant 1 (Dr. ${event.speakerName})`, text: `Hello doctors. I am online to answer your questions regarding today's session: ${event.title}.`, time: '10:02 AM', isUser: false },
       { sender: 'Moderator 2 (Dr. Renu Kapoor)', text: 'Please answer the pre-test MCQ below to get started. All questions are CME accredited.', time: '10:04 AM', isUser: false }
     ];
     
@@ -491,8 +496,8 @@ export class DashboardComponent implements OnInit {
     const blob = new Blob([
       `All India CME Private Session Notes\n` +
       `Event: ${this.activeLiveEvent.title}\n` +
-      `Speaker: ${this.activeLiveEvent.speaker}\n` +
-      `Date: ${this.activeLiveEvent.date}\n\n` +
+      `Speaker: ${this.activeLiveEvent.speakerName}\n` +
+      `Date: ${this.activeLiveEvent.eventDateTime}\n\n` +
       `My Private Notes:\n` +
       `=========================\n` +
       `${this.liveRoomNotes}`
@@ -519,9 +524,9 @@ export class DashboardComponent implements OnInit {
     if (user && this.activeLiveEvent) {
       this.authService.issueEventCertificate(
         user.id,
-        this.activeLiveEvent.id,
+        this.activeLiveEvent.id.toString(),
         this.activeLiveEvent.title,
-        this.activeLiveEvent.creditPoints || 1
+        (this.activeLiveEvent.cmeCreditPoints ?? 0) || 1
       );
     }
   }
@@ -731,7 +736,7 @@ export class DashboardComponent implements OnInit {
     this.activeFilter.set(f);
   }
 
-  openRegisterModal(event: CmeEvent) {
+  openRegisterModal(event: EventResponse) {
     this.selectedEvent = event;
     this.registrationSuccess = false;
     this.showRegisterModal = true;
@@ -785,9 +790,9 @@ export class DashboardComponent implements OnInit {
     const user = this.authService.currentUser();
     if (!user || !this.selectedEvent) return;
 
-    if (this.selectedEvent.price === 0) {
+    if (this.selectedEvent.registrationFee === 0) {
       const success = this.eventService.registerForEvent(
-        this.selectedEvent.id,
+        String(this.selectedEvent.id),
         user.id,
         user.name,
         user.email,
@@ -801,7 +806,7 @@ export class DashboardComponent implements OnInit {
     } else if (this.sponsorNameDetected) {
       // Bypass payment with MR sponsor validation
       const success = this.eventService.registerForEvent(
-        this.selectedEvent.id,
+        String(this.selectedEvent.id),
         user.id,
         user.name,
         user.email,
@@ -815,9 +820,9 @@ export class DashboardComponent implements OnInit {
       }
     } else {
       const details = {
-        courseId: this.selectedEvent.id,
+        courseId: String(this.selectedEvent.id),
         courseTitle: this.selectedEvent.title,
-        amount: this.selectedEvent.price,
+        amount: this.selectedEvent.registrationFee,
         userName: user.name,
         userEmail: user.email,
         userPhone: user.phone || '9876543210'
@@ -854,7 +859,7 @@ export class DashboardComponent implements OnInit {
     if (!user || !this.selectedEvent) return;
 
     const success = this.eventService.registerForEvent(
-      this.selectedEvent.id,
+      String(this.selectedEvent.id),
       user.id,
       user.name,
       user.email,
@@ -873,8 +878,8 @@ export class DashboardComponent implements OnInit {
     return this.eventService.isRegistered(eventId, user.id);
   }
 
-  seatsLeft(event: CmeEvent): number {
-    return this.eventService.getSeatsLeft(event);
+  seatsLeft(event: EventResponse): number {
+    return event.maxSeats ?? 0;
   }
 
   formatDate(dateStr: string): string {
@@ -882,9 +887,31 @@ export class DashboardComponent implements OnInit {
   }
 
   getModeIcon(mode: string): string {
-    if (mode === 'Online') return 'Online';
-    if (mode === 'Offline') return 'Offline';
+    const normalized = (mode || '').toUpperCase();
+    if (normalized === 'ONLINE') return 'Online';
+    if (normalized === 'OFFLINE') return 'Offline';
     return 'Hybrid';
+  }
+
+  private convertTimeToLocalDateTime(date: string, time: string): string {
+    const cleanTime = (time || '').replace(/\s*IST\s*/i, '').trim();
+    const match = cleanTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+
+    if (!match) {
+      throw new Error(`Invalid event time: ${time}`);
+    }
+
+    let hour = Number(match[1]);
+    const minute = match[2];
+    const period = match[3].toUpperCase();
+
+    if (period === 'AM' && hour === 12) {
+      hour = 0;
+    } else if (period === 'PM' && hour !== 12) {
+      hour += 12;
+    }
+
+    return `${date}T${hour.toString().padStart(2, '0')}:${minute}:00`;
   }
 
   // Admin create event
@@ -895,26 +922,30 @@ export class DashboardComponent implements OnInit {
     this.showCreateModal = true;
   }
 
-  openEditModal(event: CmeEvent, ev: Event) {
+  openEditModal(event: EventResponse, ev: Event) {
     ev.stopPropagation();
     this.editingEventId = event.id;
     this.newTitle = event.title;
     this.newDescription = event.description || '';
-    this.newDate = event.date;
-    this.newTime = event.time || '10:00 AM IST';
-    this.newVenue = event.venue || '';
-    this.newMode = event.mode || 'Online';
-    this.newSpeaker = event.speaker || '';
+    this.newDate = event.eventDateTime.split('T')[0];
+    this.newTime = event.eventDateTime ? new Date(event.eventDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '10:00 AM IST';
+    this.newVenue = event.joinLink || '';
+    const mode = (event.mode || 'ONLINE').toUpperCase();
+    this.newMode =
+      mode === 'OFFLINE' ? 'Offline' :
+      mode === 'HYBRID' ? 'Hybrid' :
+      'Online';
+    this.newSpeaker = event.speakerName || '';
     this.newSpeakerRole = event.speakerRole || '';
     this.newCategory = event.category || 'Cardiology';
-    this.newCreditPoints = event.creditPoints || 1;
-    this.newPrice = event.price || 0;
+    this.newCreditPoints = (event.cmeCreditPoints ?? 0) || 1;
+    this.newPrice = event.registrationFee || 0;
     this.newMaxSeats = event.maxSeats || 100;
-    this.newBannerColor = event.bannerColor || '#0ea5e9';
-    this.newPreRead = event.preRead || '';
+    this.newBannerColor = event.cardAccentColor || '#0ea5e9';
+    this.newPreRead = event.documents?.[0]?.fileName || '';
     this.newZohoLink = event.zohoBackstageLink || '';
-    if (event.preRead) {
-      this.uploadedFiles = [{ name: event.preRead, size: 'N/A', status: 'uploaded' }];
+    if (event.documents?.[0]?.fileName) {
+      this.uploadedFiles = [{ name: event.documents[0].fileName, size: 'N/A', status: 'uploaded' }];
     } else {
       this.uploadedFiles = [];
     }
@@ -929,58 +960,62 @@ export class DashboardComponent implements OnInit {
   saveEvent() {
     if (!this.newTitle.trim() || !this.newDate || !this.newVenue.trim()) return;
     if (!this.authService.isAdmin()) return;
-    const user = this.authService.currentUser();
-    if (!user) return;
 
-    if (this.editingEventId) {
-      const existing = this.eventService.getEventById(this.editingEventId);
-      if (existing) {
-        this.eventService.updateEvent({
-          ...existing,
-          title: this.newTitle,
-          description: this.newDescription,
-          date: this.newDate,
-          time: this.newTime,
-          venue: this.newVenue,
-          mode: this.newMode,
-          speaker: this.newSpeaker,
-          speakerRole: this.newSpeakerRole,
-          category: this.newCategory,
-          creditPoints: this.newCreditPoints,
-          price: this.newPrice,
-          maxSeats: this.newMaxSeats,
-          bannerColor: this.newBannerColor,
-          preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-          zohoBackstageLink: this.newZohoLink
-        });
-      }
-      this.editingEventId = null;
+    const eventDateTime = this.convertTimeToLocalDateTime(this.newDate, this.newTime);
+
+    const request: CreateEventRequest = {
+      title: this.newTitle,
+      description: this.newDescription,
+      eventDate: this.newDate,
+      eventTime: eventDateTime.split('T')[1] || '10:00:00',
+      joinLink: this.newVenue,
+      zohoBackstageLink: this.newZohoLink,
+      mode: this.newMode.toUpperCase(),
+      category: this.newCategory,
+      speakerName: this.newSpeaker,
+      speakerRole: this.newSpeakerRole,
+      cmeCreditPoints: this.newCreditPoints,
+      registrationFee: this.newPrice,
+      maxSeats: this.newMaxSeats,
+      cardAccentColor: this.newBannerColor
+    };
+
+    if (this.editingEventId !== null) {
+      this.eventService.updateEvent(this.editingEventId, request).subscribe({
+        next: () => {
+          this.editingEventId = null;
+          this.showCreateModal = false;
+          this.loadUpcomingEvents();
+        },
+        error: (error) => {
+          console.error('Failed to update event:', error);
+          alert('Failed to update event.');
+        }
+      });
     } else {
-      this.eventService.addEvent({
-        title: this.newTitle,
-        description: this.newDescription,
-        date: this.newDate,
-        time: this.newTime,
-        venue: this.newVenue,
-        mode: this.newMode,
-        speaker: this.newSpeaker,
-        speakerRole: this.newSpeakerRole,
-        category: this.newCategory,
-        creditPoints: this.newCreditPoints,
-        price: this.newPrice,
-        maxSeats: this.newMaxSeats,
-        bannerColor: this.newBannerColor,
-        preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-        zohoBackstageLink: this.newZohoLink
-      }, user.id, user.name);
+      this.eventService.createEvent(request).subscribe({
+        next: () => {
+          this.showCreateModal = false;
+          this.loadUpcomingEvents();
+        },
+        error: (error) => {
+          console.error('Failed to create event:', error);
+          alert('Failed to create event.');
+        }
+      });
     }
-    this.showCreateModal = false;
   }
 
-  deleteEvent(eventId: string, ev: Event) {
+  deleteEvent(eventId: number, ev: Event) {
     ev.stopPropagation();
     if (confirm('Remove this event from the platform?')) {
-      this.eventService.deleteEvent(eventId);
+      this.eventService.deleteEvent(eventId).subscribe({
+        next: () => this.loadUpcomingEvents(),
+        error: (error) => {
+          console.error('Failed to delete event:', error);
+          alert('Failed to delete event.');
+        }
+      });
     }
   }
 
