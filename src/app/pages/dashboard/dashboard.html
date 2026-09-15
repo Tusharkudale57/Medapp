@@ -466,7 +466,7 @@
           <div class="no-rec-icon"></div>
           <h4>No personalized recommendations yet</h4>
           <p>Update your interests or specialization in your profile to view tailored CME suggestions.</p>
-          <button class="btn-rec-interests" (click)="selectInterests()">Select Interests</button>
+          <button class="btn-rec-interests" (click)="showInterestPopup = true">Select Interests</button>
         </div>
       </div>
 
@@ -1166,8 +1166,10 @@
           registration...</span>
       </div>
     </div>
+    </div>
   <!-- Interest Area Pop-up -->
-  <div class="modal-overlay interest-popup-overlay" *ngIf="showInterestPopup">
+   @if (showInterestPopup){
+    <div class="modal-overlay interest-popup-overlay" >
     <div class="modal-box interest-box">
       <h2>🎯 Area of Interest</h2>
       <p class="interest-question">Do you have any specialist areas of interest?</p>
@@ -1186,35 +1188,40 @@
           </div>
         </div>
 
-          <!-- Tech Domain -->
-          <div class="interest-group">
-            <h5>💻 Medical Technology</h5>
-            <div class="interest-pills">
-              <span *ngFor="let interest of techInterests" class="interest-pill"
-                [class.selected]="selectedInterests.includes(interest)" (click)="toggleInterest(interest)">
-                {{ interest }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Charity Domain -->
-          <div class="interest-group">
-            <h5>❤️ Charity & Community Care</h5>
-            <div class="interest-pills">
-              <span *ngFor="let interest of charityInterests" class="interest-pill"
-                [class.selected]="selectedInterests.includes(interest)" (click)="toggleInterest(interest)">
-                {{ interest }}
-              </span>
-            </div>
+        <!-- Tech Domain -->
+        <div class="interest-group">
+          <h5>💻 Medical Technology</h5>
+          <div class="interest-pills">
+            <span *ngFor="let interest of techInterests" 
+              class="interest-pill" 
+              [class.selected]="selectedInterests.includes(interest)"
+              (click)="toggleInterest(interest)">
+              {{ interest }}
+            </span>
           </div>
         </div>
 
-        <div class="interest-actions">
-          <button class="btn-interest-skip" (click)="skipInterests()">Skip for now</button>
-          <button class="btn-interest-save" (click)="saveInterests()">Save & Apply Recommendations</button>
+        <!-- Charity Domain -->
+        <div class="interest-group">
+          <h5>❤️ Charity & Community Care</h5>
+          <div class="interest-pills">
+            <span *ngFor="let interest of charityInterests" 
+              class="interest-pill" 
+              [class.selected]="selectedInterests.includes(interest)"
+              (click)="toggleInterest(interest)">
+              {{ interest }}
+            </span>
+          </div>
         </div>
       </div>
+
+      <div class="interest-actions">
+        <button class="btn-interest-skip" (click)="skipInterests()">Skip for now</button>
+        <button class="btn-interest-save" (click)="saveInterests()">Save & Apply Recommendations</button>
+      </div>
     </div>
+  </div>
+}
 
     <!-- CME Event Details Modal -->
     <div class="modal-overlay cme-details-overlay" *ngIf="showDetailModal && selectedEventForDetail">

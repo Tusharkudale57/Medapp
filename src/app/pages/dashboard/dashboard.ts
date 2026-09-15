@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit {
   activeSubMenu = 'specialties';
 
   // Interests popup state
-  showInterestPopup = false;
+  showInterestPopup = true;
   medicalInterests = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'General Medicine'];
   techInterests = ['AI in Medicine', 'Robotic Surgery', 'Digital Health Records', 'Telemedicine'];
   charityInterests = ['Rural Healthcare Camps', 'Free Pediatric Screening', 'Free Cardiac Clinics', 'NGO Medical Relief'];
