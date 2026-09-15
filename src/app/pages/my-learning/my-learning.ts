@@ -96,6 +96,13 @@ export class MyLearningComponent implements OnInit {
         this.userCareerGoal = savedGoal;
       }
     }
+
+    // Ensure we have latest enrolled registrations for the logged-in doctor
+    if (this.isBrowser) {
+      this.eventService.syncRegistrationsFromBackend().catch(() => {
+        // silence - service already logs warnings on failure
+      });
+    }
   }
 
   // --- Career Goal ---
@@ -120,6 +127,10 @@ export class MyLearningComponent implements OnInit {
   // --- Filtering Methods ---
   setTab(tab: 'in_progress' | 'certificates') {
     this.activeTab.set(tab);
+    if (tab === 'in_progress' && this.isBrowser) {
+      // Refresh enrolled events when user views In Progress
+      this.eventService.syncRegistrationsFromBackend().catch(() => {});
+    }
   }
 
   get inProgressCourses(): Course[] {

@@ -876,7 +876,7 @@ export class DashboardComponent implements OnInit {
     if (!user || !this.selectedEvent) return;
 
     if (this.selectedEvent.price === 0) {
-      const success = this.eventService.registerForEvent(
+      const success = await this.eventService.registerForEvent(
         this.selectedEvent.id,
         user.id,
         user.name,
@@ -887,10 +887,12 @@ export class DashboardComponent implements OnInit {
       if (success) {
         this.registrationSuccess = true;
         setTimeout(() => this.closeRegisterModal(), 2200);
+      } else {
+        alert('Registration failed. Please try again.');
       }
     } else if (this.sponsorNameDetected) {
       // Bypass payment with MR sponsor validation
-      const success = this.eventService.registerForEvent(
+      const success = await this.eventService.registerForEvent(
         this.selectedEvent.id,
         user.id,
         user.name,
@@ -902,6 +904,8 @@ export class DashboardComponent implements OnInit {
       if (success) {
         this.registrationSuccess = true;
         setTimeout(() => this.closeRegisterModal(), 2200);
+      } else {
+        alert('Registration failed. Please try again.');
       }
     } else {
       const details = {
@@ -915,7 +919,7 @@ export class DashboardComponent implements OnInit {
       
       const res = await this.razorpayService.openPaymentGateway(details);
       if (res.success && res.paymentId && res.paymentId !== 'FALLBACK_TRIGGER') {
-        this.finalizeEventPurchase(res.paymentId);
+        await this.finalizeEventPurchase(res.paymentId);
       } else {
         this.showSimulatedRazorpay = true;
       }
@@ -929,21 +933,21 @@ export class DashboardComponent implements OnInit {
       this.paymentSuccess = true;
       this.paymentTransactionId = 'pay_rzp_evt_' + Math.random().toString(36).substring(2, 10).toUpperCase();
 
-      setTimeout(() => {
+      setTimeout(async () => {
         this.showSimulatedRazorpay = false;
         this.paymentSuccess = false;
         if (this.selectedEvent) {
-          this.finalizeEventPurchase(this.paymentTransactionId);
+          await this.finalizeEventPurchase(this.paymentTransactionId);
         }
       }, 1200);
     }, 1500);
   }
 
-  finalizeEventPurchase(transactionId: string) {
+  async finalizeEventPurchase(transactionId: string) {
     const user = this.authService.currentUser();
     if (!user || !this.selectedEvent) return;
 
-    const success = this.eventService.registerForEvent(
+    const success = await this.eventService.registerForEvent(
       this.selectedEvent.id,
       user.id,
       user.name,
@@ -954,6 +958,11 @@ export class DashboardComponent implements OnInit {
     if (success) {
       this.registrationSuccess = true;
       setTimeout(() => this.closeRegisterModal(), 2200);
+    } else {
+      alert(
+        'Payment was successful, but registration could not be completed. ' +
+        'Please contact support with transaction ID: ' + transactionId
+      );
     }
   }
 

@@ -167,10 +167,12 @@ export class CmeApiService {
     return `${this.eventRoot}/${eventId}/recording/download`;
   }
 
-  registerForEvent(eventId: number, termsAccepted = true): Observable<ApiResponse<BackendEventRegistrationResponse>> {
+  registerForEvent(eventId: number, termsAccepted = true, email?: string): Observable<ApiResponse<BackendEventRegistrationResponse>> {
+    const payload: any = { eventId, termsAccepted };
+    if (email) payload.email = email;
     return this.http.post<ApiResponse<BackendEventRegistrationResponse>>(
       this.registrationRoot,
-      { eventId, termsAccepted },
+      payload,
       { headers: this.jsonAuthHeaders() }
     );
   }

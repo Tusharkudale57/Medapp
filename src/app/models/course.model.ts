@@ -151,6 +151,9 @@ export interface EventRegistration {
   sponsoredBy?: string;       // MR Sponsor name or sponsor code
   meetingLink?: string;
   totalAmount?: number;
+  registrationStatus?: string; // e.g. "PENDING" — from event-registrations API
+  gstAmount?: number;          // GST portion of the registration fee
+  registrationFee?: number;    // Base registration fee (excl. GST)
 }
 
 export interface EventDocument {
@@ -292,4 +295,3 @@ export interface ApiResponse<T = any> {
   message: string;
   data: T;
 }
-

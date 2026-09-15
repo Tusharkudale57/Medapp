@@ -856,7 +856,7 @@ export class LoginComponent implements OnInit {
         user.phone || '9876543210',
         'free'
       );
-      if (success) {
+      if (await success) {
         this.registrationSuccess = true;
         setTimeout(() => this.closeRegisterModal(), 2200);
       }
@@ -870,7 +870,7 @@ export class LoginComponent implements OnInit {
         'sponsored',
         this.sponsorNameDetected
       );
-      if (success) {
+      if (await success) {
         this.registrationSuccess = true;
         setTimeout(() => this.closeRegisterModal(), 2200);
       }

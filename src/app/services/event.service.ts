@@ -835,45 +835,70 @@ export class EventService {
     return Math.max(Number(event?.certificateIssuedCount || 0), localCount);
   }
 
-  registerForEvent(eventId: string, userId: string, userName: string, userEmail?: string, userPhone?: string, paymentStatus?: 'pending' | 'paid' | 'free' | 'sponsored', sponsoredBy?: string): boolean {
-    const alreadyRegistered = this.registrationsSignal().some(
-      r => r.eventId === eventId && r.userId === userId
-    );
-    if (alreadyRegistered) return false;
-    const event = this.getEventById(eventId);
-    if (!event) return false;
+  /**
+   * Registers a doctor for an event via POST /api/v1/event-registrations.
+   * Resolves `true` only after the backend confirms success, so callers can
+   * gate "Registration Successful" / "Enrolled" UI on the actual response.
+   */
+  registerForEvent(
+    eventId: string,
+    userId: string,
+    userName: string,
+    userEmail?: string,
+    userPhone?: string,
+    paymentStatus?: 'pending' | 'paid' | 'free' | 'sponsored',
+    sponsoredBy?: string
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      const alreadyRegistered = this.registrationsSignal().some(
+        r => r.eventId === eventId && r.userId === userId
+      );
+      if (alreadyRegistered) {
+        resolve(false);
+        return;
+      }
 
-    const registration: EventRegistration = {
-      eventId,
-      userId,
-      userName,
-      userEmail,
-      userPhone,
-      registeredAt: new Date().toISOString(),
-      paymentStatus: paymentStatus || (event.price === 0 ? 'free' : 'pending'),
-      attended: false,
-      certificateIssued: false,
-      sponsoredBy: sponsoredBy
-    };
+      const event = this.getEventById(eventId);
+      if (!event) {
+        resolve(false);
+        return;
+      }
 
-    this.registrationsSignal.update(list => [...list, registration]);
-    this.eventsSignal.update(events =>
-      this.sortEventsByDateDesc(events.map(e => e.id === eventId ? { ...e, registeredCount: e.registeredCount + 1 } : e))
-    );
-    this.saveRegistrationsToStorage();
-    this.saveEventsToStorage();
-    const backendEventId = event.backendId ?? this.toBackendId(eventId);
-    if (backendEventId) {
-      this.api.registerForEvent(backendEventId, true).subscribe({
+      const backendEventId = event.backendId ?? this.toBackendId(eventId);
+      if (!backendEventId) {
+        console.warn('Cannot register: missing backend event id for', eventId);
+        resolve(false);
+        return;
+      }
+
+      this.api.registerForEvent(backendEventId, true, userEmail).subscribe({
         next: (response) => {
           if (response?.success && response.data) {
-            this.mergeRegistrations([this.mapBackendRegistrationToUi(response.data, userId)]);
+            const registration = this.mapBackendRegistrationToUi(response.data, userId);
+            registration.paymentStatus = paymentStatus || (event.price === 0 ? 'free' : 'paid');
+            registration.sponsoredBy = sponsoredBy;
+            registration.userName = registration.userName || userName;
+            registration.userPhone = registration.userPhone || userPhone;
+
+            this.registrationsSignal.update(list => [...list, registration]);
+            this.eventsSignal.update(events =>
+              this.sortEventsByDateDesc(events.map(e =>
+                e.id === eventId ? { ...e, registeredCount: e.registeredCount + 1 } : e
+              ))
+            );
+            this.saveRegistrationsToStorage();
+            this.saveEventsToStorage();
+            resolve(true);
+          } else {
+            resolve(false);
           }
         },
-        error: (e) => console.warn('Backend event registration failed; local registration retained.', e)
+        error: (e) => {
+          console.warn('Backend event registration failed.', e);
+          resolve(false);
+        }
       });
-    }
-    return true;
+    });
   }
 
   markAttendance(eventId: string, userId: string, attended: boolean): boolean {
@@ -1313,7 +1338,10 @@ export class EventService {
       attendanceStatus: 'PENDING',
       certificateIssued: false,
       meetingLink: reg.meetingLink,
-      totalAmount: Number(reg.totalAmount || 0)
+      totalAmount: Number(reg.totalAmount || 0),
+      registrationStatus: reg.registrationStatus,
+      gstAmount: Number(reg.gstAmount || 0),
+      registrationFee: Number(reg.registrationFee || 0)
     };
   }
 
