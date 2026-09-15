@@ -6,6 +6,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { RazorpayService } from '../../services/razorpay.service';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 
 import { EventResponse, CreateEventRequest } from '../../models/course.model';
 
@@ -33,9 +36,9 @@ export class DashboardComponent implements OnInit {
   selectedInterests: string[] = [];
 
   selectInterests() {
-  this.showInterestPopup = true;
-  // this.router.navigate(['/profile']);
-}
+    this.showInterestPopup = true;
+    // this.router.navigate(['/profile']);
+  }
 
   // Details Modal state
   selectedEventForDetail: EventResponse | null = null;
@@ -137,7 +140,7 @@ export class DashboardComponent implements OnInit {
         size: `${sizeMB} MB`,
         status: 'uploading'
       };
-      
+
       this.uploadedFiles.push(newFileItem);
 
       // Read file content as DataURL
@@ -165,7 +168,7 @@ export class DashboardComponent implements OnInit {
   removeUploadedFile(index: number) {
     const fileName = this.uploadedFiles[index].name;
     this.uploadedFiles.splice(index, 1);
-    
+
     if (typeof window !== 'undefined' && (window as any).medcme_uploaded_files) {
       delete (window as any).medcme_uploaded_files[fileName];
     }
@@ -185,87 +188,149 @@ export class DashboardComponent implements OnInit {
     public eventService: EventService,
     private razorpayService: RazorpayService,
     private sanitizer: DomSanitizer,
-    private router: Router
-  ) {}
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
+  ) { 
+      console.log('🚨 DASHBOARD CONSTRUCTOR CALLED', new Date().toISOString());
+
+  }
 
   ngOnInit() {
-    this.loadUpcomingEvents();
+    console.log('🚨 DASHBOARD ngOnInit CALLED', new Date().toISOString());
+  console.trace('🚨 ngOnInit CALL STACK');
+
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
     if (!this.authService.currentUser()) {
       this.router.navigate(['/login']);
       return;
     }
-    if (typeof window !== 'undefined') {
-      const cat = localStorage.getItem('medcme_active_category_filter');
-      if (cat) {
-        this.activeCategory.set(cat);
-        localStorage.removeItem('medcme_active_category_filter');
-      }
-      const mode = localStorage.getItem('medcme_active_mode_filter');
-      if (mode) {
-        if (mode === 'Free') {
-          this.activeFilter.set('Free');
-        } else {
-          this.activeFilter.set(mode as any);
-        }
-        localStorage.removeItem('medcme_active_mode_filter');
-      }
-      const interestsSaved = localStorage.getItem('medcme_interests_saved');
-      if (!interestsSaved && this.authService.isDoctor()) {
-        this.showInterestPopup = true;
-      }
+
+
+
+    const cat = localStorage.getItem('medcme_active_category_filter');
+
+    if (cat) {
+      this.activeCategory.set(cat);
+      localStorage.removeItem('medcme_active_category_filter');
     }
+
+    const mode = localStorage.getItem('medcme_active_mode_filter');
+
+    if (mode) {
+      if (mode === 'Free') {
+        this.activeFilter.set('Free');
+      } else {
+        this.activeFilter.set(mode as any);
+      }
+
+      localStorage.removeItem('medcme_active_mode_filter');
+    }
+
+    const interestsSaved = localStorage.getItem('medcme_interests_saved');
+
+    if (!interestsSaved && this.authService.isDoctor()) {
+      this.showInterestPopup = true;
+    }
+    this.loadUpcomingEvents();
   }
 
-  private loadUpcomingEvents(): void {
+  loadUpcomingEvents(): void {
+    console.log('🔥 loadUpcomingEvents CALLED');
+
+    console.trace('🔥 CALL STACK');
+
     this.eventService.getUpcomingEvents().subscribe({
       next: (response) => {
-        this.events = response.data || [];
+        console.log('🔥 UPCOMING API RESPONSE:', response);
+
+        this.events = Array.isArray(response?.data)
+          ? response.data
+          : [];
+
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load upcoming events:', error);
         this.events = [];
+        this.cdr.detectChanges();
       }
     });
   }
 
   get filteredEvents(): EventResponse[] {
-    let events: EventResponse[] = this.authService.isAdmin()
-      ? [...this.events]
-      : this.eventTimeFilter() === 'Past'
-      ? this.events.filter((e: EventResponse) => new Date(e.eventDateTime).getTime() < Date.now())
-      : this.events.filter((e: EventResponse) => new Date(e.eventDateTime).getTime() >= Date.now());
-    
-    // Filter by interests if enabled, otherwise prioritize interests by sorting them first
+
+    // Always start from events loaded from the backend.
+    let events: EventResponse[] = [...this.events];
+
+    // Upcoming / Past filter
+    if (this.eventTimeFilter() === 'Past') {
+      events = events.filter((e: EventResponse) =>
+        new Date(e.eventDateTime).getTime() < Date.now()
+      );
+    } else {
+      events = events.filter((e: EventResponse) =>
+        new Date(e.eventDateTime).getTime() >= Date.now()
+      );
+    }
+
+    // Filter by interests
     const user = this.authService.currentUser();
+
     if (user && user.interests && user.interests.length > 0) {
+
       if (this.showInterestedOnly) {
-        events = events.filter(e => user.interests!.includes(e.category));
+
+        events = events.filter((e: EventResponse) =>
+          user.interests!.includes(e.category)
+        );
+
       } else {
+
         events = [...events].sort((a, b) => {
+
           const aMatch = user.interests!.includes(a.category) ? 1 : 0;
           const bMatch = user.interests!.includes(b.category) ? 1 : 0;
+
           return bMatch - aMatch;
         });
       }
     }
 
+    // Category filter
     const cat = this.activeCategory();
+
     if (cat !== 'All') {
-      events = events.filter(e => e.category.toLowerCase() === cat.toLowerCase());
+      events = events.filter((e: EventResponse) =>
+        (e.category || '').toLowerCase() === cat.toLowerCase()
+      );
     }
 
+    // Mode / Free filter
     const filter = this.activeFilter();
+
     if (filter === 'Free') {
-      events = events.filter(e => e.registrationFee === 0);
+
+      events = events.filter((e: EventResponse) =>
+        e.registrationFee === 0
+      );
+
     } else if (filter !== 'All') {
-      events = events.filter(e => e.mode === filter);
+
+      events = events.filter((e: EventResponse) =>
+        e.mode === filter
+      );
     }
 
-    // Keyword Search Filter
+    // Keyword search
     if (this.searchQuery.trim()) {
+
       const q = this.searchQuery.toLowerCase().trim();
-      events = events.filter(e => 
+
+      events = events.filter((e: EventResponse) =>
         (e.title || '').toLowerCase().includes(q) ||
         (e.description || '').toLowerCase().includes(q) ||
         (e.speakerName || '').toLowerCase().includes(q) ||
@@ -273,56 +338,109 @@ export class DashboardComponent implements OnInit {
       );
     }
 
-    // Language Filter
+    // Language filter
     if (this.selectedLanguages.length > 0) {
-      events = events.filter((e: EventResponse) => {
-        // EventResponse currently has no language field.
-        // Keep English as the only available language until the backend exposes it.
-        return this.selectedLanguages.includes('English');
-      });
+
+      events = events.filter(() =>
+        this.selectedLanguages.includes('English')
+      );
     }
 
-    // Date Range Filter
+    // Date range filter
     if (this.startDateFilter) {
-      events = events.filter(e => e.eventDateTime >= this.startDateFilter);
-    }
-    if (this.endDateFilter) {
-      events = events.filter(e => e.eventDateTime <= this.endDateFilter);
+
+      events = events.filter((e: EventResponse) =>
+        e.eventDateTime >= this.startDateFilter
+      );
     }
 
-    // Credits range Filter
-    events = events.filter((e: EventResponse) => (e.cmeCreditPoints ?? 0) >= this.minCreditsFilter && (e.cmeCreditPoints ?? 0) <= this.maxCreditsFilter);
+    if (this.endDateFilter) {
+
+      events = events.filter((e: EventResponse) =>
+        e.eventDateTime <= this.endDateFilter
+      );
+    }
+
+    // CME credit range
+    events = events.filter((e: EventResponse) => {
+
+      const credits = e.cmeCreditPoints ?? 0;
+
+      return (
+        credits >= this.minCreditsFilter &&
+        credits <= this.maxCreditsFilter
+      );
+    });
 
     // Sorting
     if (this.sortByFilter === 'Date') {
-      events = events.sort((a, b) => new Date(a.eventDateTime).getTime() - new Date(b.eventDateTime).getTime());
+
+      events = events.sort((a, b) =>
+        new Date(a.eventDateTime).getTime() -
+        new Date(b.eventDateTime).getTime()
+      );
+
     } else if (this.sortByFilter === 'Newest') {
-      events = events.sort((a, b) => new Date(b.eventDateTime).getTime() - new Date(a.eventDateTime).getTime());
+
+      events = events.sort((a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
+      );
+
     } else if (this.sortByFilter === 'Price') {
-      events = events.sort((a, b) => a.registrationFee - b.registrationFee);
+
+      events = events.sort((a, b) =>
+        a.registrationFee - b.registrationFee
+      );
+
     } else if (this.sortByFilter === 'Popularity') {
+
       events = [...events];
+
     } else if (this.sortByFilter === 'Relevance') {
-      const user = this.authService.currentUser();
-      const spec = user ? (user.specialty || '').toLowerCase() : '';
-      const ints = user ? (user.interests || []).map(i => i.toLowerCase()) : [];
+
+      const specialty =
+        (user?.specialty || '').toLowerCase();
+
+      const interests =
+        (user?.interests || []).map(i => i.toLowerCase());
+
       events = events.sort((a, b) => {
-        const aCat = a.category.toLowerCase();
-        const bCat = b.category.toLowerCase();
-        const aTitle = a.title.toLowerCase();
-        const bTitle = b.title.toLowerCase();
-        
+
+        const aCat = (a.category || '').toLowerCase();
+        const bCat = (b.category || '').toLowerCase();
+
+        const aTitle = (a.title || '').toLowerCase();
+        const bTitle = (b.title || '').toLowerCase();
+
         let aScore = 0;
         let bScore = 0;
-        
-        if (aCat === spec) aScore += 5;
-        if (bCat === spec) bScore += 5;
-        
-        ints.forEach(interest => {
-          if (aCat.includes(interest) || aTitle.includes(interest)) aScore += 2;
-          if (bCat.includes(interest) || bTitle.includes(interest)) bScore += 2;
+
+        if (aCat === specialty) {
+          aScore += 5;
+        }
+
+        if (bCat === specialty) {
+          bScore += 5;
+        }
+
+        interests.forEach(interest => {
+
+          if (
+            aCat.includes(interest) ||
+            aTitle.includes(interest)
+          ) {
+            aScore += 2;
+          }
+
+          if (
+            bCat.includes(interest) ||
+            bTitle.includes(interest)
+          ) {
+            bScore += 2;
+          }
         });
-        
+
         return bScore - aScore;
       });
     }
@@ -349,20 +467,20 @@ export class DashboardComponent implements OnInit {
   get relevantEvents(): EventResponse[] {
     const user = this.authService.currentUser();
     if (!user || user.role === 'admin') return [];
-    
+
     const specialty = (user.specialty || '').toLowerCase();
     const interests = user.interests || [];
-    
+
     return this.filteredEvents.filter(event => {
       const cat = (event.category || '').toLowerCase();
       const title = (event.title || '').toLowerCase();
-      
+
       const matchesSpecialty = specialty.includes(cat) || cat.includes(specialty);
       const matchesInterests = interests.some(interest => {
         const clean = interest.toLowerCase();
         return cat.includes(clean) || title.includes(clean);
       });
-      
+
       return matchesSpecialty || matchesInterests;
     });
   }
@@ -494,19 +612,19 @@ export class DashboardComponent implements OnInit {
 
     this.activeLiveEvent = event;
     this.showLiveRoomModal = true;
-    
+
     // Pre-populate chat messages
     this.liveChatMessages = [
       { sender: 'Moderator 1 (Dr. Anjali Sharma)', text: `Welcome to the Live CME: ${event.title}! Use this chat for Q&A with our panel.`, time: '10:00 AM', isUser: false },
       { sender: `Consultant 1 (Dr. ${event.speakerName})`, text: `Hello doctors. I am online to answer your questions regarding today's session: ${event.title}.`, time: '10:02 AM', isUser: false },
       { sender: 'Moderator 2 (Dr. Renu Kapoor)', text: 'Please answer the pre-test MCQ below to get started. All questions are CME accredited.', time: '10:04 AM', isUser: false }
     ];
-    
+
     // Reset quizzes
     this.basicMcqAnswered = false;
     this.basicMcqSelectedOption = -1;
     this.basicMcqIsCorrect = null;
-    
+
     this.midMcqAnswered = false;
     this.midMcqSelectedOption = -1;
     this.midMcqIsCorrect = null;
@@ -546,7 +664,7 @@ export class DashboardComponent implements OnInit {
         this.stopLiveHeartbeat();
         return;
       }
-      }, 30000);
+    }, 30000);
   }
 
   private stopLiveHeartbeat() {
@@ -596,7 +714,7 @@ export class DashboardComponent implements OnInit {
 
     const user = this.authService.currentUser();
     if (!user || !this.activeLiveEvent) return;
-    
+
     this.liveFeedbackSubmitted = true;
     this.stopLiveHeartbeat();
 
@@ -641,13 +759,13 @@ export class DashboardComponent implements OnInit {
 
   sendLiveChatMessage() {
     if (!this.newChatMessageText.trim()) return;
-    
+
     const user = this.authService.currentUser();
     const userName = user ? user.name : 'Dr. Tushar Kudale';
-    
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    
+
     // Add user message
     this.liveChatMessages.push({
       sender: userName,
@@ -655,10 +773,10 @@ export class DashboardComponent implements OnInit {
       time: timeStr,
       isUser: true
     });
-    
+
     const query = this.newChatMessageText.trim();
     this.newChatMessageText = '';
-    
+
     // Scroll chat after DOM update
     setTimeout(() => {
       const container = document.getElementById('chat-history-scroll');
@@ -666,7 +784,7 @@ export class DashboardComponent implements OnInit {
         container.scrollTop = container.scrollHeight;
       }
     }, 50);
-    
+
     // Simulate response from Consultant
     setTimeout(() => {
       this.simulateConsultantReply(query, userName);
@@ -676,10 +794,10 @@ export class DashboardComponent implements OnInit {
   simulateConsultantReply(query: string, doctorName: string) {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    
+
     let reply = `Thank you for your question, ${doctorName}. For this specific scenario, standard guidelines recommend following local institution policies and cross-referencing with the CME lecture slide deck.`;
     const qLower = query.toLowerCase();
-    
+
     if (qLower.includes('dosage') || qLower.includes('dose') || qLower.includes('mg') || qLower.includes('drug')) {
       reply = `Excellent point, ${doctorName}. Standard initial dosing guidelines for cardiac resuscitation suggest Epinephrine 1mg IV/IO every 3-5 minutes, and Amiodarone 300mg bolus for refractory VF/pVT.`;
     } else if (qLower.includes('sepsis') || qLower.includes('icu') || qLower.includes('ventilator') || qLower.includes('protocol')) {
@@ -689,14 +807,14 @@ export class DashboardComponent implements OnInit {
     } else if (qLower.includes('mcq') || qLower.includes('quiz') || qLower.includes('test')) {
       reply = `Please complete the interactive MCQs in the outline tab on the left of your panel to verify your understanding, ${doctorName}!`;
     }
-    
+
     this.liveChatMessages.push({
       sender: 'Consultant 1 (Dr. Suresh Patel)',
       text: reply,
       time: timeStr,
       isUser: false
     });
-    
+
     // Scroll chat after DOM update
     setTimeout(() => {
       const container = document.getElementById('chat-history-scroll');
@@ -920,7 +1038,7 @@ export class DashboardComponent implements OnInit {
         userEmail: user.email,
         userPhone: user.phone || '9876543210'
       };
-      
+
       const res = await this.razorpayService.openPaymentGateway(details);
       if (res.success && res.paymentId && res.paymentId !== 'FALLBACK_TRIGGER') {
         this.finalizeEventPurchase(res.paymentId);
@@ -965,15 +1083,15 @@ export class DashboardComponent implements OnInit {
     }
   }
 
- isRegistered(eventId: string | number): boolean {
-  const user = this.authService.currentUser();
-  if (!user) return false;
+  isRegistered(eventId: string | number): boolean {
+    const user = this.authService.currentUser();
+    if (!user) return false;
 
-  return this.eventService.isRegistered(
-    String(eventId),
-    user.id
-  );
-}
+    return this.eventService.isRegistered(
+      String(eventId),
+      user.id
+    );
+  }
 
   seatsLeft(event: EventResponse): number {
     return event.maxSeats ?? 0;
@@ -1030,8 +1148,8 @@ export class DashboardComponent implements OnInit {
     const mode = (event.mode || 'ONLINE').toUpperCase();
     this.newMode =
       mode === 'OFFLINE' ? 'Offline' :
-      mode === 'HYBRID' ? 'Hybrid' :
-      'Online';
+        mode === 'HYBRID' ? 'Hybrid' :
+          'Online';
     this.newSpeaker = event.speakerName || '';
     this.newSpeakerRole = event.speakerRole || '';
     this.newCategory = event.category || 'Cardiology';
@@ -1138,9 +1256,9 @@ export class DashboardComponent implements OnInit {
     }
   }
 
- navigateToEvents() {
-  this.resetAllFilters();
-}
+  navigateToEvents() {
+    this.resetAllFilters();
+  }
 
   navigateToProfile() {
     this.router.navigate(['/profile']);

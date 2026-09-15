@@ -1,7 +1,8 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-
+import {  Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { EventRegistration ,EventDocument,EventResponse,EventPageResponse,CreateEventRequest,ApiResponse} from '../models/course.model';
 
 
@@ -35,7 +36,7 @@ export class EventService {
    * Read-only signal exposed to components.
    */
   readonly events = this.eventsSignal.asReadonly();
-
+    private isBrowser: boolean;
 
   /**
    * ==========================================================
@@ -63,8 +64,10 @@ export class EventService {
 
 
   constructor(
-    private http: HttpClient
-  ) { }
+    @Inject(PLATFORM_ID) platformId: Object, private http: HttpClient
+  ) { 
+     this.isBrowser = isPlatformBrowser(platformId);
+  }
 
 
   // ============================================================
@@ -132,26 +135,43 @@ export class EventService {
    * Backend:
    * GET /api/event/upcoming-events
    */
-  getUpcomingEvents(
-    mode?: string,
-    category?: string
-  ): Observable<ApiResponse<EventResponse[]>> {
+getUpcomingEvents(
+  mode?: string,
+  category?: string
+): Observable<ApiResponse<EventResponse[]>> {
 
-    let params = new HttpParams();
+  let params = new HttpParams();
 
-    if (mode) {
-      params = params.set('mode', mode);
-    }
-
-    if (category) {
-      params = params.set('category', category);
-    }
-
-    return this.http.get<ApiResponse<EventResponse[]>>(
-      `${this.apiUrl}/upcoming-events`,
-      { params }
-    );
+  if (mode) {
+    params = params.set('mode', mode);
   }
+
+  if (category) {
+    params = params.set('category', category);
+  }
+
+  const token = this.isBrowser
+    ? localStorage.getItem('medcme_jwt_token')
+    : null;
+
+  const headers: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  return this.http.get<ApiResponse<EventResponse[]>>(
+    `${this.apiUrl}/upcoming-events`,
+    {
+      params,
+      headers
+    }
+  ).pipe(
+    tap(response => {
+      if (response?.data && Array.isArray(response.data)) {
+        this.eventsSignal.set(response.data);
+      }
+    })
+  );
+}
 
 
   // ============================================================
