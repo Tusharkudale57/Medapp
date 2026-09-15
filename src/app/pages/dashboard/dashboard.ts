@@ -32,8 +32,8 @@ export class DashboardComponent implements OnInit {
   selectedInterests: string[] = [];
 
   selectInterests() {
-  this.showInterestPopup = false;
-  this.router.navigate(['/profile']);
+  this.showInterestPopup = true;
+  // this.router.navigate(['/profile']);
 }
 
   // Details Modal state
