@@ -98,7 +98,7 @@
 
     <!-- Event Cards -->
     <div *ngIf="hostEvents.length > 0" class="hec-list">
-      <div *ngFor="let event of hostEvents" class="hec-card" [style.border-left-color]="event.bannerColor">
+      <div *ngFor="let event of hostEvents" class="hec-card" [style.border-left-color]="event.bannerColor" (click)="openEventDetails(event)" style="cursor: pointer;">
 
         <!-- Card Header -->
         <div class="hec-header" [style.background]="'linear-gradient(135deg,' + event.bannerColor + '22,' + event.bannerColor + '08)'">
@@ -168,7 +168,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="hec-actions">
+        <div class="hec-actions" (click)="$event.stopPropagation()">
           <button class="action-btn attend-btn" (click)="openAttendanceModal(event)">
             &#9998; Manage Attendance & Issue Certificates ({{ getEnrolledCount(event.id) }})
           </button>
@@ -191,10 +191,64 @@
               &#128465; Remove Event
             </button>
           </div>
+          <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center; margin-top: 0.75rem;">
+            <input type="file" accept="video/*" (change)="onRecordingSelected(event.id, $event)"
+              style="padding: 0.55rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.8rem;" />
+            <button class="action-btn edit-btn" (click)="uploadRecording(event.id)">Upload Recording</button>
+            <a *ngIf="getRecordingDownloadUrl(event)" class="action-btn copy-btn"
+              [href]="getRecordingDownloadUrl(event)!" target="_blank" rel="noopener">
+              Watch Recording
+            </a>
+          </div>
+          <div *ngIf="event.recordingFileName" style="margin-top: 0.45rem; font-size: 0.78rem; color: #475569;">
+            Recording: <strong>{{ event.recordingFileName }}</strong>
+          </div>
         </div>
       </div>
     </div>
   </ng-container>
+
+  <div class="modal-backdrop" *ngIf="showEventDetailModal && selectedEventForDetail" (click)="closeEventDetails()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <span class="modal-tag">{{ selectedEventForDetail.category }}</span>
+          <h2>{{ selectedEventForDetail.title }}</h2>
+          <p class="modal-sub">{{ formatDate(selectedEventForDetail.date) }} at {{ selectedEventForDetail.time }}</p>
+        </div>
+        <button class="close-btn" (click)="closeEventDetails()">&#10005;</button>
+      </div>
+
+      <div style="display: grid; gap: 1rem;">
+        <div>
+          <strong style="display: block; color: #0f172a; margin-bottom: 0.25rem;">Speaker</strong>
+          <p style="margin: 0; color: #475569;">{{ selectedEventForDetail.speaker }} - {{ selectedEventForDetail.speakerRole }}</p>
+        </div>
+        <div>
+          <strong style="display: block; color: #0f172a; margin-bottom: 0.25rem;">Venue / Meeting Link</strong>
+          <p style="margin: 0; color: #475569; word-break: break-word;">{{ selectedEventForDetail.venue }}</p>
+        </div>
+        <div>
+          <strong style="display: block; color: #0f172a; margin-bottom: 0.25rem;">Description</strong>
+          <p style="margin: 0; color: #475569;">{{ selectedEventForDetail.description || 'No description added.' }}</p>
+        </div>
+        <div *ngIf="isRecordingAvailable(selectedEventForDetail)"
+          style="border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+          <strong style="display: block; color: #0f172a; margin-bottom: 0.5rem;">Session Recording</strong>
+          <p *ngIf="selectedEventForDetail.recordingPublishedAt" style="margin: 0 0 0.75rem; color: #64748b; font-size: 0.85rem;">
+            Available from {{ selectedEventForDetail.recordingPublishedAt | date:'medium' }}
+          </p>
+          <a class="action-btn copy-btn"
+            [href]="getRecordingDownloadUrl(selectedEventForDetail)!"
+            target="_blank"
+            rel="noopener"
+            style="display: inline-flex; width: auto; text-decoration: none;">
+            Watch Recording
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 
     <!-- View 2: CME Courses list -->
     <ng-container *ngIf="activeHostTab === 'courses'">
@@ -551,6 +605,10 @@
           <label>Zoho Backstage Link</label>
           <input type="text" [(ngModel)]="newZohoLink" placeholder="e.g. https://backstage.zoho.com/events/..." />
         </div>
+        <div class="form-group full-width">
+          <label>Internal Stream Embed URL</label>
+          <input type="text" [(ngModel)]="newStreamEmbedUrl" placeholder="e.g. https://www.youtube.com/embed/live-video-id" />
+        </div>
         <div class="form-group">
           <label>Mode</label>
           <select [(ngModel)]="newMode">
@@ -568,6 +626,10 @@
         <div class="form-group">
           <label>Speaker Name</label>
           <input type="text" [(ngModel)]="newSpeaker" placeholder="Dr. Full Name" />
+        </div>
+        <div class="form-group">
+          <label>Speaker Email</label>
+          <input type="email" [(ngModel)]="newSpeakerEmail" placeholder="speaker@example.com" />
         </div>
         <div class="form-group">
           <label>Speaker Role</label>
@@ -645,7 +707,7 @@
         <div class="modal-actions">
           <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
           <button class="btn-create-submit" (click)="saveEvent()"
-            [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
+            [disabled]="!canSaveEvent()">
             {{ editingEventId ? 'Update Event Details' : 'Create Event & Generate Payment Link' }}
           </button>
         </div>

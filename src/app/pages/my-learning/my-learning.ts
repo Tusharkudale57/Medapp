@@ -144,7 +144,7 @@ export class MyLearningComponent implements OnInit {
     const allEvents = this.eventService.getUpcomingEvents();
     
     // Filter events where registration exists for user
-    return allEvents.filter(e => this.eventService.isRegistered(e.id, user.id));
+    return this.sortEventsByDateDesc(allEvents.filter(e => this.eventService.isRegistered(e.id, user.id)));
   }
 
   get inProgressEvents(): CmeEvent[] {
@@ -152,20 +152,29 @@ export class MyLearningComponent implements OnInit {
     const user = this.authService.currentUser();
     if (!user) return [];
 
-    return this.registeredEvents.filter(e => {
+    return this.sortEventsByDateDesc(this.registeredEvents.filter(e => {
       const reg = this.eventService.getRegistration(e.id, user.id);
       return reg ? !reg.attended : true;
-    });
+    }));
   }
 
   get completedEvents(): CmeEvent[] {
     const user = this.authService.currentUser();
     if (!user) return [];
 
-    return this.registeredEvents.filter(e => {
+    return this.sortEventsByDateDesc(this.registeredEvents.filter(e => {
       const reg = this.eventService.getRegistration(e.id, user.id);
       return reg ? reg.attended : false;
-    });
+    }));
+  }
+
+  private sortEventsByDateDesc(events: CmeEvent[]): CmeEvent[] {
+    return [...events].sort((a, b) => this.getEventTimestamp(b) - this.getEventTimestamp(a));
+  }
+
+  private getEventTimestamp(event: CmeEvent): number {
+    const value = new Date(`${event.date} ${event.time || ''}`).getTime();
+    return Number.isFinite(value) ? value : 0;
   }
 
   get certificates(): Certificate[] {

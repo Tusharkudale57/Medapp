@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, HostListener } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { CmeEvent } from '../../models/course.model';
@@ -17,6 +18,7 @@ import { RazorpayService } from '../../services/razorpay.service';
 export class DashboardComponent implements OnInit {
   activeFilter = signal<'All' | 'Online' | 'Offline' | 'Hybrid' | 'Free'>('All');
   readonly filters: Array<'All' | 'Online' | 'Offline' | 'Hybrid' | 'Free'> = ['All', 'Online', 'Offline', 'Hybrid', 'Free'];
+  eventTimeFilter = signal<'Upcoming' | 'Past'>('Upcoming');
 
   showExploreMenu = false;
   activeCategory = signal<string>('All');
@@ -43,6 +45,7 @@ export class DashboardComponent implements OnInit {
   liveChatMessages: Array<{ sender: string; text: string; time: string; isUser: boolean }> = [];
   newChatMessageText = '';
   showJoinLiveAlert = false;  // shown when non-registered user clicks Join Live
+  private liveHeartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
   // MCQ state
   basicMcqAnswered = false;
@@ -101,6 +104,7 @@ export class DashboardComponent implements OnInit {
   newVenue = '';
   newMode: 'Online' | 'Offline' | 'Hybrid' = 'Online';
   newSpeaker = '';
+  newSpeakerEmail = '';
   newSpeakerRole = '';
   newCategory = 'Cardiology';
   newCreditPoints = 1;
@@ -109,6 +113,7 @@ export class DashboardComponent implements OnInit {
   newBannerColor = '#0ea5e9';
   newPreRead = '';
   newZohoLink = '';
+  newStreamEmbedUrl = '';
   uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
   categories = ['Cardiology', 'Oncology', 'Neurology', 'Pediatrics', 'Surgery', 'General Medicine', 'Orthopedics', 'Obstetrics', 'Gastroenterology', 'Radiology', 'Emergency', 'Dermatology', 'Endocrinology', 'Psychiatry'];
 
@@ -171,6 +176,7 @@ export class DashboardComponent implements OnInit {
     public authService: AuthService,
     public eventService: EventService,
     private razorpayService: RazorpayService,
+    private sanitizer: DomSanitizer,
     private router: Router
   ) {}
 
@@ -202,7 +208,11 @@ export class DashboardComponent implements OnInit {
   }
 
   get filteredEvents(): CmeEvent[] {
-    let events = this.eventService.getUpcomingEvents();
+    let events = this.authService.isAdmin()
+      ? this.eventService.events()
+      : this.eventTimeFilter() === 'Past'
+      ? this.eventService.getPastEvents()
+      : this.eventService.getUpcomingEvents();
     
     // Filter by interests if enabled, otherwise prioritize interests by sorting them first
     const user = this.authService.currentUser();
@@ -262,7 +272,7 @@ export class DashboardComponent implements OnInit {
 
     // Sorting
     if (this.sortByFilter === 'Date') {
-      events = events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      events = events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } else if (this.sortByFilter === 'Newest') {
       events = events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } else if (this.sortByFilter === 'Price') {
@@ -294,18 +304,19 @@ export class DashboardComponent implements OnInit {
       });
     }
 
-    // Prioritize newly created custom events to the top!
-    events = [...events].sort((a, b) => {
-      const aNum = Number(a.id.replace('evt-', ''));
-      const bNum = Number(b.id.replace('evt-', ''));
-      const aNew = (user && a.hostId === user.id) || (!isNaN(aNum) && aNum > 1000000000);
-      const bNew = (user && b.hostId === user.id) || (!isNaN(bNum) && bNum > 1000000000);
-      if (aNew && !bNew) return -1;
-      if (!aNew && bNew) return 1;
-      return 0;
-    });
-
     return events;
+  }
+
+  get eventTimeLabel(): string {
+    return this.eventTimeFilter() === 'Past' ? 'past CME events' : 'upcoming CME events';
+  }
+
+  get upcomingEventsCount(): number {
+    return this.eventService.getUpcomingEvents().length;
+  }
+
+  get pastEventsCount(): number {
+    return this.eventService.getPastEvents().length;
   }
 
   get relevantEvents(): CmeEvent[] {
@@ -348,6 +359,9 @@ export class DashboardComponent implements OnInit {
   }
 
   get fastFillingEvents(): CmeEvent[] {
+    if (this.eventTimeFilter() === 'Past') {
+      return [];
+    }
     return this.eventService.getUpcomingEvents()
       .filter(e => {
         const left = this.seatsLeft(e);
@@ -379,6 +393,7 @@ export class DashboardComponent implements OnInit {
     this.sortByFilter = 'Date';
     this.activeFilter.set('All');
     this.activeCategory.set('All');
+    this.eventTimeFilter.set('Upcoming');
     this.visibleCount = 6;
   }
 
@@ -428,6 +443,10 @@ export class DashboardComponent implements OnInit {
     this.selectedEventForDetail = null;
   }
 
+  isRecordingAvailable(event: CmeEvent): boolean {
+    return this.eventService.isRecordingAvailable(event);
+  }
+
   openLiveRoom(event: CmeEvent) {
     // Access check: only registered users can join the live room
     const user = this.authService.currentUser();
@@ -438,6 +457,8 @@ export class DashboardComponent implements OnInit {
       setTimeout(() => this.showJoinLiveAlert = false, 4000);
       return;
     }
+
+    const registration = this.eventService.getRegistration(event.id, user.id);
 
     // Close ALL other modals first
     this.showDetailModal = false;
@@ -477,6 +498,53 @@ export class DashboardComponent implements OnInit {
         this.liveRoomNotes = saved;
       }
     }
+
+    const joinWindow = typeof window !== 'undefined' ? window.open('', '_blank') : null;
+
+    this.eventService.joinEvent(event.id, user.id).then(meetingLink => {
+      if (meetingLink && this.activeLiveEvent?.id === event.id) {
+        this.activeLiveEvent = { ...this.activeLiveEvent, zohoBackstageLink: meetingLink };
+        if (joinWindow) {
+          joinWindow.location.href = meetingLink;
+        } else if (typeof window !== 'undefined') {
+          window.location.href = meetingLink;
+        }
+      } else if (joinWindow) {
+        joinWindow.close();
+      }
+    }).catch(() => {
+      if (joinWindow) {
+        joinWindow.close();
+      }
+      alert('Unable to open the join link for this login. Please confirm this account is enrolled and try again.');
+    });
+
+    this.startLiveHeartbeat(event.id, user.id);
+  }
+
+  private startLiveHeartbeat(eventId: string, userId: string) {
+    this.stopLiveHeartbeat();
+    this.eventService.heartbeatEvent(eventId, userId);
+    this.liveHeartbeatInterval = setInterval(() => {
+      if (!this.showLiveRoomModal || this.activeLiveEvent?.id !== eventId) {
+        this.stopLiveHeartbeat();
+        return;
+      }
+      this.eventService.heartbeatEvent(eventId, userId);
+    }, 30000);
+  }
+
+  private stopLiveHeartbeat() {
+    if (this.liveHeartbeatInterval) {
+      clearInterval(this.liveHeartbeatInterval);
+      this.liveHeartbeatInterval = null;
+    }
+  }
+
+  getSafeStreamUrl(url?: string): SafeResourceUrl | null {
+    const clean = (url || '').trim();
+    if (!/^https?:\/\//i.test(clean)) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(clean);
   }
 
   saveNotes() {
@@ -505,17 +573,28 @@ export class DashboardComponent implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  submitFeedback() {
+  async submitFeedback() {
     if (this.liveFeedbackRating === 0) {
       alert('Please select a star rating first.');
       return;
     }
+
+    const user = this.authService.currentUser();
+    if (!user || !this.activeLiveEvent) return;
     
     this.liveFeedbackSubmitted = true;
+    this.stopLiveHeartbeat();
+
+    const present = await this.eventService.completeEvent(this.activeLiveEvent.id, user.id);
+    if (!present) {
+      this.liveFeedbackSubmitted = false;
+      alert('Attendance is not marked present yet. You must complete the full event before credits are issued.');
+      return;
+    }
+
     this.liveSessionCompleted = true;
 
     // Automatically issue the certificate to the doctor
-    const user = this.authService.currentUser();
     if (user && this.activeLiveEvent) {
       this.authService.issueEventCertificate(
         user.id,
@@ -528,11 +607,17 @@ export class DashboardComponent implements OnInit {
 
   closeCompletedSession() {
     this.liveSessionCompleted = false;
-    this.closeLiveRoom();
+    this.closeLiveRoom(false);
     this.router.navigate(['/my-learning']);
   }
 
-  closeLiveRoom() {
+  closeLiveRoom(recordLeave = true) {
+    const user = this.authService.currentUser();
+    const event = this.activeLiveEvent;
+    this.stopLiveHeartbeat();
+    if (recordLeave && user && event && !this.liveSessionCompleted) {
+      this.eventService.leaveEvent(event.id, user.id);
+    }
     this.showLiveRoomModal = false;
     this.activeLiveEvent = null;
     this.liveSessionCompleted = false;
@@ -905,6 +990,7 @@ export class DashboardComponent implements OnInit {
     this.newVenue = event.venue || '';
     this.newMode = event.mode || 'Online';
     this.newSpeaker = event.speaker || '';
+    this.newSpeakerEmail = event.speakerEmail || '';
     this.newSpeakerRole = event.speakerRole || '';
     this.newCategory = event.category || 'Cardiology';
     this.newCreditPoints = event.creditPoints || 1;
@@ -913,6 +999,7 @@ export class DashboardComponent implements OnInit {
     this.newBannerColor = event.bannerColor || '#0ea5e9';
     this.newPreRead = event.preRead || '';
     this.newZohoLink = event.zohoBackstageLink || '';
+    this.newStreamEmbedUrl = event.streamEmbedUrl || '';
     if (event.preRead) {
       this.uploadedFiles = [{ name: event.preRead, size: 'N/A', status: 'uploaded' }];
     } else {
@@ -926,8 +1013,20 @@ export class DashboardComponent implements OnInit {
     this.editingEventId = null;
   }
 
+  canSaveEvent(): boolean {
+    return Boolean(
+      this.newTitle.trim() &&
+      this.newDate &&
+      this.newVenue.trim() &&
+      this.hasValidSpeakerFields()
+    );
+  }
+
   saveEvent() {
-    if (!this.newTitle.trim() || !this.newDate || !this.newVenue.trim()) return;
+    if (!this.canSaveEvent()) {
+      this.showSpeakerValidationMessage();
+      return;
+    }
     if (!this.authService.isAdmin()) return;
     const user = this.authService.currentUser();
     if (!user) return;
@@ -944,6 +1043,7 @@ export class DashboardComponent implements OnInit {
           venue: this.newVenue,
           mode: this.newMode,
           speaker: this.newSpeaker,
+          speakerEmail: this.newSpeakerEmail,
           speakerRole: this.newSpeakerRole,
           category: this.newCategory,
           creditPoints: this.newCreditPoints,
@@ -951,7 +1051,8 @@ export class DashboardComponent implements OnInit {
           maxSeats: this.newMaxSeats,
           bannerColor: this.newBannerColor,
           preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-          zohoBackstageLink: this.newZohoLink
+          zohoBackstageLink: this.newZohoLink,
+          streamEmbedUrl: this.newStreamEmbedUrl
         });
       }
       this.editingEventId = null;
@@ -964,6 +1065,7 @@ export class DashboardComponent implements OnInit {
         venue: this.newVenue,
         mode: this.newMode,
         speaker: this.newSpeaker,
+        speakerEmail: this.newSpeakerEmail,
         speakerRole: this.newSpeakerRole,
         category: this.newCategory,
         creditPoints: this.newCreditPoints,
@@ -971,10 +1073,21 @@ export class DashboardComponent implements OnInit {
         maxSeats: this.newMaxSeats,
         bannerColor: this.newBannerColor,
         preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-        zohoBackstageLink: this.newZohoLink
+        zohoBackstageLink: this.newZohoLink,
+        streamEmbedUrl: this.newStreamEmbedUrl
       }, user.id, user.name);
     }
     this.showCreateModal = false;
+  }
+
+  private hasValidSpeakerFields(): boolean {
+    return Boolean(this.newSpeaker.trim()) === Boolean(this.newSpeakerEmail.trim());
+  }
+
+  private showSpeakerValidationMessage() {
+    if (!this.hasValidSpeakerFields()) {
+      alert('Enter both Speaker Name and Speaker Email, or leave both blank.');
+    }
   }
 
   deleteEvent(eventId: string, ev: Event) {
@@ -1035,6 +1148,7 @@ export class DashboardComponent implements OnInit {
     this.newVenue = '';
     this.newMode = 'Online';
     this.newSpeaker = '';
+    this.newSpeakerEmail = '';
     this.newSpeakerRole = '';
     this.newCategory = 'Cardiology';
     this.newCreditPoints = 1;
@@ -1043,6 +1157,7 @@ export class DashboardComponent implements OnInit {
     this.newBannerColor = '#0ea5e9';
     this.newPreRead = '';
     this.newZohoLink = '';
+    this.newStreamEmbedUrl = '';
     this.uploadedFiles = [];
   }
 }

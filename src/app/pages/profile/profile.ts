@@ -250,7 +250,14 @@ export class ProfileComponent implements OnInit {
   }
 
   get certificates(): Certificate[] {
-    return this.authService.getUserCertificates();
+    return [...this.authService.getUserCertificates()].sort(
+      (a, b) => this.getCertificateTimestamp(b) - this.getCertificateTimestamp(a)
+    );
+  }
+
+  private getCertificateTimestamp(cert: Certificate): number {
+    const value = new Date(cert.issueDate || '').getTime();
+    return Number.isFinite(value) ? value : 0;
   }
 
   get totalCreditPoints(): number {

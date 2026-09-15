@@ -235,6 +235,25 @@
         </label>
       </div>
 
+      <div style="margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.25rem;">
+        <button
+          type="button"
+          (click)="eventTimeFilter.set('Upcoming')"
+          [style.background]="eventTimeFilter() === 'Upcoming' ? '#2563eb' : 'transparent'"
+          [style.color]="eventTimeFilter() === 'Upcoming' ? '#fff' : '#334155'"
+          style="border: 0; border-radius: 8px; padding: 0.45rem 0.8rem; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+          Upcoming ({{ upcomingEventsCount }})
+        </button>
+        <button
+          type="button"
+          (click)="eventTimeFilter.set('Past')"
+          [style.background]="eventTimeFilter() === 'Past' ? '#2563eb' : 'transparent'"
+          [style.color]="eventTimeFilter() === 'Past' ? '#fff' : '#334155'"
+          style="border: 0; border-radius: 8px; padding: 0.45rem 0.8rem; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+          Past Events ({{ pastEventsCount }})
+        </button>
+      </div>
+
       <!-- Collapsible Advanced Filters Panel -->
       <div *ngIf="showFiltersPanel" class="filters-panel-content animate-in" style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
         <!-- Languages Checklist -->
@@ -298,7 +317,7 @@
         </button>
       </div>
       <div class="event-count">
-        Showing <strong>{{ filteredEvents.length }}</strong> upcoming CME events
+        Showing <strong>{{ filteredEvents.length }}</strong> {{ eventTimeLabel }}
       </div>
     </div>
 
@@ -414,18 +433,28 @@
                   </span>
                   <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
                 </div>
-                <div class="actions-section-coursera" style="display: flex; gap: 0.4rem;">
+                <div class="actions-section-coursera" style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
                   <!-- Not registered: show Pay & Enroll button that opens Razorpay -->
                   <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera"
                     (click)="$event.stopPropagation(); openRegisterModal(event)"
                     style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; font-weight: 800;">
                     {{ event.price === 0 ? 'Enroll Free' : 'Pay & Enroll' }}
                   </button>
+                  <button class="btn-enroll-coursera"
+                    (click)="$event.stopPropagation(); openDetailModal(event)"
+                    style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-weight: 800;">
+                    View Details
+                  </button>
                   <!-- Already Registered: show clean Enrolled badge -->
                   <span *ngIf="isRegistered(event.id)"
                     style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
                     ✓ Enrolled
                   </span>
+                  <button *ngIf="isRegistered(event.id)" class="btn-enroll-coursera"
+                    (click)="$event.stopPropagation(); openLiveRoom(event)"
+                    style="background: linear-gradient(135deg, #ef4444, #f43f5e); color: #fff; border: none; font-weight: 800;">
+                    Join Live
+                  </button>
                 </div>
               </div>
             </div>
@@ -508,18 +537,28 @@
                   </span>
                   <span class="price-lbl" *ngIf="event.price > 0">incl. cert</span>
                 </div>
-                <div class="actions-section-coursera" style="display: flex; gap: 0.4rem;">
+                <div class="actions-section-coursera" style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
                   <!-- Not registered: show Pay & Enroll button that opens Razorpay -->
                   <button *ngIf="!isRegistered(event.id)" class="btn-enroll-coursera"
                     (click)="$event.stopPropagation(); openRegisterModal(event)"
                     style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; font-weight: 800;">
                     {{ event.price === 0 ? 'Enroll Free' : 'Pay & Enroll' }}
                   </button>
+                  <button class="btn-enroll-coursera"
+                    (click)="$event.stopPropagation(); openDetailModal(event)"
+                    style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-weight: 800;">
+                    View Details
+                  </button>
                   <!-- Already Registered: show clean Enrolled badge -->
                   <span *ngIf="isRegistered(event.id)"
                     style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
                     ✓ Enrolled
                   </span>
+                  <button *ngIf="isRegistered(event.id)" class="btn-enroll-coursera"
+                    (click)="$event.stopPropagation(); openLiveRoom(event)"
+                    style="background: linear-gradient(135deg, #ef4444, #f43f5e); color: #fff; border: none; font-weight: 800;">
+                    Join Live
+                  </button>
                 </div>
               </div>
             </div>
@@ -904,6 +943,10 @@
           <label>Zoho Backstage Link</label>
           <input type="text" [(ngModel)]="newZohoLink" placeholder="e.g. https://backstage.zoho.com/events/..." />
         </div>
+        <div class="form-group full-width">
+          <label>Internal Stream Embed URL</label>
+          <input type="text" [(ngModel)]="newStreamEmbedUrl" placeholder="e.g. https://www.youtube.com/embed/live-video-id" />
+        </div>
         <div class="form-group">
           <label>Mode</label>
           <select [(ngModel)]="newMode">
@@ -921,6 +964,10 @@
         <div class="form-group">
           <label>Speaker Name</label>
           <input type="text" [(ngModel)]="newSpeaker" placeholder="Dr. Full Name" />
+        </div>
+        <div class="form-group">
+          <label>Speaker Email</label>
+          <input type="email" [(ngModel)]="newSpeakerEmail" placeholder="speaker@example.com" />
         </div>
         <div class="form-group">
           <label>Speaker Role</label>
@@ -993,8 +1040,8 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
-        <button class="btn-confirm" (click)="saveEvent()" [disabled]="!newTitle.trim() || !newDate || !newVenue.trim()">
-          {{ editingEventId ? 'Save Changes' : 'Publish Event' }}
+        <button class="btn-confirm" (click)="saveEvent()" [disabled]="!canSaveEvent()">
+          {{ editingEventId ? 'Save Changes' : 'Create Draft Event' }}
         </button>
       </div>
     </div>
@@ -1083,6 +1130,8 @@
         <span class="unlock-text" style="font-size:0.82rem; color:#2563eb; font-weight:600; display:block; margin-top:0.75rem;">Completing event registration...</span>
       </div>
     </div>
+  </div>
+
   <!-- Interest Area Pop-up -->
   <div class="modal-overlay interest-popup-overlay" *ngIf="showInterestPopup">
     <div class="modal-box interest-box">
@@ -1227,6 +1276,19 @@
               <p>🗣️ {{ selectedEventForDetail.videoAssistance }}</p>
             </div>
           </div>
+
+            <div class="detail-section" *ngIf="isRecordingAvailable(selectedEventForDetail)">
+              <h4>Session Recording</h4>
+              <p *ngIf="selectedEventForDetail.recordingPublishedAt" style="color: #64748b; margin-bottom: 0.75rem;">
+                Available from {{ selectedEventForDetail.recordingPublishedAt | date:'medium' }}
+              </p>
+              <a [href]="eventService.getRecordingDownloadUrl(selectedEventForDetail)"
+                target="_blank"
+                rel="noopener"
+                style="background: linear-gradient(135deg, #0f766e, #0891b2); color: #fff; text-decoration: none; font-weight: 800; padding: 0.65rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem;">
+                Watch Recording
+              </a>
+            </div>
 
           <!-- Attendees Registered Count -->
           <div class="detail-section registration-stats">
@@ -1421,9 +1483,16 @@
       <div class="live-room-body">
         <!-- Left Panel: Video Stream & Outline -->
         <div class="live-stream-panel">
-          <!-- Mock Video Player Feed -->
+          <!-- Internal Video Player Feed -->
           <div class="mock-video-container">
-            <div class="video-mock-feed">
+            <iframe *ngIf="getSafeStreamUrl(activeLiveEvent.streamEmbedUrl)"
+              [src]="getSafeStreamUrl(activeLiveEvent.streamEmbedUrl)"
+              title="Live CME stream"
+              style="width: 100%; height: 100%; border: 0; border-radius: 10px; background: #020617;"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+            <div class="video-mock-feed" *ngIf="!getSafeStreamUrl(activeLiveEvent.streamEmbedUrl)">
               <div class="video-speaker-anim">🎙️</div>
               <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">{{ activeLiveEvent.speaker }}</h4>
               <p style="margin: 0.15rem 0 0 0; color: #38bdf8; font-size: 0.75rem;">{{ activeLiveEvent.speakerRole }}</p>
@@ -1667,10 +1736,14 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
           <div>
             <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Speaker Name</label>
             <input type="text" [(ngModel)]="newSpeaker" placeholder="Dr. Full Name" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Speaker Email</label>
+            <input type="email" [(ngModel)]="newSpeakerEmail" placeholder="speaker@example.com" style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
           </div>
           <div>
             <label style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Speaker Designation</label>
@@ -1696,8 +1769,8 @@
 
       <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
         <button (click)="closeCreateModal()" style="padding: 0.65rem 1.25rem; border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Cancel</button>
-        <button (click)="saveEvent()" style="padding: 0.65rem 1.5rem; border: none; background: #2563eb; color: #fff; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
-          {{ editingEventId ? 'Update Event' : 'Publish Event' }}
+        <button (click)="saveEvent()" [disabled]="!canSaveEvent()" style="padding: 0.65rem 1.5rem; border: none; background: #2563eb; color: #fff; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
+          {{ editingEventId ? 'Update Event' : 'Create Draft Event' }}
         </button>
       </div>
 

@@ -203,7 +203,7 @@ export class AuthService {
     return newUser;
   }
 
-  public backendUrl = 'http://localhost:8080';
+  public backendUrl = '';
 
   public getEndpoint(path: string): string {
     if (!path) return '';
@@ -240,7 +240,7 @@ export class AuthService {
   /** Send OTP for Login via Backend API (POST /api/auth/login/send-otp) */
   sendLoginOtpBackend(identifier: string): Observable<any> {
     const clean = identifier.trim();
-    const payload = clean.includes('@') ? { email: clean } : { mobileNumber: clean };
+    const payload = { email: clean };
     const headers = { 'Content-Type': 'application/json' };
     return this.http.post<any>('/api/auth/login/send-otp', payload, { headers }).pipe(
       catchError((err) => {
@@ -259,11 +259,7 @@ export class AuthService {
       otp: otp.trim(),
       purpose: purpose
     };
-    if (clean.includes('@')) {
-      payload.email = clean;
-    } else {
-      payload.mobileNumber = clean;
-    }
+    payload.email = clean;
     const headers = { 'Content-Type': 'application/json' };
     return this.http.post<any>('/api/auth/verify-otp', payload, { headers }).pipe(
       catchError((err) => {
@@ -476,6 +472,7 @@ export class AuthService {
     this.currentUserSignal.set(null);
     if (this.isBrowser) {
       localStorage.removeItem('medcme_user');
+      localStorage.removeItem('medcme_jwt_token');
     }
   }
 

@@ -1,6 +1,16 @@
 import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { CmeEvent, EventRegistration } from '../models/course.model';
+import { firstValueFrom, timeout } from 'rxjs';
+import {
+  BackendEventAttendanceResponse,
+  BackendEventRegistrationResponse,
+  BackendEventRequest,
+  BackendEventResponse,
+  CmeEvent,
+  EventDocument,
+  EventRegistration
+} from '../models/course.model';
+import { CmeApiService } from './cme-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -646,9 +656,12 @@ export class EventService {
   public events = computed(() => this.eventsSignal());
   public registrations = computed(() => this.registrationsSignal());
 
-  constructor(@Inject(PLATFORM_ID) platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) platformId: Object, private api: CmeApiService) {
     this.isBrowser = isPlatformBrowser(platformId);
     this.loadFromStorage();
+    if (this.isBrowser) {
+      this.syncEventsFromBackend();
+    }
     
     // Inject mock detail fields to all events and override bannerColor with soft, light blue shades
     const silentColors = ['#bae6fd', '#e0f2fe', '#dbeafe', '#93c5fd', '#bae6fd', '#bae6fd'];
@@ -661,8 +674,68 @@ export class EventService {
       scopeDetails: e.scopeDetails || `Accredited CME event focusing on advanced clinical protocols, guidelines, and diagnostic decisions. Earn +${e.creditPoints} CME points.`,
       outcome: e.outcome || 'Mastery of specialized diagnostics, implementation of critical protocols, and verified CME credits.',
       videoAssistance: e.videoAssistance || 'Live Stream, 2 Dedicated Moderators, 1-2 Consultants for Chat Q&A',
-      zohoBackstageLink: e.zohoBackstageLink || ''
+      zohoBackstageLink: e.zohoBackstageLink || '',
+      streamEmbedUrl: e.streamEmbedUrl || ''
     })));
+  }
+
+  async syncEventsFromBackend(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.api.getAllEvents());
+      if (response?.success && Array.isArray(response.data)) {
+        const backendEvents = response.data.map(e => this.mapBackendEventToUi(e));
+        if (backendEvents.length > 0) {
+          this.eventsSignal.set(this.sortEventsByDateDesc(backendEvents));
+          this.saveEventsToStorage();
+          await this.syncRegistrationsFromBackend();
+        }
+      }
+    } catch (e) {
+      console.warn('Backend events unavailable; using local event data.', e);
+    }
+  }
+
+  async syncRegistrationsFromBackend(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.api.getEnrolledEvents());
+      if (response?.success && Array.isArray(response.data)) {
+        const userRegistrations = response.data.map(r => this.mapBackendRegistrationToUi(r));
+        this.mergeRegistrations(userRegistrations);
+      }
+    } catch (e) {
+      console.warn('Backend enrolled events unavailable; using local registrations.', e);
+    }
+  }
+
+  async syncEventRegistrationsFromBackend(eventId: string): Promise<void> {
+    const event = this.getEventById(eventId);
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return;
+    try {
+      const response = await firstValueFrom(this.api.getEventRegistrations(backendId));
+      if (response?.success && Array.isArray(response.data)) {
+        const registrations = response.data.map(r => this.mapBackendRegistrationToUi(r));
+        if (registrations.length > 0) {
+          this.mergeRegistrations(registrations);
+        }
+      }
+    } catch (e) {
+      console.warn('Backend event registrations unavailable; using local registrations.', e);
+    }
+  }
+
+  async syncAttendanceFromBackend(eventId: string): Promise<void> {
+    const event = this.getEventById(eventId);
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return;
+    try {
+      const response = await firstValueFrom(this.api.getAttendanceForEvent(backendId));
+      if (response?.success && Array.isArray(response.data)) {
+        this.applyBackendAttendance(response.data);
+      }
+    } catch (e) {
+      console.warn('Backend attendance unavailable; using local attendance.', e);
+    }
   }
 
   private loadFromStorage() {
@@ -679,12 +752,12 @@ export class EventService {
           const existingIds = new Set(parsed.map((e: any) => e.id));
           const missingDefaults = this.eventsSignal().filter(e => !existingIds.has(e.id));
           if (missingDefaults.length > 0) {
-            const merged = [...parsed, ...missingDefaults];
+            const merged = this.sortEventsByDateDesc([...parsed, ...missingDefaults]);
             this.eventsSignal.set(merged);
             localStorage.setItem('medcme_events', JSON.stringify(merged));
             return;
           } else {
-            this.eventsSignal.set(parsed);
+            this.eventsSignal.set(this.sortEventsByDateDesc(parsed));
             return;
           }
         }
@@ -707,7 +780,15 @@ export class EventService {
   }
 
   getUpcomingEvents(): CmeEvent[] {
-    return this.eventsSignal().filter(e => e.status === 'upcoming');
+    return this.sortEventsByDateDesc(
+      this.eventsSignal().filter(e => e.status === 'upcoming' && this.isFutureEvent(e))
+    );
+  }
+
+  getPastEvents(): CmeEvent[] {
+    return this.sortEventsByDateDesc(
+      this.eventsSignal().filter(e => this.isPastEvent(e))
+    );
   }
 
   getEventById(id: string): CmeEvent | undefined {
@@ -715,7 +796,7 @@ export class EventService {
   }
 
   getEventsByHost(hostId: string): CmeEvent[] {
-    return this.eventsSignal().filter(e => e.hostId === hostId);
+    return this.sortEventsByDateDesc(this.eventsSignal().filter(e => e.hostId === hostId));
   }
 
   getRegistrationsByEvent(eventId: string): EventRegistration[] {
@@ -731,19 +812,27 @@ export class EventService {
   }
 
   getEnrolledCount(eventId: string): number {
-    return this.registrationsSignal().filter(r => r.eventId === eventId).length;
+    const event = this.getEventById(eventId);
+    const localCount = this.registrationsSignal().filter(r => r.eventId === eventId).length;
+    return Math.max(Number(event?.registeredCount || 0), localCount);
   }
 
   getPresentCount(eventId: string): number {
-    return this.registrationsSignal().filter(r => r.eventId === eventId && r.attended).length;
+    const event = this.getEventById(eventId);
+    const localCount = this.registrationsSignal().filter(r => r.eventId === eventId && r.attended).length;
+    return Math.max(Number(event?.presentCount || 0), localCount);
   }
 
   getAbsentCount(eventId: string): number {
-    return this.registrationsSignal().filter(r => r.eventId === eventId && !r.attended).length;
+    const event = this.getEventById(eventId);
+    const localCount = this.registrationsSignal().filter(r => r.eventId === eventId && r.attendanceStatus === 'ABSENT').length;
+    return Math.max(Number(event?.absentCount || 0), localCount);
   }
 
   getCertificateIssuedCount(eventId: string): number {
-    return this.registrationsSignal().filter(r => r.eventId === eventId && r.certificateIssued).length;
+    const event = this.getEventById(eventId);
+    const localCount = this.registrationsSignal().filter(r => r.eventId === eventId && r.certificateIssued).length;
+    return Math.max(Number(event?.certificateIssuedCount || 0), localCount);
   }
 
   registerForEvent(eventId: string, userId: string, userName: string, userEmail?: string, userPhone?: string, paymentStatus?: 'pending' | 'paid' | 'free' | 'sponsored', sponsoredBy?: string): boolean {
@@ -769,10 +858,21 @@ export class EventService {
 
     this.registrationsSignal.update(list => [...list, registration]);
     this.eventsSignal.update(events =>
-      events.map(e => e.id === eventId ? { ...e, registeredCount: e.registeredCount + 1 } : e)
+      this.sortEventsByDateDesc(events.map(e => e.id === eventId ? { ...e, registeredCount: e.registeredCount + 1 } : e))
     );
     this.saveRegistrationsToStorage();
     this.saveEventsToStorage();
+    const backendEventId = event.backendId ?? this.toBackendId(eventId);
+    if (backendEventId) {
+      this.api.registerForEvent(backendEventId, true).subscribe({
+        next: (response) => {
+          if (response?.success && response.data) {
+            this.mergeRegistrations([this.mapBackendRegistrationToUi(response.data, userId)]);
+          }
+        },
+        error: (e) => console.warn('Backend event registration failed; local registration retained.', e)
+      });
+    }
     return true;
   }
 
@@ -785,6 +885,7 @@ export class EventService {
           return {
             ...r,
             attended,
+            attendanceStatus: attended ? 'PRESENT' : 'ABSENT',
             attendedAt: attended ? new Date().toISOString() : undefined,
             certificateIssued: attended ? r.certificateIssued : false
           };
@@ -792,7 +893,25 @@ export class EventService {
         return r;
       })
     );
-    if (found) this.saveRegistrationsToStorage();
+    if (found) {
+      this.saveRegistrationsToStorage();
+      const reg = this.getRegistration(eventId, userId);
+      if (reg?.registrationId) {
+        this.api.markAttendance({
+          registrationId: reg.registrationId,
+          status: attended ? 'PRESENT' : 'ABSENT',
+          minutesAttended: attended ? 60 : 0
+        }).subscribe({
+          next: (response) => {
+            if (response?.success && response.data) {
+              this.applyBackendAttendance([response.data]);
+              this.refreshEventFromBackend(eventId);
+            }
+          },
+          error: (e) => console.warn('Backend attendance update failed; local attendance retained.', e)
+        });
+      }
+    }
     return found;
   }
 
@@ -807,6 +926,17 @@ export class EventService {
       )
     );
     this.saveRegistrationsToStorage();
+    if (reg.registrationId) {
+      this.api.issueCertificate(reg.registrationId).subscribe({
+        next: (response) => {
+          if (response?.success && response.data) {
+            this.applyBackendAttendance([response.data]);
+            this.refreshEventFromBackend(eventId);
+          }
+        },
+        error: (e) => console.warn('Backend certificate issue failed; local certificate retained.', e)
+      });
+    }
     return true;
   }
 
@@ -821,6 +951,7 @@ export class EventService {
       venue: partial.venue || 'TBD',
       mode: partial.mode || 'Online',
       speaker: partial.speaker || '',
+      speakerEmail: partial.speakerEmail || '',
       speakerRole: partial.speakerRole || '',
       category: partial.category || 'General Medicine',
       creditPoints: partial.creditPoints ?? 1,
@@ -831,25 +962,207 @@ export class EventService {
       hostName,
       paymentLink: `https://medcme.org/pay/${id}`,
       status: 'upcoming',
+      publicationStatus: 'DRAFT',
       bannerColor: partial.bannerColor || '#0ea5e9',
       preRead: partial.preRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-      zohoBackstageLink: partial.zohoBackstageLink || ''
+      zohoBackstageLink: partial.zohoBackstageLink || '',
+      streamEmbedUrl: partial.streamEmbedUrl || ''
     };
-    this.eventsSignal.update(events => [newEvent, ...events]);
+    this.eventsSignal.update(events => this.sortEventsByDateDesc([newEvent, ...events]));
     this.saveEventsToStorage();
+    this.api.createEvent(this.mapUiEventToBackendRequest(newEvent)).subscribe({
+      next: (response) => {
+        if (response?.success && response.data) {
+          const saved = this.mapBackendEventToUi(response.data);
+          this.eventsSignal.update(events => this.sortEventsByDateDesc(events.map(e => e.id === id ? saved : e)));
+          this.saveEventsToStorage();
+        }
+      },
+        error: (e) => {
+          this.eventsSignal.update(events => events.filter(event => event.id !== id));
+          this.saveEventsToStorage();
+          this.showBackendError('Event creation failed', e);
+        }
+    });
     return newEvent;
   }
 
   deleteEvent(eventId: string): void {
+    const event = this.getEventById(eventId);
     this.eventsSignal.update(events => events.filter(e => e.id !== eventId));
     this.saveEventsToStorage();
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+    if (backendId) {
+      this.api.deleteEvent(backendId).subscribe({
+        error: (e) => console.warn('Backend event delete failed; local delete retained.', e)
+      });
+    }
   }
 
   updateEvent(updated: CmeEvent): void {
     this.eventsSignal.update(events =>
-      events.map(e => e.id === updated.id ? { ...e, ...updated } : e)
+      this.sortEventsByDateDesc(events.map(e => e.id === updated.id ? { ...e, ...updated } : e))
     );
     this.saveEventsToStorage();
+    const backendId = updated.backendId ?? this.toBackendId(updated.id);
+    if (backendId) {
+      this.api.updateEvent(backendId, this.mapUiEventToBackendRequest(updated)).subscribe({
+        next: (response) => {
+          if (response?.success && response.data) {
+            const saved = this.mapBackendEventToUi(response.data);
+            this.eventsSignal.update(events => this.sortEventsByDateDesc(events.map(e => e.id === updated.id ? saved : e)));
+            this.saveEventsToStorage();
+          }
+        },
+        error: (e) => this.showBackendError('Event update failed', e)
+      });
+    }
+  }
+
+  publishEvent(eventId: string): void {
+    const backendId = this.getEventById(eventId)?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return;
+    this.api.publishEvent(backendId).subscribe({
+      next: (response) => this.replaceFromBackendResponse(response.data),
+      error: (e) => console.warn('Backend publish failed.', e)
+    });
+  }
+
+  unpublishEvent(eventId: string): void {
+    const backendId = this.getEventById(eventId)?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return;
+    this.api.unpublishEvent(backendId).subscribe({
+      next: (response) => this.replaceFromBackendResponse(response.data),
+      error: (e) => console.warn('Backend unpublish failed.', e)
+    });
+  }
+
+  async joinEvent(eventId: string, userId: string): Promise<string | null> {
+    const registration = this.getRegistration(eventId, userId);
+    const event = this.getEventById(eventId);
+    if (!registration?.registrationId) {
+      return this.getJoinLinkFromEvent(event);
+    }
+    try {
+      const response = await firstValueFrom(this.api.joinEvent(registration.registrationId).pipe(timeout(3000)));
+      return response?.data?.meetingLink || this.getJoinLinkFromEvent(event);
+    } catch (e) {
+      console.warn('Backend join event failed.', e);
+      return this.getJoinLinkFromEvent(event);
+    }
+  }
+
+  private getJoinLinkFromEvent(event?: CmeEvent): string | null {
+    const candidates = [
+      event?.zohoBackstageLink,
+      event?.paymentLink,
+      event?.venue
+    ];
+    return candidates.find(link => !!link && /^https?:\/\//i.test(link)) || null;
+  }
+
+  async leaveEvent(eventId: string, userId: string): Promise<void> {
+    const registration = this.getRegistration(eventId, userId);
+    if (!registration?.registrationId) return;
+    try {
+      const response = await firstValueFrom(this.api.leaveEvent(registration.registrationId).pipe(timeout(3000)));
+      if (response?.data) {
+        this.applyJoinStatus(response.data);
+      }
+    } catch (e) {
+      console.warn('Backend leave event failed.', e);
+    }
+  }
+
+  async heartbeatEvent(eventId: string, userId: string): Promise<boolean> {
+    const registration = this.getRegistration(eventId, userId);
+    if (!registration?.registrationId) return true;
+    try {
+      const response = await firstValueFrom(this.api.heartbeatEvent(registration.registrationId).pipe(timeout(3000)));
+      if (response?.data) {
+        this.applyJoinStatus(response.data);
+        return true;
+      }
+    } catch (e) {
+      console.warn('Backend heartbeat failed.', e);
+    }
+    return false;
+  }
+
+  async completeEvent(eventId: string, userId: string): Promise<boolean> {
+    const registration = this.getRegistration(eventId, userId);
+    if (!registration?.registrationId) return true;
+    try {
+      const response = await firstValueFrom(this.api.completeEvent(registration.registrationId).pipe(timeout(3000)));
+      if (response?.data) {
+        this.applyJoinStatus(response.data);
+        return response.data.attendanceStatus === 'PRESENT';
+      }
+    } catch (e) {
+      console.warn('Backend complete event failed.', e);
+    }
+    return false;
+  }
+
+  getDocumentDownloadUrl(documentId: number): string {
+    return this.api.getDocumentDownloadUrl(documentId);
+  }
+
+  async loadEventDocuments(eventId: string): Promise<EventDocument[]> {
+    const backendId = this.getEventById(eventId)?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return [];
+    try {
+      const response = await firstValueFrom(this.api.getEventDocuments(backendId));
+      return response?.data || [];
+    } catch (e) {
+      console.warn('Backend document list failed.', e);
+      return [];
+    }
+  }
+
+  notifyRegisteredPeople(eventId: string, subject: string, message: string): void {
+    const backendId = this.getEventById(eventId)?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return;
+    this.api.notifyRegisteredPeople(backendId, { subject, message }).subscribe({
+      error: (e) => console.warn('Backend notification failed.', e)
+    });
+  }
+
+  uploadRecording(eventId: string, recording: File): void {
+    const backendId = this.getEventById(eventId)?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) {
+      console.warn('Recording upload requires a backend event id.');
+      return;
+    }
+    this.api.uploadRecording(backendId, recording).subscribe({
+      next: (response) => this.replaceFromBackendResponse(response.data),
+      error: (e) => console.warn('Backend recording upload failed.', e)
+    });
+  }
+
+  getRecordingDownloadUrl(event: CmeEvent): string | null {
+    if (!this.isRecordingAvailable(event)) {
+      return null;
+    }
+    const backendId = event.backendId ?? this.toBackendId(event.id);
+    if (event.recordingUrl && /^https?:\/\//i.test(event.recordingUrl)) {
+      return event.recordingUrl;
+    }
+    if (event.recordingDownloadUrl && /^https?:\/\//i.test(event.recordingDownloadUrl)) {
+      return event.recordingDownloadUrl;
+    }
+    return backendId && event.recordingDownloadUrl ? this.api.getRecordingDownloadUrl(backendId) : null;
+  }
+
+  isRecordingAvailable(event: CmeEvent): boolean {
+    const hasRecording = Boolean(event.recordingUrl || event.recordingDownloadUrl);
+    if (!hasRecording) {
+      return false;
+    }
+    if (event.recordingAvailable === false) {
+      return false;
+    }
+    return this.getEventTimestamp(event) <= Date.now();
   }
 
   getWhatsAppShareUrl(event: CmeEvent): string {
@@ -874,5 +1187,291 @@ export class EventService {
 
   getSeatsLeft(event: CmeEvent): number {
     return Math.max(0, event.maxSeats - event.registeredCount);
+  }
+
+  private replaceFromBackendResponse(event?: BackendEventResponse): void {
+    if (!event) return;
+    const mapped = this.mapBackendEventToUi(event);
+    this.eventsSignal.update(events => this.sortEventsByDateDesc(events.map(e => e.id === mapped.id ? mapped : e)));
+    this.saveEventsToStorage();
+  }
+
+  private sortEventsByDateDesc(events: CmeEvent[]): CmeEvent[] {
+    return [...events].sort((a, b) => this.getEventTimestamp(b) - this.getEventTimestamp(a));
+  }
+
+  private getEventTimestamp(event: CmeEvent): number {
+    const dateMatch = (event.date || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dateMatch) {
+      const timeMatch = (event.time || '').match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      let hour = timeMatch ? Number(timeMatch[1]) : 0;
+      const minute = timeMatch ? Number(timeMatch[2]) : 0;
+      const meridiem = timeMatch?.[3]?.toUpperCase();
+      if (meridiem === 'PM' && hour < 12) hour += 12;
+      if (meridiem === 'AM' && hour === 12) hour = 0;
+      const value = new Date(
+        Number(dateMatch[1]),
+        Number(dateMatch[2]) - 1,
+        Number(dateMatch[3]),
+        hour,
+        minute
+      ).getTime();
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    const value = new Date(`${event.date} ${event.time || ''}`).getTime();
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  private isFutureEvent(event: CmeEvent): boolean {
+    const timestamp = this.getEventTimestamp(event);
+    return timestamp > 0 && timestamp >= Date.now();
+  }
+
+  private isPastEvent(event: CmeEvent): boolean {
+    const timestamp = this.getEventTimestamp(event);
+    return timestamp > 0 && timestamp < Date.now();
+  }
+
+  private refreshEventFromBackend(eventId: string): void {
+    const backendId = this.getEventById(eventId)?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return;
+    this.api.getEventById(backendId).subscribe({
+      next: (response) => this.replaceFromBackendResponse(response.data),
+      error: (e) => console.warn('Backend event refresh failed.', e)
+    });
+  }
+
+  private mergeRegistrations(registrations: EventRegistration[]): void {
+    this.registrationsSignal.update(list => {
+      const next = [...list];
+      for (const reg of registrations) {
+        const index = next.findIndex(existing =>
+          (reg.registrationId && existing.registrationId === reg.registrationId) ||
+          (existing.eventId === reg.eventId && existing.userId === reg.userId)
+        );
+        if (index >= 0) {
+          const existing = next[index];
+          next[index] = {
+            ...existing,
+            ...reg,
+            attended: reg.attended || existing.attended,
+            attendanceStatus: reg.attendanceStatus || existing.attendanceStatus,
+            attendedAt: reg.attendedAt || existing.attendedAt,
+            certificateIssued: reg.certificateIssued || existing.certificateIssued
+          };
+        } else {
+          next.push(reg);
+        }
+      }
+      return next;
+    });
+    this.saveRegistrationsToStorage();
+  }
+
+  private applyBackendAttendance(attendance: BackendEventAttendanceResponse[]): void {
+    this.registrationsSignal.update(list => list.map(reg => {
+      const found = attendance.find(a => a.registrationId === reg.registrationId);
+      if (!found) return reg;
+      return {
+        ...reg,
+        attended: found.status === 'PRESENT',
+        attendanceStatus: found.status,
+        attendedAt: found.markedAt || reg.attendedAt,
+        certificateIssued: found.status === 'ABSENT' ? false : Boolean(found.certificateIssued || reg.certificateIssued)
+      };
+    }));
+    this.saveRegistrationsToStorage();
+  }
+
+  private applyJoinStatus(status: { registrationId: number; attendanceStatus: string; joinedAt?: string; leftAt?: string; lastSeenAt?: string; completedAt?: string; minutesAttended?: number }): void {
+    this.registrationsSignal.update(list => list.map(reg => {
+      if (reg.registrationId !== status.registrationId) return reg;
+      return {
+        ...reg,
+        attended: status.attendanceStatus === 'PRESENT',
+        attendanceStatus: status.attendanceStatus as EventRegistration['attendanceStatus'],
+        attendedAt: status.completedAt || status.leftAt || status.joinedAt || reg.attendedAt,
+        certificateIssued: status.attendanceStatus === 'ABSENT' ? false : reg.certificateIssued
+      };
+    }));
+    this.saveRegistrationsToStorage();
+  }
+
+  private mapBackendRegistrationToUi(reg: BackendEventRegistrationResponse, fallbackUserId?: string): EventRegistration {
+    return {
+      registrationId: reg.registrationId,
+      eventId: String(reg.eventId),
+      backendEventId: reg.eventId,
+      userId: fallbackUserId || String(reg.doctorProfileId),
+      userName: reg.fullName,
+      userEmail: reg.email,
+      userPhone: reg.mobileNumber,
+      registeredAt: new Date().toISOString(),
+      paymentStatus: reg.totalAmount > 0 ? 'paid' : 'free',
+      attended: false,
+      attendanceStatus: 'PENDING',
+      certificateIssued: false,
+      meetingLink: reg.meetingLink,
+      totalAmount: Number(reg.totalAmount || 0)
+    };
+  }
+
+  private mapBackendEventToUi(event: BackendEventResponse): CmeEvent {
+    const datePart = this.toDatePart(event.eventDate);
+    const timePart = this.toDisplayTime(event.eventTime || event.eventDate);
+    const status = event.status === 'COMPLETED' ? 'completed' : event.status === 'CANCELLED' ? 'completed' : 'upcoming';
+    return {
+      id: String(event.id),
+      backendId: event.id,
+      title: event.title,
+      description: event.description || '',
+      date: datePart,
+      time: timePart,
+      venue: event.joinLink || event.zohoBackstageLink || (event.mode === 'ONLINE' ? 'Online' : 'TBD'),
+      mode: this.toUiMode(event.mode),
+      speaker: event.speakerName || '',
+      speakerEmail: event.speakerEmail || '',
+      speakerRole: event.speakerRole || '',
+      category: this.toUiCategory(event.category),
+      creditPoints: Number(event.cmeCreditPoints || 0),
+      price: Number(event.registrationFee || 0),
+      maxSeats: event.maxSeats || 100,
+      registeredCount: Number(event.enrolledCount || 0),
+      presentCount: Number(event.presentCount || 0),
+      absentCount: Number(event.absentCount || 0),
+      certificateIssuedCount: Number(event.certificateIssuedCount || 0),
+      hostId: 'admin_001',
+      hostName: 'Dr. Administrator (Chief CME Director)',
+      paymentLink: event.joinLink || event.zohoBackstageLink || `https://medcme.org/pay/${event.id}`,
+      status,
+      publicationStatus: event.status,
+      bannerColor: event.cardAccentColor || '#bae6fd',
+      language: 'English',
+      preRead: event.documents?.[0]?.fileName || 'ACLS_Standard_Protocols_Guideline.pdf',
+      zohoBackstageLink: event.zohoBackstageLink || '',
+      streamEmbedUrl: event.streamEmbedUrl || '',
+      recordingFileName: event.recordingFileName,
+      recordingContentType: event.recordingContentType,
+      recordingFileSize: event.recordingFileSize,
+      recordingPublishedAt: event.recordingPublishedAt,
+      recordingAvailable: event.recordingAvailable,
+      recordingUrl: event.recordingUrl,
+      recordingDownloadUrl: event.recordingDownloadUrl,
+      documents: event.documents || []
+    };
+  }
+
+  private mapUiEventToBackendRequest(event: CmeEvent): BackendEventRequest {
+    const eventDateTime = this.combineDateAndTime(event.date, event.time);
+    const eventEndDateTime = this.addMinutesToDateTime(eventDateTime, 60);
+    return {
+      speakerName: event.speaker,
+      speakerEmail: event.speakerEmail,
+      speakerRole: event.speakerRole,
+      title: event.title,
+      description: event.description,
+      eventDate: eventDateTime,
+      eventTime: eventEndDateTime,
+      joinLink: event.mode === 'Online' ? event.zohoBackstageLink || event.paymentLink : undefined,
+      zohoBackstageLink: event.zohoBackstageLink || '',
+      streamEmbedUrl: event.streamEmbedUrl || '',
+      liveProvider: event.mode === 'Offline' ? 'NONE' : 'ZOHO_WEBINAR',
+      createProviderRoom: event.mode !== 'Offline',
+      mode: this.toBackendMode(event.mode),
+      category: this.toBackendCategory(event.category),
+      mandatory: false,
+      cmeCreditPoints: event.creditPoints,
+      registrationFee: event.price,
+      maxSeats: event.maxSeats,
+      cardAccentColor: event.bannerColor
+    };
+  }
+
+  private toBackendId(id: string): number | null {
+    const numeric = Number(id.replace('evt-', ''));
+    return Number.isInteger(numeric) && numeric > 0 && numeric < 1000000000 ? numeric : null;
+  }
+
+  private toUiMode(mode: string): 'Online' | 'Offline' | 'Hybrid' {
+    if (mode === 'OFFLINE') return 'Offline';
+    if (mode === 'HYBRID') return 'Hybrid';
+    return 'Online';
+  }
+
+  private toBackendMode(mode: string): 'ONLINE' | 'OFFLINE' | 'HYBRID' {
+    if (mode === 'Offline') return 'OFFLINE';
+    if (mode === 'Hybrid') return 'HYBRID';
+    return 'ONLINE';
+  }
+
+  private toUiCategory(category: string): string {
+    if (category === 'GeneralMedicine') return 'General Medicine';
+    if (category === 'Endrocrinology') return 'Endocrinology';
+    return category || 'General Medicine';
+  }
+
+  private toBackendCategory(category: string): string {
+    const normalized = (category || '').replace(/\s+/g, '').toLowerCase();
+    if (normalized === 'generalmedicine') return 'GeneralMedicine';
+    if (normalized === 'endocrinology') return 'Endrocrinology';
+    const allowed: Record<string, string> = {
+      cardiology: 'Cardiology',
+      pediatrics: 'Pediatrics',
+      neurology: 'Neurology',
+      surgery: 'Surgery',
+      oncology: 'Oncology',
+      psychiatry: 'Psychiatry'
+    };
+    return allowed[normalized] || 'GeneralMedicine';
+  }
+
+  private toDatePart(value: string): string {
+    return value ? value.split('T')[0] : new Date().toISOString().split('T')[0];
+  }
+
+  private toDisplayTime(value: string): string {
+    if (!value) return '10:00 AM IST';
+    const time = value.includes('T') ? value.split('T')[1] : value;
+    const [hourRaw, minute = '00'] = time.split(':');
+    const hour = Number(hourRaw);
+    if (!Number.isFinite(hour)) return '10:00 AM IST';
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minute.padStart(2, '0')} ${suffix} IST`;
+  }
+
+  private combineDateAndTime(date: string, time: string): string {
+    const cleanDate = date || new Date().toISOString().split('T')[0];
+    const match = (time || '').match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (!match) return `${cleanDate}T10:00:00`;
+    let hour = Number(match[1]);
+    const minute = match[2];
+    const meridiem = match[3]?.toUpperCase();
+    if (meridiem === 'PM' && hour < 12) hour += 12;
+    if (meridiem === 'AM' && hour === 12) hour = 0;
+      return `${cleanDate}T${String(hour).padStart(2, '0')}:${minute}:00`;
+    }
+
+  private addMinutesToDateTime(dateTime: string, minutesToAdd: number): string {
+    const value = new Date(dateTime);
+    if (!Number.isFinite(value.getTime())) {
+      return dateTime;
+    }
+    value.setMinutes(value.getMinutes() + minutesToAdd);
+    const yyyy = value.getFullYear();
+    const mm = String(value.getMonth() + 1).padStart(2, '0');
+    const dd = String(value.getDate()).padStart(2, '0');
+    const hh = String(value.getHours()).padStart(2, '0');
+    const min = String(value.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}:00`;
+  }
+
+  private showBackendError(prefix: string, error: any): void {
+    const message = error?.error?.message || error?.message || 'Please try again.';
+    console.warn(prefix, error);
+    if (typeof window !== 'undefined') {
+      alert(`${prefix}: ${message}`);
+    }
   }
 }

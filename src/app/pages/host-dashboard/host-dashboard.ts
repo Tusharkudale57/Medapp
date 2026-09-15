@@ -20,6 +20,8 @@ export class HostDashboardComponent implements OnInit {
   editingEventId: string | null = null;
   showAttendanceModal = false;
   selectedEventForAttendance: CmeEvent | null = null;
+  showEventDetailModal = false;
+  selectedEventForDetail: CmeEvent | null = null;
   copiedEventId = '';
   copiedCourseId = '';
   certIssuedMsg = '';
@@ -39,6 +41,7 @@ export class HostDashboardComponent implements OnInit {
   newVenue = '';
   newMode: 'Online' | 'Offline' | 'Hybrid' = 'Online';
   newSpeaker = '';
+  newSpeakerEmail = '';
   newSpeakerRole = '';
   newCategory = 'Cardiology';
   newCreditPoints = 1;
@@ -47,6 +50,8 @@ export class HostDashboardComponent implements OnInit {
   newBannerColor = '#0ea5e9';
   newPreRead = '';
   newZohoLink = '';
+  newStreamEmbedUrl = '';
+  selectedRecordingFiles: { [eventId: string]: File | undefined } = {};
   uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
 
   onFileSelected(event: any) {
@@ -167,6 +172,16 @@ export class HostDashboardComponent implements OnInit {
   }
 
   // --- Create & Edit Event -----------------------------------------------------------
+  openEventDetails(event: CmeEvent) {
+    this.selectedEventForDetail = event;
+    this.showEventDetailModal = true;
+  }
+
+  closeEventDetails() {
+    this.showEventDetailModal = false;
+    this.selectedEventForDetail = null;
+  }
+
   openCreateModal() {
     this.editingEventId = null;
     this.resetForm();
@@ -182,6 +197,7 @@ export class HostDashboardComponent implements OnInit {
     this.newVenue = event.venue || '';
     this.newMode = event.mode || 'Online';
     this.newSpeaker = event.speaker || '';
+    this.newSpeakerEmail = event.speakerEmail || '';
     this.newSpeakerRole = event.speakerRole || '';
     this.newCategory = event.category || 'Cardiology';
     this.newCreditPoints = event.creditPoints || 1;
@@ -190,6 +206,7 @@ export class HostDashboardComponent implements OnInit {
     this.newBannerColor = event.bannerColor || '#0ea5e9';
     this.newPreRead = event.preRead || '';
     this.newZohoLink = event.zohoBackstageLink || '';
+    this.newStreamEmbedUrl = event.streamEmbedUrl || '';
     if (event.preRead) {
       this.uploadedFiles = [{ name: event.preRead, size: 'N/A', status: 'uploaded' }];
     } else {
@@ -203,8 +220,20 @@ export class HostDashboardComponent implements OnInit {
     this.editingEventId = null;
   }
 
+  canSaveEvent(): boolean {
+    return Boolean(
+      this.newTitle.trim() &&
+      this.newDate &&
+      this.newVenue.trim() &&
+      this.hasValidSpeakerFields()
+    );
+  }
+
   saveEvent() {
-    if (!this.newTitle.trim() || !this.newDate || !this.newVenue.trim()) return;
+    if (!this.canSaveEvent()) {
+      this.showSpeakerValidationMessage();
+      return;
+    }
     const user = this.authService.currentUser();
     if (!user) return;
 
@@ -220,6 +249,7 @@ export class HostDashboardComponent implements OnInit {
           venue: this.newVenue,
           mode: this.newMode,
           speaker: this.newSpeaker,
+          speakerEmail: this.newSpeakerEmail,
           speakerRole: this.newSpeakerRole,
           category: this.newCategory,
           creditPoints: this.newCreditPoints,
@@ -227,7 +257,8 @@ export class HostDashboardComponent implements OnInit {
           maxSeats: this.newMaxSeats,
           bannerColor: this.newBannerColor,
           preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-          zohoBackstageLink: this.newZohoLink
+          zohoBackstageLink: this.newZohoLink,
+          streamEmbedUrl: this.newStreamEmbedUrl
         });
       }
       this.editingEventId = null;
@@ -240,6 +271,7 @@ export class HostDashboardComponent implements OnInit {
         venue: this.newVenue,
         mode: this.newMode,
         speaker: this.newSpeaker,
+        speakerEmail: this.newSpeakerEmail,
         speakerRole: this.newSpeakerRole,
         category: this.newCategory,
         creditPoints: this.newCreditPoints,
@@ -247,10 +279,21 @@ export class HostDashboardComponent implements OnInit {
         maxSeats: this.newMaxSeats,
         bannerColor: this.newBannerColor,
         preRead: this.newPreRead || 'ACLS_Standard_Protocols_Guideline.pdf',
-        zohoBackstageLink: this.newZohoLink
+        zohoBackstageLink: this.newZohoLink,
+        streamEmbedUrl: this.newStreamEmbedUrl
       }, user.id, user.name);
     }
     this.showCreateModal = false;
+  }
+
+  private hasValidSpeakerFields(): boolean {
+    return Boolean(this.newSpeaker.trim()) === Boolean(this.newSpeakerEmail.trim());
+  }
+
+  private showSpeakerValidationMessage() {
+    if (!this.hasValidSpeakerFields()) {
+      alert('Enter both Speaker Name and Speaker Email, or leave both blank.');
+    }
   }
 
   deleteEvent(eventId: string) {
@@ -266,6 +309,32 @@ export class HostDashboardComponent implements OnInit {
     this.certIssuedMsg = '';
     this.absentMsg = '';
     this.presentMsg = '';
+    this.eventService.syncEventRegistrationsFromBackend(event.id).then(() => {
+      this.eventService.syncAttendanceFromBackend(event.id);
+    });
+  }
+
+  onRecordingSelected(eventId: string, event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.selectedRecordingFiles[eventId] = input.files?.[0];
+  }
+
+  uploadRecording(eventId: string) {
+    const recording = this.selectedRecordingFiles[eventId];
+    if (!recording) {
+      alert('Please choose a recording file first.');
+      return;
+    }
+    this.eventService.uploadRecording(eventId, recording);
+    this.selectedRecordingFiles[eventId] = undefined;
+  }
+
+  getRecordingDownloadUrl(event: CmeEvent): string | null {
+    return this.eventService.getRecordingDownloadUrl(event);
+  }
+
+  isRecordingAvailable(event: CmeEvent): boolean {
+    return this.eventService.isRecordingAvailable(event);
   }
 
   closeAttendanceModal() {
@@ -449,6 +518,7 @@ export class HostDashboardComponent implements OnInit {
     this.newVenue = '';
     this.newMode = 'Online';
     this.newSpeaker = '';
+    this.newSpeakerEmail = '';
     this.newSpeakerRole = '';
     this.newCategory = 'Cardiology';
     this.newCreditPoints = 1;
@@ -457,6 +527,7 @@ export class HostDashboardComponent implements OnInit {
     this.newBannerColor = '#0ea5e9';
     this.newPreRead = '';
     this.newZohoLink = '';
+    this.newStreamEmbedUrl = '';
     this.uploadedFiles = [];
   }
 }
