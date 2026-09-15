@@ -71,8 +71,8 @@ export class EmailService {
       const templateParams = {
         to_email: toEmail,
         otp_code: otpCode,
-        app_name: 'MedCME Academy',
-        subject: 'Your MedCME Verification Code'
+        app_name: 'All India CME',
+        subject: 'Your All India CME Verification Code'
       };
 
       const response = await emailjs.send(this.serviceId, this.templateId, templateParams);

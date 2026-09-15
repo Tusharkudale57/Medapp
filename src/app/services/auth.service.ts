@@ -12,10 +12,56 @@ export class AuthService {
 
   private currentUserSignal = signal<UserProfile | null>(null);
   public currentUser = computed(() => this.currentUserSignal());
-
+  
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
-
+  public user: UserProfile = {
+    id: '',
+    name: '',
+    sirName: '',
+    email: '',
+    phone: '',
+    specialty: '',
+    registrationNo: '',
+    creditPoints: 0,
+    purchasedCourseIds: [''],
+    completedCourseIds: [''],
+    certificates: [
+      {
+        id: '',
+        courseId: '',
+        courseTitle: '',
+        issueDate: '',
+        creditPoints: 0,
+        recipientName: '',
+        verificationCode: '',
+        issuer: ''
+      },
+      {
+        id: '',
+        courseId: '',
+        courseTitle: '',
+        issueDate: '',
+        creditPoints: 0,
+        recipientName: '',
+        verificationCode: '',
+        issuer: ''
+      }
+    ],
+    role: 'doctor',
+    city: '',
+    interests: [''],
+    gender: '',
+    dob: '',
+    designation: '',
+    department: '',
+    qualification: '',
+    hospital: '',
+    experience: 0,
+    language: '',
+    emailConsent: false,
+    whatsappConsent: false
+  };
   // Static Pre-defined Accounts
   public staticDoctorAccount: UserProfile = {
     id: 'doc_101',
@@ -69,7 +115,7 @@ export class AuthService {
     id: 'admin_001',
     name: 'Dr. Administrator (Chief CME Director)',
     sirName: 'Director',
-    email: 'admin@medcme.org',
+    email: 'admin@medcme',
     phone: '9999999999',
     specialty: 'General Medicine',
     registrationNo: 'ADMIN-DIRECTOR-01',
@@ -117,8 +163,12 @@ export class AuthService {
           next: (res) => {
             if (res?.success && res?.data) {
               const freshUser = this.mapBackendProfileToUser(res.data);
+              console.log("The freshUser is ========",freshUser);
               const stored = this.currentUserSignal();
+              console.log("The current stored user is ",stored);
               const merged = { ...freshUser, role: stored?.role || 'doctor' };
+              this.user=merged;
+              console.log("The merged user is ",merged);
               this.currentUserSignal.set(merged);
               this.saveUserToStorage(merged);
             }
@@ -134,16 +184,31 @@ export class AuthService {
   private saveUserToStorage(user: UserProfile | null) {
     if (!this.isBrowser) return;
     if (user) {
-      localStorage.setItem('medcme_user', JSON.stringify(user));
+      // Store ONLY required basic fields in session storage
+      const basicUser: UserProfile = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        specialty: user.specialty || '',
+        registrationNo: user.registrationNo || '',
+        creditPoints: user.creditPoints || 0,
+        purchasedCourseIds: [],
+        completedCourseIds: [],
+        certificates: []
+      };
+      localStorage.setItem('medcme_user', JSON.stringify(basicUser));
     } else {
       localStorage.removeItem('medcme_user');
+      localStorage.removeItem('medcme_jwt_token');
     }
   }
 
   checkUserExists(idOrMobile: string): boolean {
     const clean = idOrMobile.trim().toLowerCase();
     // Admin is always considered present
-    if (clean === 'admin@medcme.org' || clean === '9999999999' || clean === 'admin') {
+    if (clean === 'admin@medcme' || clean === 'admin@medcme.org' || clean === '9999999999' || clean === 'admin') {
       return true;
     }
     // Check doctor accounts
@@ -243,12 +308,8 @@ export class AuthService {
     const payload = { email: clean };
     const headers = { 'Content-Type': 'application/json' };
     return this.http.post<any>('/api/auth/login/send-otp', payload, { headers }).pipe(
-      catchError((err) => {
-        if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}/api/auth/login/send-otp`, payload, { headers });
-        }
-        return throwError(() => err);
-      })
+      timeout(2000),
+      catchError((err) => throwError(() => err))
     );
   }
 
@@ -262,21 +323,26 @@ export class AuthService {
     payload.email = clean;
     const headers = { 'Content-Type': 'application/json' };
     return this.http.post<any>('/api/auth/verify-otp', payload, { headers }).pipe(
-      catchError((err) => {
-        if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}/api/auth/verify-otp`, payload, { headers });
-        }
-        return throwError(() => err);
-      })
+      timeout(2000),
+      catchError((err) => throwError(() => err))
     );
   }
 
   /** Fetch Doctor Profile from Backend API (GET /api/profile/get-my-profile) */
   fetchProfileBackend(): Observable<any> {
+    console.log("**** calling fetchprofile backend");
     const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    const url = this.getEndpoint('/api/profile/get-my-profile');
-    return this.http.get<any>(url, { headers });
+    // const url = this.getEndpoint('/api/profile/get-my-profile');
+    // return this.http.get<any>(url, { headers });
+    return this.http.get<any>('/api/profile/get-my-profile', { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}/api/profile/get-my-profile`, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   /** Update Doctor Profile on Backend API (PUT /api/profile/update-my-profile) */
@@ -287,7 +353,7 @@ export class AuthService {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     };
 
-    const rawName = (user.name || '').replace(/^Dr\.\s*/i, '').trim();
+    const rawName = (user.name || '').replace(/^(?:dr\.)\s*/i, '').trim();
     const nameParts = rawName.split(' ');
     const firstName = nameParts[0] || '';
     const lastName = user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
@@ -312,14 +378,23 @@ export class AuthService {
       yearsOfExperience: user.experience || 0,
       clinicAddress: user.clinicAddress || '',
       practicingInterest: user.practicingInterest || (user.interests ? user.interests.join(', ') : ''),
+      cmeInterests:user.interests,
       emailOptIn: user.emailConsent ?? true,
       whatsappOptIn: user.whatsappConsent ?? true,
       termsAccepted: true,
       passwordConfirmed: true
     };
 
-    const url = this.getEndpoint('/api/profile/update-my-profile');
-    return this.http.put<any>(url, payload, { headers });
+    // const url = this.getEndpoint('/api/profile/update-my-profile');
+    // return this.http.put<any>(url, payload, { headers });
+     return this.http.put<any>('api/profile/update-my-profile',payload, { headers }).pipe(
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 0) {
+          return this.http.post<any>(`${this.backendUrl}api/profile/update-my-profile`,payload, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   /** Map backend JSON profile to frontend UserProfile model */
@@ -327,8 +402,10 @@ export class AuthService {
     const firstName = bp.firstName || '';
     const middleName = bp.middleName ? bp.middleName.trim() + ' ' : '';
     const lastName = bp.lastName || '';
-    const fullName = bp.fullName || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
+    const fullName = bp.name || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
+    
 
+    console.log("The bp from the mapBackendProfileToUser @@@@@",bp);
     return {
       id: String(bp.id || 'doc_' + Date.now()),
       name: fullName,
@@ -361,10 +438,14 @@ export class AuthService {
     };
   }
 
+   
   /** Set backend authenticated user session & token */
   loginWithBackendUser(profile: any, token: string) {
-    const user = this.mapBackendProfileToUser(profile);
+    console.log("Inside loginWithBackendUSer  $$$$$$");
+    const user = profile;
+    console.log("The user inside loginWithBackenuser is ----",user);
     this.currentUserSignal.set(user);
+    console.log("The seted current user signal is ",this.currentUserSignal());
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {
       localStorage.setItem('medcme_jwt_token', token);
@@ -395,7 +476,7 @@ export class AuthService {
       id: String(adminProfile.id || 'admin_001'),
       name: adminProfile.fullName || adminProfile.name || 'Dr. Administrator (Chief CME Director)',
       sirName: adminProfile.lastName || adminProfile.sirName || 'Director',
-      email: adminProfile.email || adminProfile.username || 'admin@medcme.org',
+      email: adminProfile.email || adminProfile.username || 'admin@medcme',
       phone: adminProfile.mobileNumber || adminProfile.phone || '9999999999',
       specialty: adminProfile.specialty || 'General Medicine',
       registrationNo: adminProfile.medicalRegistrationNo || 'ADMIN-DIRECTOR-01',
@@ -431,10 +512,31 @@ export class AuthService {
 
     // Dynamic accounts check
     const list = this.usersSignal();
-    const matched = list.find(u => u.email.toLowerCase() === cleanId || u.phone === cleanId);
+    const matched = list.find(u => u && (u.email.toLowerCase() === cleanId || u.phone === cleanId));
     if (matched && (cleanPass.length >= 4)) {
       this.currentUserSignal.set(matched);
       this.saveUserToStorage(matched);
+      return { success: true };
+    }
+
+    // If OTP code is entered (4+ digits), log in with basic doctor profile
+    if (cleanPass.length >= 4 && cleanId) {
+      const isEmail = cleanId.includes('@');
+      const newUser: UserProfile = {
+        id: 'doc_' + Date.now(),
+        name: isEmail ? 'Dr. ' + cleanId.split('@')[0] : 'Dr. User',
+        email: isEmail ? cleanId : '',
+        phone: !isEmail ? cleanId : '',
+        role: 'doctor',
+        specialty: 'General Medicine',
+        registrationNo: 'MCI-2026-' + Math.floor(10000 + Math.random() * 90000),
+        creditPoints: 0,
+        purchasedCourseIds: [],
+        completedCourseIds: [],
+        certificates: []
+      };
+      this.currentUserSignal.set(newUser);
+      this.saveUserToStorage(newUser);
       return { success: true };
     }
 
@@ -446,7 +548,7 @@ export class AuthService {
     const cleanId = idOrMobile.trim().toLowerCase();
     const cleanPass = passOrOtp.trim();
 
-    if ((cleanId === 'admin@medcme.org' || cleanId === '9999999999' || cleanId.includes('admin')) &&
+    if ((cleanId === 'admin@medcme' || cleanId === 'admin@medcme.org' || cleanId === '9999999999' || cleanId.includes('admin')) &&
         (cleanPass === 'admin123' || cleanPass === '999999' || cleanPass.length >= 4)) {
       
       const admin = { ...this.staticAdminAccount };

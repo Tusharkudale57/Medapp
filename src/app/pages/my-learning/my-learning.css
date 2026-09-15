@@ -8,11 +8,30 @@
   flex-direction: column;
 }
 
-/* ===== MedCME BRAND NAVBAR (LIGHT THEMED) ===== */
+/* ===== COVELIS TOP BAR (Sony-style) ===== */
+.covelis-topbar {
+  background: linear-gradient(90deg, #1a237e 0%, #1565c0 100%);
+  height: 34px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.covelis-topbar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.covelis-tagline { font-size: 0.68rem; color: rgba(255,255,255,0.55); font-weight: 400; letter-spacing: 0.03em; }
+.covelis-brand { font-size: 0.72rem; color: rgba(255,255,255,0.7); font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase; }
+.covelis-brand strong { font-size: 0.82rem; font-weight: 800; color: #f5c518; letter-spacing: 0.14em; font-family: 'Inter', 'Segoe UI', sans-serif; text-shadow: 0 0 12px rgba(245,197,24,0.4); }
+
+/* ===== Covelis BRAND NAVBAR (LIGHT THEMED) ===== */
 .dash-navbar {
   background-color: #ffffff;
-  border-bottom: 1px solid #cbd5e1;
-  padding: 0 2rem;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -22,6 +41,7 @@
 .dash-navbar .nav-inner {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   height: 68px;
   display: flex;
   align-items: center;
@@ -660,98 +680,6 @@
   color: #ffffff;
 }
 
-/* ===== TABLE FOR COMPLETED RECORDS ===== */
-.completed-list-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background-color: #ffffff;
-}
-
-.completed-items-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.88rem;
-}
-
-.completed-items-table th, 
-.completed-items-table td {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.completed-items-table th {
-  background-color: #f9fafb;
-  font-weight: 700;
-  color: #374151;
-}
-
-.completed-items-table tr:last-child td {
-  border-bottom: none;
-}
-
-.type-pill {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-}
-
-.type-pill.course-pill {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.type-pill.event-pill {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.completed-title-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.completed-title-col strong {
-  color: #111827;
-  font-size: 0.92rem;
-}
-
-.completed-title-col span {
-  font-size: 0.78rem;
-  color: #6b7280;
-}
-
-.credit-color {
-  color: #385723;
-  font-weight: 700;
-}
-
-.status-success {
-  color: #16a34a;
-  font-weight: 700;
-}
-
-.btn-table-action {
-  background: none;
-  border: 1px solid #d1d5db;
-  padding: 0.4rem 0.85rem;
-  border-radius: 4px;
-  font-weight: 600;
-  color: #4b5563;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.8rem;
-}
-
-.btn-table-action:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-}
-
 /* ===== CERTIFICATES GRID ===== */
 .certificates-grid {
   display: grid;
@@ -919,13 +847,19 @@
 }
 
 .btn-empty-primary {
-  background-color: #0056D2;
-  border: 1px solid #0056D2;
+  width: min(228px, 100%);
+  min-height: 49px;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 7px;
+  background-color: #075bd3;
   color: #ffffff;
+  font-size: 1.1rem;
+  line-height: 1.2;
 }
 
 .btn-empty-primary:hover {
-  background-color: #00419e;
+  background-color: #004bb8;
 }
 
 .btn-empty-secondary {

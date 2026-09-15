@@ -2,12 +2,18 @@
 
   <!-- ==================== HEADER ==================== -->
   <header class="main-header">
+    <!-- Covelis Top Bar (Sony-style) -->
+    <div class="covelis-topbar">
+      <div class="covelis-topbar-inner">
+        <span class="covelis-tagline">India's Official MMC &amp; NMC Accredited CME Platform</span>
+        <span class="covelis-brand">powered by <strong>COVELIS</strong></span>
+      </div>
+    </div>
     <div class="header-inner">
 
       <!-- Logo -->
-      <div class="logo-wrapper" (click)="selectExploreOption('All')">
-        <img src="assets/logo.png" alt="MedCME Academy Logo" class="header-logo" />
-        <span class="logo-text">MedCME Academy</span>
+      <div class="logo-wrapper" (click)="selectExploreOption('All')" style="cursor: pointer; display: flex; align-items: center;">
+        <img src="assets/logo.png" alt="All India CME Logo" style="height: 34px; width: auto; object-fit: contain;" />
       </div>
 
       <!-- Explore Dropdown -->
@@ -26,13 +32,13 @@
       </div>
 
       <!-- Global Search Bar -->
-      <div class="search-bar-wrapper">
+      <!-- <div class="search-bar-wrapper">
         <div class="search-input-container">
           <span class="search-icon">🔍</span>
           <input type="text" [(ngModel)]="searchQuery" placeholder="Search CME events, topics, speakers..." />
           <button class="btn-search-trigger">Search</button>
         </div>
-      </div>
+      </div> -->
 
       <!-- Header Navigation Actions -->
       <div class="header-actions">
@@ -142,7 +148,8 @@
       <div class="events-grid">
         <div class="event-card animate-fade-in" *ngFor="let event of visibleEvents">
           <div class="card-image-wrapper">
-            <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img" (error)="onImgError($event, event.category, event.title)" />
+            <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img"
+              (error)="onImgError($event, event.category, event.title)" />
             <div class="event-poster-overlay"></div>
             <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'"
               [class.hybrid]="event.mode === 'Hybrid'">
@@ -187,11 +194,11 @@
         style="text-align: center; margin-top: 2rem;">
         <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()"
           style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
-          Show More ({{ filteredEvents.length - eventsLimit }} remaining) 📂
+          Show More ({{ filteredEvents.length - eventsLimit }} remaining) 
         </button>
         <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()"
           style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Show Less ↩️
+          Show Less 
         </button>
       </div>
 
@@ -208,7 +215,8 @@
       <div class="courses-grid">
         <div class="course-card" *ngFor="let course of visibleCourses">
           <div class="course-thumb-wrapper">
-            <img [src]="getCoursePoster(course)" [alt]="course.title" class="course-thumbnail" (error)="onImgError($event, course.category, course.title)" />
+            <img [src]="getCoursePoster(course)" [alt]="course.title" class="course-thumbnail"
+              (error)="onImgError($event, course.category, course.title)" />
             <div class="course-poster-overlay"></div>
             <span class="course-category-tag">{{ course.category }}</span>
           </div>
@@ -239,48 +247,32 @@
       <div *ngIf="filteredCourses.length > 3" style="text-align: center; margin-top: 2rem;">
         <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()"
           style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
-          Show More ({{ filteredCourses.length - coursesLimit }} remaining) 📚
+          Show More ({{ filteredCourses.length - coursesLimit }} remaining) 
         </button>
         <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()"
           style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Show Less ↩️
+          Show Less 
         </button>
       </div>
     </div>
   </section>
 
-  <!-- ==================== BENEFITS BANNER ==================== -->
-  <section class="benefits-banner">
-    <div class="section-container">
-      <div class="benefits-grid">
-        <div class="benefit-item">
-          <div class="benefit-icon">📅</div>
-          <h3>Stay Updated</h3>
-          <p>Never miss an important CME event or certificate submission deadline.</p>
+
+
+  <!-- ==================== SONY-STYLE COVELIS FOOTER ==================== -->
+  <footer class="covelis-pro-footer">
+    <div class="footer-container">
+
+      <div class="footer-brand-section">
+        <div class="footer-brand-logo">
+          <img src="assets/logo-light.png" alt="All India CME Logo" style="height: 36px; width: auto; object-fit: contain; margin-bottom: 0.35rem;" />
         </div>
-        <div class="benefit-item">
-          <div class="benefit-icon">🏅</div>
-          <h3>Earn CME Credits</h3>
-          <p>Enhance your medical knowledge and officially log verified state board credits.</p>
-        </div>
-        <div class="benefit-item">
-          <div class="benefit-icon">🎓</div>
-          <h3>Get Certified</h3>
-          <p>Receive digital gold-stamped certificates instantly upon completing courses.</p>
-        </div>
-        <div class="benefit-item">
-          <div class="benefit-icon">🚀</div>
-          <h3>Grow Professionally</h3>
-          <p>Advance your medical career with specialized curriculum and clinical skillsets.</p>
+
+        <div class="footer-copyright-text">
+          &copy; 2026 Covelis | A Venture of Covelis Health Tech LLP | All Rights Reserved | +91 73776 79778
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ==================== FOOTER ==================== -->
-  <footer class="main-footer">
-    <div class="section-container footer-inner">
-      <p>&copy; 2026 MedCME Academy. All Rights Reserved. Accredited by NMC & MMC.</p>
     </div>
   </footer>
 
@@ -293,9 +285,8 @@
 
         <!-- Left Side: Brand Showcase -->
         <div class="left-showcase-panel">
-          <div class="hero-logo-showcase">
-            <img src="assets/logo.png" alt="MedCME Academy Logo" class="modal-showcase-logo" />
-            <h2>MedCME Academy</h2>
+          <div class="hero-logo-showcase" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <img src="assets/logo-light.png" alt="All India CME Logo" style="height: 60px; width: auto; object-fit: contain; margin-bottom: 0.75rem;" />
             <p>Official MMC & NMC Accredited CME Sessions, Courses & Real-Time Credit Tracking</p>
           </div>
           <div class="modal-metrics-grid">
@@ -340,15 +331,18 @@
               <!-- STEP 1: Account ID input -->
               <div *ngIf="loginStep === 1" class="form-step-content">
                 <div class="form-group">
-                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin Username / Email' }}</label>
+                  <label>{{ activeRole() === 'doctor' ? 'Doctor Email / Registered Mobile' : 'Admin Username / Email'
+                    }}</label>
                   <div class="input-icon-wrapper">
                     <span class="field-icon">👤</span>
-                    <input type="text" [(ngModel)]="userId" name="userId" [placeholder]="activeRole() === 'doctor' ? 'doctor@medcme.org or 9876543210' : 'admin@medcme.org'"
+                    <input type="text" [(ngModel)]="userId" name="userId"
+                      [placeholder]="activeRole() === 'doctor' ? 'doctor@medcme.org or 9876543210' : 'admin@medcme'"
                       required />
                   </div>
                 </div>
                 <button type="button" class="btn-next-step" (click)="nextStep()">
-                  {{ activeRole() === 'doctor' ? 'Continue to OTP Verification \u2192' : 'Continue to Password Authentication \u2192' }}
+                  {{ activeRole() === 'doctor' ? 'Continue to OTP Verification \u2192' : 'Continue to Password
+                  Authentication \u2192' }}
                 </button>
               </div>
 
@@ -372,7 +366,8 @@
                   <div *ngIf="otpSentForLogin" class="form-group">
                     <div
                       style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.75rem; line-height: 1.4;">
-                      📱 <strong>Verification OTP:</strong> A 6-digit OTP has been dispatched to <strong>{{ userId }}</strong>. Please enter the OTP code to complete authentication.
+                      📱 <strong>Verification OTP:</strong> A 6-digit OTP has been dispatched to <strong>{{ userId
+                        }}</strong>. Please enter the OTP code to complete authentication.
                     </div>
                     <label>Enter 6-Digit OTP Code *</label>
                     <div class="input-icon-wrapper">
@@ -403,7 +398,8 @@
                       <span class="field-icon">🔑</span>
                       <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="userPass" name="userPass"
                         placeholder="Enter Admin Password" required />
-                      <button type="button" class="btn-toggle-pwd" (click)="togglePasswordVisibility()" style="background: transparent; border: none; font-size: 1rem; cursor: pointer; padding: 0 0.5rem;">
+                      <button type="button" class="btn-toggle-pwd" (click)="togglePasswordVisibility()"
+                        style="background: transparent; border: none; font-size: 1rem; cursor: pointer; padding: 0 0.5rem;">
                         {{ showPassword ? '🙈' : '👁️' }}
                       </button>
                     </div>
@@ -417,7 +413,8 @@
                 </label>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn-submit-main" [disabled]="loading || (activeRole() === 'doctor' && !otpSentForLogin) || (activeRole() === 'admin' && !userPass.trim())">
+                <button type="submit" class="btn-submit-main"
+                  [disabled]="loading || (activeRole() === 'doctor' && !otpSentForLogin) || (activeRole() === 'admin' && !userPass.trim())">
                   <span *ngIf="!loading && activeRole() === 'doctor'">Verify OTP &amp; Sign In &rarr;</span>
                   <span *ngIf="!loading && activeRole() === 'admin'">Authenticate Admin &amp; Sign In &rarr;</span>
                   <span *ngIf="loading" class="spinner"></span>
@@ -572,7 +569,8 @@
 
           <div class="form-group" style="grid-column: span 2;">
             <label>Clinic Address</label>
-            <textarea [(ngModel)]="regClinicAddress" name="regClinicAddress" placeholder="Clinic / Office Address" rows="2"></textarea>
+            <textarea [(ngModel)]="regClinicAddress" name="regClinicAddress" placeholder="Clinic / Office Address"
+              rows="2"></textarea>
           </div>
 
           <div class="form-group"
@@ -609,7 +607,8 @@
             </div>
           </div>
 
-          <div class="registration-consents" style="grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.35rem;">
+          <div class="registration-consents"
+            style="grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.35rem;">
             <label>
               <input type="checkbox" [(ngModel)]="regEmailConsent" name="regEmailConsent" required />
               <span>I consent to receive emails regarding CME updates and courses *</span>
@@ -805,7 +804,7 @@
         <!-- Terms agreement -->
         <label class="terms-label">
           <input type="checkbox" [(ngModel)]="agreeTermsCheckout" />
-          <span>I agree to the MedCME Academy Event Code of Conduct and Cancellation Policy. *</span>
+          <span>I agree to the All India CME Event Code of Conduct and Cancellation Policy. *</span>
         </label>
 
         <button class="btn-checkout-confirm" [disabled]="!agreeTermsCheckout" (click)="confirmRegister()">

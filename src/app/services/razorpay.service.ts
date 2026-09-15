@@ -57,7 +57,7 @@ export class RazorpayService {
             key: 'rzp_test_TIRF1jkl1g0ryG', // Razorpay Test key
             amount: details.amount * 100, // Amount in paise
             currency: 'INR',
-            name: 'MedCME Academy',
+            name: 'All India CME',
             description: `Course Purchase: ${details.courseTitle}`,
             image: 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png',
             prefill: {

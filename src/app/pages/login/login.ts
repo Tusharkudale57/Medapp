@@ -77,7 +77,7 @@ export class LoginComponent implements OnInit {
       icon: '≡ƒÅå',
       tag: 'Accredited CME Platform',
       title: 'Earn & Track CME Credit Points',
-      desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions and track your official credit ledger in real time.'
+      desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions in real time.'
     },
     {
       icon: '≡ƒô£',
@@ -183,7 +183,7 @@ export class LoginComponent implements OnInit {
       this.userPass = 'doctor123';
       this.loginMethod = 'otp';
     } else {
-      this.userId = 'admin@medcme.org';
+      this.userId = 'admin@medcme';
       this.userPass = '';
       this.loginMethod = 'password';
     }
@@ -216,13 +216,10 @@ export class LoginComponent implements OnInit {
     }
     this.errorMessage = '';
     if (this.activeRole() === 'doctor') {
-      this.checkNumberPresent();
-      if (!this.showNotRegisteredModal) {
-        this.loginStep = 2;
-        this.loginMethod = 'otp';
-        if (!this.otpSentForLogin) {
-          this.sendLoginOtp();
-        }
+      this.loginStep = 2;
+      this.loginMethod = 'otp';
+      if (!this.otpSentForLogin) {
+        this.sendLoginOtp();
       }
     } else {
       this.loginStep = 2;
@@ -240,7 +237,7 @@ export class LoginComponent implements OnInit {
 
   fillAdminDemo() {
     this.activeRole.set('admin');
-    this.userId = 'admin@medcme.org';
+    this.userId = 'admin@medcme';
     this.userPass = '';
     this.loginMethod = 'password';
     this.loginStep = 1;
@@ -281,17 +278,17 @@ export class LoginComponent implements OnInit {
   submitRegistration() {
     this.loading = false;
     // 1. Mandatory Field presence checks
-    if (!this.regFirstName.trim() || 
-        !this.regLastName.trim() || 
-        !this.regMobileNumber.trim() || 
-        !this.regEmail.trim() ||
-        !this.regCity.trim() ||
-        !this.regDesignation.trim() ||
-        !this.regSpecialty.trim() ||
-        !this.regQualification.trim() ||
-        !this.regHospital.trim() ||
-        !this.regLanguage.trim() ||
-        !this.regMmcNo.trim()) {
+    if (!this.regFirstName.trim() ||
+      !this.regLastName.trim() ||
+      !this.regMobileNumber.trim() ||
+      !this.regEmail.trim() ||
+      !this.regCity.trim() ||
+      !this.regDesignation.trim() ||
+      !this.regSpecialty.trim() ||
+      !this.regQualification.trim() ||
+      !this.regHospital.trim() ||
+      !this.regLanguage.trim() ||
+      !this.regMmcNo.trim()) {
       alert('Please fill in all required fields (marked with *).');
       return;
     }
@@ -575,19 +572,29 @@ export class LoginComponent implements OnInit {
             if (token) {
               localStorage.setItem('medcme_jwt_token', token);
             }
-            const prof = res.data?.profile || (res.data?.fullName ? {
-              id: String(res.data.doctorId || 'doc_' + Date.now()),
-              name: res.data.fullName,
-              phone: res.data.mobileNumber || identifier,
-              email: identifier.includes('@') ? identifier : '',
-              role: 'doctor'
-            } : null);
+            // const prof = res.data?.profile || (res.data?.fullName ? {
+            //   id: String(res.data.doctorId || 'doc_' + Date.now()),
+            //   name: res.data.fullName,
+            //   phone: res.data.mobileNumber || identifier,
+            //   email: identifier.includes('@') ? identifier : '',
+            //   role: 'doctor'
+            // } : null);
+            this.authService.fetchProfileBackend().subscribe({
+              next: (res) => {
+                if (res?.success && res?.data) {
+                  const freshUser = this.authService.mapBackendProfileToUser(res.data);
+                  if (freshUser) {
+                    this.authService.loginWithBackendUser(freshUser, token);
+                  } else {
+                    this.authService.authenticateDoctor(identifier, otp);
+                  }
+                }
+              },
+              error: () => { }
+            });
 
-            if (prof) {
-              this.authService.loginWithBackendUser(prof, token);
-            } else {
-              this.authService.authenticateDoctor(identifier, otp);
-            }
+
+
 
             if (this.pendingEventForCheckout) {
               this.showLoginModal = false;

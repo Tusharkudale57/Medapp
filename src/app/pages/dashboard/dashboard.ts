@@ -31,6 +31,11 @@ export class DashboardComponent implements OnInit {
   charityInterests = ['Rural Healthcare Camps', 'Free Pediatric Screening', 'Free Cardiac Clinics', 'NGO Medical Relief'];
   selectedInterests: string[] = [];
 
+  selectInterests() {
+  this.showInterestPopup = false;
+  this.router.navigate(['/profile']);
+}
+
   // Details Modal state
   selectedEventForDetail: CmeEvent | null = null;
   showDetailModal = false;
@@ -557,7 +562,7 @@ export class DashboardComponent implements OnInit {
   downloadNotes() {
     if (!this.activeLiveEvent) return;
     const blob = new Blob([
-      `MedCME Private Session Notes\n` +
+      `All India CME Private Session Notes\n` +
       `Event: ${this.activeLiveEvent.title}\n` +
       `Speaker: ${this.activeLiveEvent.speaker}\n` +
       `Date: ${this.activeLiveEvent.date}\n\n` +
@@ -709,7 +714,7 @@ export class DashboardComponent implements OnInit {
 
   downloadPPT(fileName: string) {
     if (typeof window !== 'undefined') {
-      const blob = new Blob(['MedCME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
+      const blob = new Blob(['All India CME Resource Presentation: ' + fileName + '\n\nThis is a mock slide deck presentation for continuous medical education and best practices guidelines.'], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1097,10 +1102,9 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  navigateToEvents() {
-    this.activeFilter.set('All');
-    this.activeCategory.set('All');
-  }
+ navigateToEvents() {
+  this.resetAllFilters();
+}
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
@@ -1118,9 +1122,9 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/host-dashboard']);
   }
 
-  navigateToCredits() {
-    this.router.navigate(['/credits']);
-  }
+  // navigateToCredits() {
+  //   this.router.navigate(['/credits']);
+  // }
 
   navigateToKnowledge() {
     this.router.navigate(['/knowledge']);

@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, Inject, PLATFORM_ID, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -68,52 +68,29 @@ export class ProfileComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private router: Router,
-    @Inject(PLATFORM_ID) platformId: Object
+    @Inject(PLATFORM_ID) platformId: Object,
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (!user) {
+        return;
+      }
+
+      this.user = user;
+      this.initializeProfileFields();
+    });
   }
-  ngOnInit() {
-    this.user = this.authService.currentUser();
-    if (this.user) {
-      let cleanName = this.user.name.trim();
-      if (cleanName.toLowerCase().startsWith('dr. ')) {
-        cleanName = cleanName.substring(4).trim();
-      }
-      const nameParts = cleanName.split(/\s+/);
-      this.editFirstName = nameParts[0] || '';
-      this.editMiddleName = this.user.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '');
-      this.editLastName = this.user.sirName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
-      this.editRegNo = this.user.registrationNo;
-      this.editEmail = this.user.email;
-      this.editPhone = this.user.phone;
-      this.editCity = this.user.city || '';
 
-      const knownSpecialties = ['Cardiology', 'Pediatrics', 'Neurology', 'Surgery', 'General Medicine'];
-      if (knownSpecialties.includes(this.user.specialty)) {
-        this.editSpecialtyDropdown = this.user.specialty;
-        this.editSpecialtyOther = '';
-      } else {
-        this.editSpecialtyDropdown = 'Others';
-        this.editSpecialtyOther = this.user.specialty;
-      }
+  navigateToKnowledge() {
+    this.router.navigate(['/knowledge']);
+  }
 
-      // Initialize expanded fields
-      this.editGender = this.user.gender || 'Male';
-      this.editDob = this.user.dob || '';
-      this.editDesignation = this.user.designation || '';
-      this.editDepartment = this.user.department || '';
-      this.editQualification = this.user.qualification || '';
-      this.editHospital = this.user.hospital || '';
-      this.editOrganization = this.user.organization || '';
-      this.editClinicAddress = this.user.clinicAddress || '';
-      this.editPracticingInterest = this.user.practicingInterest || '';
-      this.editExperience = this.user.experience || 0;
-      this.editLanguage = this.user.language || 'English';
-      this.editEmailConsent = this.user.emailConsent !== false;
-      this.editWhatsappConsent = this.user.whatsappConsent !== false;
-      this.selectedInterests = [...(this.user.interests || [])];
-    }
-
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+ ngOnInit(): void {
     if (this.isBrowser) {
       const savedPhoto = localStorage.getItem('medcme_profile_photo');
       if (savedPhoto) {
@@ -121,6 +98,143 @@ export class ProfileComponent implements OnInit {
       }
     }
   }
+
+
+  private initializeProfileFields(): void {
+
+  if (!this.user) {
+    return;
+  }
+
+  // ============================================
+  // Name
+  // ============================================
+
+  let cleanName = (this.user.name || '').trim();
+
+  // Remove Dr / Dr. / DR / DR. from the beginning
+  cleanName = cleanName.replace(/^dr\.?\s*/i, '').trim();
+
+  const nameParts = cleanName.split(/\s+/);
+
+  // First Name
+  this.editFirstName = nameParts[0] || '';
+
+  // Middle Name
+  this.editMiddleName =
+    this.user.middleName ||
+    (
+      nameParts.length > 2
+        ? nameParts.slice(1, -1).join(' ')
+        : ''
+    );
+
+  // Last Name
+  this.editLastName =
+    this.user.sirName ||
+    (
+      nameParts.length > 1
+        ? nameParts[nameParts.length - 1]
+        : ''
+    );
+
+  // ============================================
+  // Basic Profile Fields
+  // ============================================
+
+  this.editRegNo =
+    this.user.registrationNo || '';
+
+  this.editEmail =
+    this.user.email || '';
+
+  this.editPhone =
+    this.user.phone || '';
+
+  this.editCity =
+    this.user.city || '';
+
+  // ============================================
+  // Specialty
+  // ============================================
+
+  const knownSpecialties = [
+    'Cardiology',
+    'Pediatrics',
+    'Neurology',
+    'Surgery',
+    'General Medicine'
+  ];
+
+  if (knownSpecialties.includes(this.user.specialty)) {
+
+    this.editSpecialtyDropdown =
+      this.user.specialty;
+
+    this.editSpecialtyOther = '';
+
+  } else {
+
+    this.editSpecialtyDropdown = 'Others';
+
+    this.editSpecialtyOther =
+      this.user.specialty || '';
+  }
+
+  // ============================================
+  // Additional Profile Fields
+  // ============================================
+
+  this.editGender =
+    this.user.gender || 'Male';
+
+  this.editDob =
+    this.user.dob || '';
+
+  this.editDesignation =
+    this.user.designation || '';
+
+  this.editDepartment =
+    this.user.department || '';
+
+  this.editQualification =
+    this.user.qualification || '';
+
+  this.editHospital =
+    this.user.hospital || '';
+
+  this.editOrganization =
+    this.user.organization || '';
+
+  this.editClinicAddress =
+    this.user.clinicAddress || '';
+
+  this.editPracticingInterest =
+    this.user.practicingInterest || '';
+
+  this.editExperience =
+    this.user.experience || 0;
+
+  this.editLanguage =
+    this.user.language || 'English';
+
+  this.editEmailConsent =
+    this.user.emailConsent !== false;
+
+  this.editWhatsappConsent =
+    this.user.whatsappConsent !== false;
+
+  this.selectedInterests =
+    [...(this.user.interests || [])];
+
+  // ============================================
+  // Debug
+  // ============================================
+
+  console.log('Edit First Name:', this.editFirstName);
+  console.log('Edit Middle Name:', this.editMiddleName);
+  console.log('Edit Last Name:', this.editLastName);
+}
 
   toggleInterest(interest: string) {
     const idx = this.selectedInterests.indexOf(interest);
