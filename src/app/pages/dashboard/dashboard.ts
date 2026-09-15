@@ -2,9 +2,11 @@ import { Component, OnInit, signal, computed, HostListener } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { RazorpayService } from '../../services/razorpay.service';
-import { EventService } from '../../services/event.service';
+
 import { EventResponse, CreateEventRequest } from '../../models/course.model';
 
 @Component({
@@ -17,6 +19,7 @@ import { EventResponse, CreateEventRequest } from '../../models/course.model';
 export class DashboardComponent implements OnInit {
   activeFilter = signal<'All' | 'Online' | 'Offline' | 'Hybrid' | 'Free'>('All');
   readonly filters: Array<'All' | 'Online' | 'Offline' | 'Hybrid' | 'Free'> = ['All', 'Online', 'Offline', 'Hybrid', 'Free'];
+  eventTimeFilter = signal<'Upcoming' | 'Past'>('Upcoming');
 
   showExploreMenu = false;
   activeCategory = signal<string>('All');
@@ -28,6 +31,11 @@ export class DashboardComponent implements OnInit {
   techInterests = ['AI in Medicine', 'Robotic Surgery', 'Digital Health Records', 'Telemedicine'];
   charityInterests = ['Rural Healthcare Camps', 'Free Pediatric Screening', 'Free Cardiac Clinics', 'NGO Medical Relief'];
   selectedInterests: string[] = [];
+
+  selectInterests() {
+  this.showInterestPopup = true;
+  // this.router.navigate(['/profile']);
+}
 
   // Details Modal state
   selectedEventForDetail: EventResponse | null = null;
@@ -43,6 +51,7 @@ export class DashboardComponent implements OnInit {
   liveChatMessages: Array<{ sender: string; text: string; time: string; isUser: boolean }> = [];
   newChatMessageText = '';
   showJoinLiveAlert = false;  // shown when non-registered user clicks Join Live
+  private liveHeartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
   // MCQ state
   basicMcqAnswered = false;
@@ -103,6 +112,7 @@ export class DashboardComponent implements OnInit {
   newVenue = '';
   newMode: 'Online' | 'Offline' | 'Hybrid' = 'Online';
   newSpeaker = '';
+  newSpeakerEmail = '';
   newSpeakerRole = '';
   newCategory = 'Cardiology';
   newCreditPoints = 1;
@@ -111,6 +121,7 @@ export class DashboardComponent implements OnInit {
   newBannerColor = '#0ea5e9';
   newPreRead = '';
   newZohoLink = '';
+  newStreamEmbedUrl = '';
   uploadedFiles: Array<{ name: string; size: string; status: 'uploaded' | 'uploading' }> = [];
   categories = ['Cardiology', 'Oncology', 'Neurology', 'Pediatrics', 'Surgery', 'General Medicine', 'Orthopedics', 'Obstetrics', 'Gastroenterology', 'Radiology', 'Emergency', 'Dermatology', 'Endocrinology', 'Psychiatry'];
 
@@ -173,6 +184,7 @@ export class DashboardComponent implements OnInit {
     public authService: AuthService,
     public eventService: EventService,
     private razorpayService: RazorpayService,
+    private sanitizer: DomSanitizer,
     private router: Router
   ) {}
 
@@ -205,10 +217,10 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  loadUpcomingEvents(): void {
+  private loadUpcomingEvents(): void {
     this.eventService.getUpcomingEvents().subscribe({
       next: (response) => {
-        this.events = response.data ?? [];
+        this.events = response.data || [];
       },
       error: (error) => {
         console.error('Failed to load upcoming events:', error);
@@ -218,8 +230,11 @@ export class DashboardComponent implements OnInit {
   }
 
   get filteredEvents(): EventResponse[] {
-
-    let events: EventResponse[] = [...this.events];
+    let events: EventResponse[] = this.authService.isAdmin()
+      ? [...this.events]
+      : this.eventTimeFilter() === 'Past'
+      ? this.events.filter((e: EventResponse) => new Date(e.eventDateTime).getTime() < Date.now())
+      : this.events.filter((e: EventResponse) => new Date(e.eventDateTime).getTime() >= Date.now());
     
     // Filter by interests if enabled, otherwise prioritize interests by sorting them first
     const user = this.authService.currentUser();
@@ -315,6 +330,22 @@ export class DashboardComponent implements OnInit {
     return events;
   }
 
+  get eventTimeLabel(): string {
+    return this.eventTimeFilter() === 'Past' ? 'past CME events' : 'upcoming CME events';
+  }
+
+  get upcomingEventsCount(): number {
+    return this.events.filter(
+      (e: EventResponse) => new Date(e.eventDateTime).getTime() >= Date.now()
+    ).length;
+  }
+
+  get pastEventsCount(): number {
+    return this.events.filter(
+      (e: EventResponse) => new Date(e.eventDateTime).getTime() < Date.now()
+    ).length;
+  }
+
   get relevantEvents(): EventResponse[] {
     const user = this.authService.currentUser();
     if (!user || user.role === 'admin') return [];
@@ -353,7 +384,11 @@ export class DashboardComponent implements OnInit {
   }
 
   get fastFillingEvents(): EventResponse[] {
-    return [...this.events]
+    if (this.eventTimeFilter() === 'Past') {
+      return [];
+    }
+    return this.events
+      .filter((e: EventResponse) => new Date(e.eventDateTime).getTime() >= Date.now())
       .filter((e: EventResponse) => {
         const left = this.seatsLeft(e);
         return left > 0 && left < 30;
@@ -384,6 +419,7 @@ export class DashboardComponent implements OnInit {
     this.sortByFilter = 'Date';
     this.activeFilter.set('All');
     this.activeCategory.set('All');
+    this.eventTimeFilter.set('Upcoming');
     this.visibleCount = 6;
   }
 
@@ -433,6 +469,10 @@ export class DashboardComponent implements OnInit {
     this.selectedEventForDetail = null;
   }
 
+  isRecordingAvailable(event: EventResponse): boolean {
+    return false;
+  }
+
   openLiveRoom(event: EventResponse) {
     // Access check: only registered users can join the live room
     const user = this.authService.currentUser();
@@ -443,6 +483,8 @@ export class DashboardComponent implements OnInit {
       setTimeout(() => this.showJoinLiveAlert = false, 4000);
       return;
     }
+
+    const registration = this.eventService.getRegistration(String(event.id), user.id);
 
     // Close ALL other modals first
     this.showDetailModal = false;
@@ -482,6 +524,42 @@ export class DashboardComponent implements OnInit {
         this.liveRoomNotes = saved;
       }
     }
+
+    const meetingLink = (event.zohoBackstageLink || event.joinLink || '').trim();
+
+    if (!meetingLink) {
+      alert('No live meeting link is available for this event.');
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      window.open(meetingLink, '_blank');
+    }
+
+    this.startLiveHeartbeat(String(event.id), user.id);
+  }
+
+  private startLiveHeartbeat(eventId: string, userId: string) {
+    this.stopLiveHeartbeat();
+    this.liveHeartbeatInterval = setInterval(() => {
+      if (!this.showLiveRoomModal || String(this.activeLiveEvent?.id) !== eventId) {
+        this.stopLiveHeartbeat();
+        return;
+      }
+      }, 30000);
+  }
+
+  private stopLiveHeartbeat() {
+    if (this.liveHeartbeatInterval) {
+      clearInterval(this.liveHeartbeatInterval);
+      this.liveHeartbeatInterval = null;
+    }
+  }
+
+  getSafeStreamUrl(url?: string): SafeResourceUrl | null {
+    const clean = (url || '').trim();
+    if (!/^https?:\/\//i.test(clean)) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(clean);
   }
 
   saveNotes() {
@@ -510,17 +588,27 @@ export class DashboardComponent implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  submitFeedback() {
+  async submitFeedback() {
     if (this.liveFeedbackRating === 0) {
       alert('Please select a star rating first.');
       return;
     }
+
+    const user = this.authService.currentUser();
+    if (!user || !this.activeLiveEvent) return;
     
     this.liveFeedbackSubmitted = true;
+    this.stopLiveHeartbeat();
+
+    this.eventService.markAttendance(
+      String(this.activeLiveEvent.id),
+      user.id,
+      true
+    );
+
     this.liveSessionCompleted = true;
 
     // Automatically issue the certificate to the doctor
-    const user = this.authService.currentUser();
     if (user && this.activeLiveEvent) {
       this.authService.issueEventCertificate(
         user.id,
@@ -533,11 +621,16 @@ export class DashboardComponent implements OnInit {
 
   closeCompletedSession() {
     this.liveSessionCompleted = false;
-    this.closeLiveRoom();
+    this.closeLiveRoom(false);
     this.router.navigate(['/my-learning']);
   }
 
-  closeLiveRoom() {
+  closeLiveRoom(recordLeave = true) {
+    const user = this.authService.currentUser();
+    const event = this.activeLiveEvent;
+    this.stopLiveHeartbeat();
+    if (recordLeave && user && event && !this.liveSessionCompleted) {
+    }
     this.showLiveRoomModal = false;
     this.activeLiveEvent = null;
     this.liveSessionCompleted = false;
@@ -872,11 +965,15 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  isRegistered(eventId: string): boolean {
-    const user = this.authService.currentUser();
-    if (!user) return false;
-    return this.eventService.isRegistered(eventId, user.id);
-  }
+ isRegistered(eventId: string | number): boolean {
+  const user = this.authService.currentUser();
+  if (!user) return false;
+
+  return this.eventService.isRegistered(
+    String(eventId),
+    user.id
+  );
+}
 
   seatsLeft(event: EventResponse): number {
     return event.maxSeats ?? 0;
@@ -957,8 +1054,20 @@ export class DashboardComponent implements OnInit {
     this.editingEventId = null;
   }
 
+  canSaveEvent(): boolean {
+    return Boolean(
+      this.newTitle.trim() &&
+      this.newDate &&
+      this.newVenue.trim() &&
+      this.hasValidSpeakerFields()
+    );
+  }
+
   saveEvent() {
-    if (!this.newTitle.trim() || !this.newDate || !this.newVenue.trim()) return;
+    if (!this.canSaveEvent()) {
+      this.showSpeakerValidationMessage();
+      return;
+    }
     if (!this.authService.isAdmin()) return;
 
     const eventDateTime = this.convertTimeToLocalDateTime(this.newDate, this.newTime);
@@ -1006,6 +1115,16 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  private hasValidSpeakerFields(): boolean {
+    return Boolean(this.newSpeaker.trim()) === Boolean(this.newSpeakerEmail.trim());
+  }
+
+  private showSpeakerValidationMessage() {
+    if (!this.hasValidSpeakerFields()) {
+      alert('Enter both Speaker Name and Speaker Email, or leave both blank.');
+    }
+  }
+
   deleteEvent(eventId: number, ev: Event) {
     ev.stopPropagation();
     if (confirm('Remove this event from the platform?')) {
@@ -1019,10 +1138,9 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  navigateToEvents() {
-    this.activeFilter.set('All');
-    this.activeCategory.set('All');
-  }
+ navigateToEvents() {
+  this.resetAllFilters();
+}
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
@@ -1070,6 +1188,7 @@ export class DashboardComponent implements OnInit {
     this.newVenue = '';
     this.newMode = 'Online';
     this.newSpeaker = '';
+    this.newSpeakerEmail = '';
     this.newSpeakerRole = '';
     this.newCategory = 'Cardiology';
     this.newCreditPoints = 1;
@@ -1078,6 +1197,7 @@ export class DashboardComponent implements OnInit {
     this.newBannerColor = '#0ea5e9';
     this.newPreRead = '';
     this.newZohoLink = '';
+    this.newStreamEmbedUrl = '';
     this.uploadedFiles = [];
   }
 }

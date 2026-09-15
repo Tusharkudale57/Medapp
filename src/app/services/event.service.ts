@@ -564,27 +564,15 @@ export class EventService {
   // LOCAL REGISTRATION
   // ============================================================
 
-  registerForEvent(
-    eventId: string,
-    userId: string,
-    userName: string,
-    userEmail?: string,
-    userPhone?: string,
-    paymentStatus?: 'pending' | 'paid' | 'free' | 'sponsored',
-    sponsoredBy?: string
-  ): boolean {
-
-    const alreadyRegistered =
-      this.registrationsSignal().some(
-        registration =>
-          registration.eventId === eventId &&
-          registration.userId === userId
-      );
-
-    if (alreadyRegistered) {
-      return false;
-    }
-
+  registerForEvent(eventId: string, userId: string, userName: string, userEmail?: string, userPhone?: string, paymentStatus?: 'pending' | 'paid' | 'free' | 'sponsored', sponsoredBy?: string): boolean {
+    const alreadyRegistered = this.registrationsSignal().some(
+      r => r.eventId === eventId && r.userId === userId
+    );
+    if (alreadyRegistered) return false;
+    const event = this.eventsSignal().find(
+      e => e.id === Number(eventId)
+    );
+    if (!event) return false;
 
     const registration: EventRegistration = {
       eventId,
@@ -855,5 +843,4 @@ export class EventService {
   clearEvents(): void {
     this.eventsSignal.set([]);
   }
-
 }

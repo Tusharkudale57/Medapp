@@ -133,7 +133,7 @@ export class MyLearningComponent implements OnInit {
   }
 
   // --- Filtering Methods ---
-  setTab(tab: 'in_progress' | 'completed' | 'certificates') {
+  setTab(tab: 'in_progress' | 'certificates') {
     this.activeTab.set(tab);
   }
 
@@ -146,8 +146,8 @@ export class MyLearningComponent implements OnInit {
 
   get completedCourses(): Course[] {
     const allCourses = this.courseService.getCourses();
-    return allCourses.filter(c => 
-      this.authService.isCourseCompleted(c.id)
+    return allCourses.filter(c =>
+      this.authService.isCoursePurchased(c.id) && this.authService.isCourseCompleted(c.id)
     );
   }
 
@@ -191,6 +191,10 @@ export class MyLearningComponent implements OnInit {
 
   get certificates(): Certificate[] {
     return this.authService.getUserCertificates();
+  }
+
+  getRegisteredCount(event: EventResponse): number {
+    return this.eventService.getEnrolledCount(String(event.id));
   }
 
   // --- Course Navigation ---

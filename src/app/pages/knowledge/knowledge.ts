@@ -199,16 +199,21 @@ export class KnowledgeBaseComponent implements OnInit {
     }
   }
 
-  backToDashboard() {
-    this.router.navigate(['/dashboard']);
-  }
-
   navigateToMyLearning() {
     this.router.navigate(['/my-learning']);
   }
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  backToDashboard() {
+    this.router.navigate(['/dashboard']);
   }
 
   resetAllFilters() {

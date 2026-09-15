@@ -90,6 +90,7 @@ export interface UserProfile {
 
 export interface CmeEvent {
   id: string;
+  backendId?: number;
   title: string;
   description: string;
   date: string;            // ISO date string e.g. "2026-08-15"
@@ -97,16 +98,21 @@ export interface CmeEvent {
   venue: string;
   mode: 'Online' | 'Offline' | 'Hybrid';
   speaker: string;
+  speakerEmail?: string;
   speakerRole: string;
   category: string;
   creditPoints: number;
   price: number;           // 0 = free
   maxSeats: number;
   registeredCount: number;
+  presentCount?: number;
+  absentCount?: number;
+  certificateIssuedCount?: number;
   hostId: string;
   hostName: string;
   paymentLink: string;     // mock URL — replace with real gateway link from backend
   status: 'upcoming' | 'ongoing' | 'completed';
+  publicationStatus?: 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'COMPLETED';
   bannerColor?: string;    // optional accent color for UI card
   language?: string;
   preRead?: string;
@@ -115,12 +121,23 @@ export interface CmeEvent {
   outcome?: string;
   videoAssistance?: string;
   zohoBackstageLink?: string;
+  streamEmbedUrl?: string;
+  recordingFileName?: string;
+  recordingContentType?: string;
+  recordingFileSize?: number;
+  recordingPublishedAt?: string;
+  recordingAvailable?: boolean;
+  recordingUrl?: string;
+  recordingDownloadUrl?: string;
+  documents?: EventDocument[];
 }
 
 // TODO: When backend is ready, replace with:
 //   this.http.post<EventRegistration>('/api/events/register', payload)
 export interface EventRegistration {
+  registrationId?: number;
   eventId: string;
+  backendEventId?: number;
   userId: string;
   userName: string;
   userEmail?: string;
@@ -128,9 +145,120 @@ export interface EventRegistration {
   registeredAt: string;   // ISO timestamp
   paymentStatus: 'pending' | 'paid' | 'free' | 'sponsored';
   attended: boolean;          // Admin marks as present/absent
+  attendanceStatus?: 'PENDING' | 'PRESENT' | 'ABSENT';
   certificateIssued: boolean; // Certificate issued after marking present
   attendedAt?: string;        // Timestamp when marked present
   sponsoredBy?: string;       // MR Sponsor name or sponsor code
+  meetingLink?: string;
+  totalAmount?: number;
+}
+
+export interface EventDocument {
+  id: number;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  downloadUrl: string;
+}
+
+export interface BackendEventRequest {
+  speakerName?: string;
+  speakerEmail?: string;
+  speakerRole?: string;
+  title: string;
+  description?: string;
+  sequenceNo?: number;
+  eventDate: string;
+  eventTime: string;
+  joinLink?: string;
+  zohoBackstageLink?: string;
+  streamEmbedUrl?: string;
+  liveProvider?: 'NONE' | 'ZOHO_MEETING' | 'ZOHO_WEBINAR';
+  createProviderRoom?: boolean;
+  mode: 'ONLINE' | 'OFFLINE' | 'HYBRID';
+  category: string;
+  mandatory: boolean;
+  cmeCreditPoints?: number;
+  registrationFee?: number;
+  maxSeats?: number;
+  cardAccentColor?: string;
+}
+
+export interface BackendEventResponse extends BackendEventRequest {
+  id: number;
+  createdAt?: string;
+  zohoBackstageEventId?: string;
+  recordingFileName?: string;
+  recordingContentType?: string;
+  recordingFileSize?: number;
+  recordingPublishedAt?: string;
+  recordingAvailable?: boolean;
+  recordingUrl?: string;
+  recordingDownloadUrl?: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'COMPLETED';
+  registrationId?: number;
+  registrationStatus?: string;
+  registered?: boolean;
+  enrolledCount?: number;
+  presentCount?: number;
+  absentCount?: number;
+  certificateIssuedCount?: number;
+  documents?: EventDocument[];
+}
+
+export interface BackendEventRegistrationResponse {
+  registrationId: number;
+  registrationStatus: string;
+  fullName: string;
+  doctorProfileId: number;
+  email: string;
+  mobileNumber: string;
+  specialtyCategory: string;
+  eventId: number;
+  eventTitle: string;
+  eventDate: string;
+  eventTime: string;
+  meetingLink: string;
+  cmeCreditPoints: number;
+  registrationFee: number;
+  gstAmount: number;
+  totalAmount: number;
+}
+
+export interface BackendEventJoinResponse {
+  registrationId: number;
+  eventId: number;
+  eventTitle: string;
+  eventDate: string;
+  eventTime: string;
+  meetingLink: string;
+  joinedAt: string;
+  leftAt?: string;
+  lastSeenAt?: string;
+  completedAt?: string;
+  minutesAttended?: number;
+  attendanceStatus: string;
+}
+
+export interface BackendEventAttendanceResponse {
+  attendanceId: number;
+  registrationId: number;
+  eventId: number;
+  eventTitle: string;
+  doctorProfileId: number;
+  attendeeName: string;
+  attendeeEmail: string;
+  status: 'PENDING' | 'PRESENT' | 'ABSENT';
+  minutesAttended?: number;
+  remarks?: string;
+  joinedAt?: string;
+  leftAt?: string;
+  lastSeenAt?: string;
+  completedAt?: string;
+  certificateIssued?: boolean;
+  certificateIssuedAt?: string;
+  markedAt: string;
+  updatedAt?: string;
 }
 
 export interface RegisterRequest {

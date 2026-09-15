@@ -25,6 +25,8 @@ export class HostDashboardComponent implements OnInit {
   showAttendanceModal = false;
   selectedEventForAttendance: EventResponse | null = null;
 
+  showEventDetailModal = false;
+  selectedEventForDetail: EventResponse | null = null;
   copiedEventId: string | number = '';
   copiedCourseId = '';
 
@@ -58,6 +60,7 @@ export class HostDashboardComponent implements OnInit {
   newMode: 'Online' | 'Offline' | 'Hybrid' = 'Online';
 
   newSpeaker = '';
+  newSpeakerEmail = '';
   newSpeakerRole = '';
   newCategory = 'Cardiology';
 
@@ -75,6 +78,8 @@ export class HostDashboardComponent implements OnInit {
 
   newZohoLink = '';
 
+  newStreamEmbedUrl = '';
+  selectedRecordingFiles: { [eventId: string]: File | undefined } = {};
   uploadedFiles: Array<{
     name: string;
     size: string;
@@ -369,6 +374,22 @@ export class HostDashboardComponent implements OnInit {
     this.editingEventId = null;
   }
 
+  canSaveEvent(): boolean {
+    return Boolean(
+      this.newTitle.trim() &&
+      this.newDate &&
+      this.newVenue.trim() &&
+      this.hasValidSpeakerFields()
+    );
+  }
+
+  private hasValidSpeakerFields(): boolean {
+    return Boolean(
+      this.newSpeaker.trim() &&
+      this.newSpeakerRole.trim()
+    );
+  }
+
   saveEvent(): void {
 
     if (
@@ -607,6 +628,31 @@ export class HostDashboardComponent implements OnInit {
     this.certIssuedMsg = '';
     this.absentMsg = '';
     this.presentMsg = '';
+  }
+
+  onRecordingSelected(eventId: string, event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.selectedRecordingFiles[eventId] = input.files?.[0];
+  }
+
+  uploadRecording(eventId: string) {
+    const recording = this.selectedRecordingFiles[eventId];
+    if (!recording) {
+      alert('Please choose a recording file first.');
+      return;
+    }
+    // Recording upload is not part of the current EventService/backend contract.
+    // Keep the UI handler safe until a recording endpoint is added.
+    alert('Recording upload is not available yet.');
+    this.selectedRecordingFiles[eventId] = undefined;
+  }
+
+  getRecordingDownloadUrl(event: EventResponse): string | null {
+    return null;
+  }
+
+  isRecordingAvailable(event: EventResponse): boolean {
+    return false;
   }
 
   closeAttendanceModal(): void {
@@ -1169,6 +1215,7 @@ export class HostDashboardComponent implements OnInit {
     this.newMode = 'Online';
 
     this.newSpeaker = '';
+    this.newSpeakerEmail = '';
     this.newSpeakerRole = '';
 
     this.newCategory = 'Cardiology';
@@ -1181,7 +1228,7 @@ export class HostDashboardComponent implements OnInit {
 
     this.newPreRead = '';
     this.newZohoLink = '';
-
+    this.newStreamEmbedUrl = '';
     this.uploadedFiles = [];
 
     this.selectedDocuments = [];
