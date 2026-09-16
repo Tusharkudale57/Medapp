@@ -12,7 +12,7 @@ export class AuthService {
 
   private currentUserSignal = signal<UserProfile | null>(null);
   public currentUser = computed(() => this.currentUserSignal());
-  
+
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
   public user: UserProfile = {
@@ -163,17 +163,17 @@ export class AuthService {
           next: (res) => {
             if (res?.success && res?.data) {
               const freshUser = this.mapBackendProfileToUser(res.data);
-              console.log("The freshUser is ========",freshUser);
+              console.log("The freshUser is ========", freshUser);
               const stored = this.currentUserSignal();
-              console.log("The current stored user is ",stored);
+              console.log("The current stored user is ", stored);
               const merged = { ...freshUser, role: stored?.role || 'doctor' };
-              this.user=merged;
-              console.log("The merged user is ",merged);
+              this.user = merged;
+              console.log("The merged user is ", merged);
               this.currentUserSignal.set(merged);
               this.saveUserToStorage(merged);
             }
           },
-          error: () => {}
+          error: () => { }
         });
       }
     } else {
@@ -307,23 +307,40 @@ export class AuthService {
     const clean = identifier.trim();
     const payload = { email: clean };
     const headers = { 'Content-Type': 'application/json' };
-    return this.http.post<any>('/api/auth/login/send-otp', payload, { headers }).pipe(
-      timeout(2000),
+
+    return this.http.post<any>(
+      '/api/auth/login/send-otp',
+      payload,
+      { headers }
+    ).pipe(
       catchError((err) => throwError(() => err))
     );
   }
 
   /** Verify OTP via Backend API (POST /api/auth/verify-otp) */
-  verifyLoginOtpBackend(identifier: string, otp: string, purpose: string = 'LOGIN'): Observable<any> {
+  verifyLoginOtpBackend(
+    identifier: string,
+    otp: string,
+    purpose: string = 'LOGIN'
+  ): Observable<any> {
+
     const clean = identifier.trim();
+
     const payload: any = {
       otp: otp.trim(),
-      purpose: purpose
+      purpose: purpose,
+      email: clean
     };
-    payload.email = clean;
-    const headers = { 'Content-Type': 'application/json' };
-    return this.http.post<any>('/api/auth/verify-otp', payload, { headers }).pipe(
-      timeout(2000),
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    return this.http.post<any>(
+      '/api/auth/verify-otp',
+      payload,
+      { headers }
+    ).pipe(
       catchError((err) => throwError(() => err))
     );
   }
@@ -378,7 +395,7 @@ export class AuthService {
       yearsOfExperience: user.experience || 0,
       clinicAddress: user.clinicAddress || '',
       practicingInterest: user.practicingInterest || (user.interests ? user.interests.join(', ') : ''),
-      cmeInterests:user.interests,
+      cmeInterests: user.interests,
       emailOptIn: user.emailConsent ?? true,
       whatsappOptIn: user.whatsappConsent ?? true,
       termsAccepted: true,
@@ -387,10 +404,10 @@ export class AuthService {
 
     // const url = this.getEndpoint('/api/profile/update-my-profile');
     // return this.http.put<any>(url, payload, { headers });
-     return this.http.put<any>('api/profile/update-my-profile',payload, { headers }).pipe(
+    return this.http.put<any>('api/profile/update-my-profile', payload, { headers }).pipe(
       catchError((err) => {
         if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}api/profile/update-my-profile`,payload, { headers });
+          return this.http.post<any>(`${this.backendUrl}api/profile/update-my-profile`, payload, { headers });
         }
         return throwError(() => err);
       })
@@ -403,9 +420,9 @@ export class AuthService {
     const middleName = bp.middleName ? bp.middleName.trim() + ' ' : '';
     const lastName = bp.lastName || '';
     const fullName = bp.name || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
-    
 
-    console.log("The bp from the mapBackendProfileToUser @@@@@",bp);
+
+    console.log("The bp from the mapBackendProfileToUser @@@@@", bp);
     return {
       id: String(bp.id || 'doc_' + Date.now()),
       name: fullName,
@@ -438,14 +455,14 @@ export class AuthService {
     };
   }
 
-   
+
   /** Set backend authenticated user session & token */
   loginWithBackendUser(profile: any, token: string) {
     console.log("Inside loginWithBackendUSer  $$$$$$");
     const user = profile;
-    console.log("The user inside loginWithBackenuser is ----",user);
+    console.log("The user inside loginWithBackenuser is ----", user);
     this.currentUserSignal.set(user);
-    console.log("The seted current user signal is ",this.currentUserSignal());
+    console.log("The seted current user signal is ", this.currentUserSignal());
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {
       localStorage.setItem('medcme_jwt_token', token);
@@ -502,8 +519,8 @@ export class AuthService {
     const cleanPass = passOrOtp.trim();
 
     if ((cleanId === 'doctor@medcme.org' || cleanId === '9876543210' || cleanId.includes('doctor')) &&
-        (cleanPass === 'doctor123' || cleanPass === '123456' || cleanPass.length >= 4)) {
-      
+      (cleanPass === 'doctor123' || cleanPass === '123456' || cleanPass.length >= 4)) {
+
       const user = { ...this.staticDoctorAccount };
       this.currentUserSignal.set(user);
       this.saveUserToStorage(user);
@@ -549,8 +566,8 @@ export class AuthService {
     const cleanPass = passOrOtp.trim();
 
     if ((cleanId === 'admin@medcme' || cleanId === 'admin@medcme.org' || cleanId === '9999999999' || cleanId.includes('admin')) &&
-        (cleanPass === 'admin123' || cleanPass === '999999' || cleanPass.length >= 4)) {
-      
+      (cleanPass === 'admin123' || cleanPass === '999999' || cleanPass.length >= 4)) {
+
       const admin = { ...this.staticAdminAccount };
       this.currentUserSignal.set(admin);
       this.saveUserToStorage(admin);
@@ -695,7 +712,7 @@ export class AuthService {
     };
     this.currentUserSignal.set(updated);
     this.saveUserToStorage(updated);
-    
+
     this.usersSignal.update(list => {
       const next = list.map(u => u.id === user.id ? updated : u);
       if (this.isBrowser) {
@@ -708,7 +725,7 @@ export class AuthService {
   updateProfileWithInterests(updatedUser: UserProfile) {
     this.currentUserSignal.set(updatedUser);
     this.saveUserToStorage(updatedUser);
-    
+
     this.usersSignal.update(list => {
       const next = list.map(u => u.id === updatedUser.id ? updatedUser : u);
       if (this.isBrowser) {

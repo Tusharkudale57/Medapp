@@ -8,7 +8,7 @@ import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
 import { RazorpayService } from '../../services/razorpay.service';
 import { Course, EventResponse, RegisterRequest } from '../../models/course.model';
-
+import { ChangeDetectorRef } from '@angular/core';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -155,7 +155,8 @@ export class LoginComponent implements OnInit {
     public courseService: CourseService,
     public eventService: EventService,
     private razorpayService: RazorpayService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     effect(() => {
       const user = this.authService.currentUser();
@@ -539,14 +540,23 @@ export class LoginComponent implements OnInit {
       this.loginOtpCountdown = 60;
       this.startOtpCountdown();
       this.loading = false;
-
       this.authService.sendLoginOtpBackend(identifier).subscribe({
+
         next: (res) => {
           console.log('OTP dispatched successfully:', res);
         },
+
         error: (err) => {
           console.warn('Send OTP background notice:', err);
+
+          const message =
+            err?.error?.message ||
+            'Unable to send OTP. Please try again.';
+
+          alert(message);
+          return;
         }
+
       });
     } else {
       // Admin simulation
@@ -581,35 +591,39 @@ export class LoginComponent implements OnInit {
 
       this.authService.verifyLoginOtpBackend(identifier, otp, purpose).subscribe({
         next: (res) => {
+          console.log("inside response of verifyLoginOtpBackend ===");
           this.loading = false;
+
           if (res && res.success) {
+
             const token = res.data?.token || res.data?.jwt || '';
+
             if (token) {
               localStorage.setItem('medcme_jwt_token', token);
             }
-            // const prof = res.data?.profile || (res.data?.fullName ? {
-            //   id: String(res.data.doctorId || 'doc_' + Date.now()),
-            //   name: res.data.fullName,
-            //   phone: res.data.mobileNumber || identifier,
-            //   email: identifier.includes('@') ? identifier : '',
-            //   role: 'doctor'
-            // } : null);
+
             this.authService.fetchProfileBackend().subscribe({
               next: (res) => {
                 if (res?.success && res?.data) {
-                  const freshUser = this.authService.mapBackendProfileToUser(res.data);
+
+                  const freshUser =
+                    this.authService.mapBackendProfileToUser(res.data);
+
                   if (freshUser) {
-                    this.authService.loginWithBackendUser(freshUser, token);
+                    this.authService.loginWithBackendUser(
+                      freshUser,
+                      token
+                    );
                   } else {
-                    this.authService.authenticateDoctor(identifier, otp);
+                    this.authService.authenticateDoctor(
+                      identifier,
+                      otp
+                    );
                   }
                 }
               },
               error: () => { }
             });
-
-
-
 
             if (this.pendingEventForCheckout) {
               this.showLoginModal = false;
@@ -619,19 +633,33 @@ export class LoginComponent implements OnInit {
               this.showLoginModal = false;
               this.router.navigate(['/dashboard']);
             }
+
           } else {
-            this.errorMessage = res?.message || 'OTP verification failed.';
+
+            const message =
+              res?.message || 'OTP verification failed.';
+
+            this.errorMessage = message;
+            alert(message);
           }
         },
+
         error: (err) => {
+          console.log("inside error of verifyLoginOtpBackend ===");
+
           this.loading = false;
-          const localRes = this.authService.authenticateDoctor(identifier, otp);
-          if (localRes.success) {
-            this.showLoginModal = false;
-            this.router.navigate(['/dashboard']);
-          } else {
-            this.errorMessage = err?.error?.message || err?.message || 'Invalid or expired OTP. Please try again.';
-          }
+
+          const message =
+            err?.error?.message ||
+            err?.message ||
+            'Invalid or expired OTP. Please try again.';
+
+          this.errorMessage = message;
+
+          setTimeout(() => {
+            alert(message);
+          }, 0);
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -655,28 +683,33 @@ export class LoginComponent implements OnInit {
             this.showLoginModal = false;
             this.router.navigate(['/dashboard']);
           } else {
-            this.errorMessage = res?.message || 'Admin authentication failed. Please check credentials.';
+            this.loading = false;
+          const message =
+            res?.error?.message ||
+            res?.message ||
+            'Admin authentication failed. Please check credentials.';
+            // this.errorMessage = res?.message || 'Admin authentication failed. Please check credentials.';
+          setTimeout(() => {
+            alert(message);
+          }, 0);
+          this.cdr.detectChanges();
           }
         },
         error: (err) => {
+
           this.loading = false;
-          console.warn('Admin API login response/notice:', err);
 
-          // If backend API returns explicit 401 / 403 Unauthorized
-          if (err?.status === 401 || err?.status === 403) {
-            this.errorMessage = err?.error?.message || err?.error || 'Invalid Admin Username or Password.';
-            return;
-          }
+          const message =
+            err?.error?.message ||
+            err?.message ||
+            'Invalid or expired OTP. Please try again.';
 
-          // For proxy error, connection error, timeout, 500, 502, 504, 404, or status 0:
-          // Fall back gracefully to local admin authentication
-          const adminRes = this.authService.authenticateAdmin(username, password);
-          if (adminRes.success) {
-            this.showLoginModal = false;
-            this.router.navigate(['/dashboard']);
-          } else {
-            this.errorMessage = adminRes.message || 'Invalid Admin Username or Password.';
-          }
+          this.errorMessage = message;
+
+          setTimeout(() => {
+            alert(message);
+          }, 0);
+          this.cdr.detectChanges();
         }
       });
     }

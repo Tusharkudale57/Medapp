@@ -1,9 +1,9 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import {  Inject, PLATFORM_ID } from '@angular/core';
+import { Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { EventRegistration ,EventDocument,EventResponse,EventPageResponse,CreateEventRequest,ApiResponse} from '../models/course.model';
+import { EventRegistration, EventDocument, EventResponse, EventPageResponse, CreateEventRequest, ApiResponse } from '../models/course.model';
 
 
 
@@ -36,7 +36,7 @@ export class EventService {
    * Read-only signal exposed to components.
    */
   readonly events = this.eventsSignal.asReadonly();
-    private isBrowser: boolean;
+  private isBrowser: boolean;
 
   /**
    * ==========================================================
@@ -65,8 +65,8 @@ export class EventService {
 
   constructor(
     @Inject(PLATFORM_ID) platformId: Object, private http: HttpClient
-  ) { 
-     this.isBrowser = isPlatformBrowser(platformId);
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
   }
 
 
@@ -89,7 +89,7 @@ export class EventService {
    */
   getAllEvents(
     page: number = 0,
-    size: number = 10,
+    size: number = 100,
     mode?: string,
     category?: string
   ): Observable<ApiResponse<EventPageResponse>> {
@@ -106,22 +106,31 @@ export class EventService {
       params = params.set('category', category);
     }
 
-    return this.http
-      .get<ApiResponse<EventPageResponse>>(
-        `${this.apiUrl}/get-all-events`,
-        { params }
-      )
-      .pipe(
-        tap(response => {
+    const token = this.isBrowser
+      ? localStorage.getItem('medcme_jwt_token')
+      : null;
 
-          if (response?.data?.content) {
-            this.eventsSignal.set(response.data.content);
-          } else {
-            this.eventsSignal.set([]);
-          }
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
 
-        })
-      );
+    return this.http.get<ApiResponse<EventPageResponse>>(
+      `${this.apiUrl}/get-all-events`,
+      {
+        params,
+        headers
+      }
+    ).pipe(
+      tap(response => {
+
+        if (response?.data?.content && Array.isArray(response.data.content)) {
+          this.eventsSignal.set(response.data.content);
+        } else {
+          this.eventsSignal.set([]);
+        }
+
+      })
+    );
   }
 
 
@@ -135,43 +144,43 @@ export class EventService {
    * Backend:
    * GET /api/event/upcoming-events
    */
-getUpcomingEvents(
-  mode?: string,
-  category?: string
-): Observable<ApiResponse<EventResponse[]>> {
+  getUpcomingEvents(
+    mode?: string,
+    category?: string
+  ): Observable<ApiResponse<EventResponse[]>> {
 
-  let params = new HttpParams();
+    let params = new HttpParams();
 
-  if (mode) {
-    params = params.set('mode', mode);
-  }
-
-  if (category) {
-    params = params.set('category', category);
-  }
-
-  const token = this.isBrowser
-    ? localStorage.getItem('medcme_jwt_token')
-    : null;
-
-  const headers: Record<string, string> = token
-    ? { Authorization: `Bearer ${token}` }
-    : {};
-
-  return this.http.get<ApiResponse<EventResponse[]>>(
-    `${this.apiUrl}/upcoming-events`,
-    {
-      params,
-      headers
+    if (mode) {
+      params = params.set('mode', mode);
     }
-  ).pipe(
-    tap(response => {
-      if (response?.data && Array.isArray(response.data)) {
-        this.eventsSignal.set(response.data);
+
+    if (category) {
+      params = params.set('category', category);
+    }
+
+    const token = this.isBrowser
+      ? localStorage.getItem('medcme_jwt_token')
+      : null;
+
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
+    return this.http.get<ApiResponse<EventResponse[]>>(
+      `${this.apiUrl}/upcoming-events`,
+      {
+        params,
+        headers
       }
-    })
-  );
-}
+    ).pipe(
+      tap(response => {
+        if (response?.data && Array.isArray(response.data)) {
+          this.eventsSignal.set(response.data);
+        }
+      })
+    );
+  }
 
 
   // ============================================================
@@ -304,7 +313,6 @@ getUpcomingEvents(
       request.cardAccentColor || ''
     );
 
-
     // ------------------------------------------
     // Photo
     // ------------------------------------------
@@ -312,7 +320,6 @@ getUpcomingEvents(
     if (photo) {
       formData.append('photo', photo);
     }
-
 
     // ------------------------------------------
     // Documents
@@ -322,14 +329,23 @@ getUpcomingEvents(
       formData.append('documents', file);
     });
 
+    // ------------------------------------------
+    // JWT Token
+    // ------------------------------------------
+
+    const token = localStorage.getItem('medcme_jwt_token');
 
     return this.http
       .post<ApiResponse<EventResponse>>(
         `${this.apiUrl}/create-new-event`,
-        formData
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token || ''}`
+          }
+        }
       )
       .pipe(
-
         tap(response => {
 
           /**
@@ -337,16 +353,13 @@ getUpcomingEvents(
            * add the returned event to our signal.
            */
           if (response?.data) {
-
             this.eventsSignal.update(events => [
               response.data,
               ...events
             ]);
-
           }
 
         })
-
       );
   }
 
@@ -366,13 +379,23 @@ getUpcomingEvents(
     request: CreateEventRequest
   ): Observable<ApiResponse<EventResponse>> {
 
+    const token = this.isBrowser
+      ? localStorage.getItem('medcme_jwt_token')
+      : null;
+
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
     return this.http
       .put<ApiResponse<EventResponse>>(
         `${this.apiUrl}/update-event/${id}`,
-        request
+        request,
+        {
+          headers
+        }
       )
       .pipe(
-
         tap(response => {
 
           if (response?.data) {
@@ -388,7 +411,6 @@ getUpcomingEvents(
           }
 
         })
-
       );
   }
 
@@ -407,12 +429,22 @@ getUpcomingEvents(
     id: number
   ): Observable<ApiResponse<void>> {
 
+    const token = this.isBrowser
+      ? localStorage.getItem('medcme_jwt_token')
+      : null;
+
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
     return this.http
       .delete<ApiResponse<void>>(
-        `${this.apiUrl}/delete-event/${id}`
+        `${this.apiUrl}/delete-event/${id}`,
+        {
+          headers
+        }
       )
       .pipe(
-
         tap(() => {
 
           this.eventsSignal.update(events =>
@@ -420,7 +452,6 @@ getUpcomingEvents(
           );
 
         })
-
       );
   }
 

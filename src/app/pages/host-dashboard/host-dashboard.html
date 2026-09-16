@@ -124,7 +124,7 @@
             <!-- Left side: Speaker and tags -->
             <div class="hec-body-left">
               <div class="hec-speaker">
-                <div class="spk-avatar">{{ event.speakerName.charAt(4) || 'D' }}</div>
+                <div class="spk-avatar"> {{ (event.speakerName || 'D').charAt(0) }}</div>
                 <div class="spk-info">
                   <div class="spk-name">{{ event.speakerName }}</div>
                   <div class="spk-role">{{ event.speakerRole }}</div>
@@ -649,7 +649,7 @@
           <label>Max Seats</label>
           <input type="number" [(ngModel)]="newMaxSeats" min="1" />
         </div>
-        <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div *ngIf="!editingEventId" class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem;">
           <label style="font-weight: 700; color: #1e293b;">📚 Pre-Read Study Material &amp; Documents</label>
 
           <!-- Beautiful File Dropzone/Uploader -->

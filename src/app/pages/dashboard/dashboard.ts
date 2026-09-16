@@ -35,6 +35,9 @@ export class DashboardComponent implements OnInit {
   charityInterests = ['Rural Healthcare Camps', 'Free Pediatric Screening', 'Free Cardiac Clinics', 'NGO Medical Relief'];
   selectedInterests: string[] = [];
 
+    minEventDate = '';
+
+
   selectInterests() {
     this.showInterestPopup = true;
     // this.router.navigate(['/profile']);
@@ -192,13 +195,21 @@ export class DashboardComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) { 
-      console.log('🚨 DASHBOARD CONSTRUCTOR CALLED', new Date().toISOString());
+      // console.log('🚨 DASHBOARD CONSTRUCTOR CALLED', new Date().toISOString());
 
   }
 
   ngOnInit() {
-    console.log('🚨 DASHBOARD ngOnInit CALLED', new Date().toISOString());
-  console.trace('🚨 ngOnInit CALL STACK');
+  //   console.log('🚨 DASHBOARD ngOnInit CALLED', new Date().toISOString());
+  // console.trace('🚨 ngOnInit CALL STACK');
+   const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+     const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+
+    this.minEventDate = `${year}-${month}-${day}`;
 
     if (!isPlatformBrowser(this.platformId)) {
       return;
@@ -209,6 +220,7 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+   
 
 
     const cat = localStorage.getItem('medcme_active_category_filter');
@@ -235,31 +247,55 @@ export class DashboardComponent implements OnInit {
     if (!interestsSaved && this.authService.isDoctor()) {
       this.showInterestPopup = true;
     }
-    this.loadUpcomingEvents();
+    // this.loadUpcomingEvents();
+    this.loadAllEvents();
   }
 
-  loadUpcomingEvents(): void {
-    console.log('🔥 loadUpcomingEvents CALLED');
+  // loadUpcomingEvents(): void {
+  //   console.log('🔥 loadUpcomingEvents CALLED');
 
-    console.trace('🔥 CALL STACK');
+  //   console.trace('🔥 CALL STACK');
 
-    this.eventService.getUpcomingEvents().subscribe({
-      next: (response) => {
-        console.log('🔥 UPCOMING API RESPONSE:', response);
+  //   this.eventService.getUpcomingEvents().subscribe({
+  //     next: (response) => {
+  //       console.log('🔥 UPCOMING API RESPONSE:', response);
 
-        this.events = Array.isArray(response?.data)
-          ? response.data
-          : [];
+  //       this.events = Array.isArray(response?.data)
+  //         ? response.data
+  //         : [];
 
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Failed to load upcoming events:', error);
-        this.events = [];
-        this.cdr.detectChanges();
-      }
-    });
-  }
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: (error) => {
+  //       console.error('Failed to load upcoming events:', error);
+  //       this.events = [];
+  //       this.cdr.detectChanges();
+  //     }
+  //   });
+  // }
+
+  loadAllEvents(): void {
+  console.log('🔥 loadAllEvents CALLED');
+
+  this.eventService.getAllEvents(0, 100).subscribe({
+    next: (response) => {
+    
+
+      this.events = Array.isArray(response?.data?.content)
+        ? response.data.content
+        : [];
+
+      console.log('🔥 ALL EVENTS STORED IN DASHBOARD:', this.events);
+
+      this.cdr.detectChanges();
+    },
+    error: (error) => {
+      console.error('Failed to load all events:', error);
+      this.events = [];
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   get filteredEvents(): EventResponse[] {
 
@@ -1108,26 +1144,35 @@ export class DashboardComponent implements OnInit {
     return 'Hybrid';
   }
 
-  private convertTimeToLocalDateTime(date: string, time: string): string {
-    const cleanTime = (time || '').replace(/\s*IST\s*/i, '').trim();
-    const match = cleanTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+private convertTimeToLocalDateTime(
+  date: string,
+  time: string
+): string {
 
-    if (!match) {
-      throw new Error(`Invalid event time: ${time}`);
-    }
+  const cleanTime = (time || '')
+    .replace(/\s*IST\s*/i, '')
+    .trim();
 
-    let hour = Number(match[1]);
-    const minute = match[2];
-    const period = match[3].toUpperCase();
+  const match = cleanTime.match(
+    /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+  );
 
-    if (period === 'AM' && hour === 12) {
-      hour = 0;
-    } else if (period === 'PM' && hour !== 12) {
-      hour += 12;
-    }
-
-    return `${date}T${hour.toString().padStart(2, '0')}:${minute}:00`;
+  if (!match) {
+    throw new Error(`Invalid event time: ${time}`);
   }
+
+  let hour = Number(match[1]);
+  const minute = match[2];
+  const period = match[3].toUpperCase();
+
+  if (period === 'AM' && hour === 12) {
+    hour = 0;
+  } else if (period === 'PM' && hour !== 12) {
+    hour += 12;
+  }
+
+  return `${date}T${hour.toString().padStart(2, '0')}:${minute}:00`;
+}
 
   // Admin create event
   openCreateModal() {
@@ -1188,31 +1233,61 @@ export class DashboardComponent implements OnInit {
     }
     if (!this.authService.isAdmin()) return;
 
-    const eventDateTime = this.convertTimeToLocalDateTime(this.newDate, this.newTime);
+   const eventDateTime = this.convertTimeToLocalDateTime(
+  this.newDate,
+  this.newTime
+);
 
-    const request: CreateEventRequest = {
-      title: this.newTitle,
-      description: this.newDescription,
-      eventDate: this.newDate,
-      eventTime: eventDateTime.split('T')[1] || '10:00:00',
-      joinLink: this.newVenue,
-      zohoBackstageLink: this.newZohoLink,
-      mode: this.newMode.toUpperCase(),
-      category: this.newCategory,
-      speakerName: this.newSpeaker,
-      speakerRole: this.newSpeakerRole,
-      cmeCreditPoints: this.newCreditPoints,
-      registrationFee: this.newPrice,
-      maxSeats: this.newMaxSeats,
-      cardAccentColor: this.newBannerColor
-    };
+const request: CreateEventRequest = {
+  title: this.newTitle,
+  description: this.newDescription,
+  eventDate: `${this.newDate}T00:00:00`,
+  eventTime: eventDateTime,
+  joinLink: this.newVenue,
+  zohoBackstageLink: this.newZohoLink,
+  mode: this.newMode.toUpperCase(),
+  category: this.newCategory,
+  speakerName: this.newSpeaker,
+  speakerRole: this.newSpeakerRole,
+  cmeCreditPoints: this.newCreditPoints,
+  registrationFee: this.newPrice,
+  maxSeats: this.newMaxSeats,
+  cardAccentColor: this.newBannerColor
+};
+
+const updateRequest: CreateEventRequest = {
+  title: this.newTitle,
+  description: this.newDescription,
+
+  eventDate: `${this.newDate}T00:00:00`,
+  eventTime: eventDateTime,
+
+  joinLink: this.newVenue,
+  zohoBackstageLink: this.newZohoLink,
+
+  mode: this.newMode.toUpperCase(),
+  category: this.newCategory,
+
+  speakerName: this.newSpeaker,
+  speakerRole: this.newSpeakerRole,
+
+  sequenceNo: 1,
+  mandatory: false,
+
+  cmeCreditPoints: Number(this.newCreditPoints) || 0,
+  registrationFee: Number(this.newPrice) || 0,
+  maxSeats: Number(this.newMaxSeats) || 100,
+
+  cardAccentColor: this.newBannerColor
+};
 
     if (this.editingEventId !== null) {
-      this.eventService.updateEvent(this.editingEventId, request).subscribe({
+      this.eventService.updateEvent(this.editingEventId, updateRequest).subscribe({
         next: () => {
           this.editingEventId = null;
           this.showCreateModal = false;
-          this.loadUpcomingEvents();
+          // this.loadUpcomingEvents();
+          this.loadAllEvents();
         },
         error: (error) => {
           console.error('Failed to update event:', error);
@@ -1223,7 +1298,8 @@ export class DashboardComponent implements OnInit {
       this.eventService.createEvent(request).subscribe({
         next: () => {
           this.showCreateModal = false;
-          this.loadUpcomingEvents();
+          // this.loadUpcomingEvents();
+          this.loadAllEvents();
         },
         error: (error) => {
           console.error('Failed to create event:', error);
@@ -1247,7 +1323,8 @@ export class DashboardComponent implements OnInit {
     ev.stopPropagation();
     if (confirm('Remove this event from the platform?')) {
       this.eventService.deleteEvent(eventId).subscribe({
-        next: () => this.loadUpcomingEvents(),
+        // next: () => this.loadUpcomingEvents(),
+        next:()=> this.loadAllEvents(),
         error: (error) => {
           console.error('Failed to delete event:', error);
           alert('Failed to delete event.');

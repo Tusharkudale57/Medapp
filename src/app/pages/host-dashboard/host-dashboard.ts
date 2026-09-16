@@ -125,10 +125,10 @@ export class HostDashboardComponent implements OnInit {
 
   ngOnInit(): void {
 
-    if (!this.authService.isAdmin()) {
-      this.router.navigate(['/dashboard']);
-      return;
-    }
+    // if (!this.authService.isAdmin()) {
+    //   this.router.navigate(['/dashboard']);
+    //   return;
+    // }
 
     this.coursesList = this.courseService.getCourses();
 
