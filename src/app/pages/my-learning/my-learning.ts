@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CmeApiService } from '../../services/cme-api.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
 import { Course, CmeEvent, Certificate, EventRegistration } from '../../models/course.model';
@@ -27,6 +28,7 @@ export class MyLearningComponent implements OnInit {
   // Certificate viewer state
   selectedCertificate: Certificate | null = null;
   showCertModal = false;
+  private backendCertificates: Certificate[] = [];
 
   // Edit Goal Modal state
   showGoalModal = false;
@@ -64,6 +66,7 @@ export class MyLearningComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
+    private cmeApi: CmeApiService,
     private courseService: CourseService,
     private eventService: EventService,
     private router: Router,
@@ -78,6 +81,8 @@ export class MyLearningComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+
+    this.loadCertificates();
 
     // Set greeting based on current hour
     const hour = new Date().getHours();
@@ -171,7 +176,37 @@ export class MyLearningComponent implements OnInit {
   }
 
   get certificates(): Certificate[] {
-    return this.authService.getUserCertificates();
+    return this.backendCertificates.length > 0 ? this.backendCertificates : this.authService.getUserCertificates();
+  }
+
+  private loadCertificates() {
+    if (!this.cmeApi.hasJwtToken()) return;
+    this.cmeApi.getAllCertificates().subscribe({
+      next: (response) => {
+        const payload = response?.data ?? response;
+        const certificates = Array.isArray(payload) ? payload : payload?.certificates;
+        if (Array.isArray(certificates)) {
+          this.backendCertificates = certificates.map(cert => this.mapBackendCertificate(cert));
+        }
+      },
+      error: (error) => console.error('Failed to load certificates from backend', error)
+    });
+  }
+
+  private mapBackendCertificate(cert: any): Certificate {
+    const backendId = Number(cert.id ?? cert.certificateId ?? cert.certificateID);
+    return {
+      id: String(cert.id ?? cert.certificateId ?? cert.certificateID ?? ''),
+      backendId: Number.isInteger(backendId) && backendId > 0 ? backendId : undefined,
+      courseId: String(cert.eventId ?? cert.courseId ?? ''),
+      courseTitle: cert.title ?? cert.courseTitle ?? cert.eventTitle ?? 'CME Certificate',
+      issueDate: cert.issueDate ?? cert.issuedAt ?? '',
+      creditPoints: Number(cert.creditPoints ?? cert.credits ?? 0),
+      recipientName: cert.recipientName ?? this.authService.currentUser()?.name ?? '',
+      verificationCode: cert.verificationCode ?? cert.verificationId ?? '',
+      issuer: cert.issuer ?? 'Indian Council of Continuing Medical Education (ICCME)',
+      type: 'event'
+    };
   }
 
   // --- Course Navigation ---
@@ -540,9 +575,32 @@ export class MyLearningComponent implements OnInit {
   openCertificate(cert: Certificate) {
     this.selectedCertificate = cert;
     this.showCertModal = true;
+    this.loadCertificateDetails(cert);
     setTimeout(() => {
       this.drawCertificateOnCanvas();
     }, 150);
+  }
+
+  private loadCertificateDetails(cert: Certificate) {
+    const backendId = cert.backendId ?? Number(cert.id);
+    if (!Number.isInteger(backendId) || backendId <= 0 || !this.cmeApi.hasJwtToken()) return;
+
+    this.cmeApi.getCertificateDetails(backendId).subscribe({
+      next: (response) => {
+        const details = response?.data ?? response;
+        if (details && this.selectedCertificate === cert) {
+          this.selectedCertificate = {
+            ...cert,
+            courseTitle: details.title ?? details.courseTitle ?? cert.courseTitle,
+            issueDate: details.issueDate ?? cert.issueDate,
+            creditPoints: Number(details.creditPoints ?? cert.creditPoints),
+            verificationCode: details.verificationCode ?? cert.verificationCode,
+            issuer: details.issuer ?? cert.issuer
+          };
+        }
+      },
+      error: (error) => console.error('Failed to load certificate details', error)
+    });
   }
 
   closeCertificateModal() {
@@ -826,7 +884,18 @@ export class MyLearningComponent implements OnInit {
 
 
   downloadCertificate() {
-    if (!this.isBrowser || !this.certCanvas || !this.selectedCertificate) return;
+    if (!this.isBrowser || !this.selectedCertificate) return;
+
+    const backendId = this.selectedCertificate.backendId ?? Number(this.selectedCertificate.id);
+    if (Number.isInteger(backendId) && backendId > 0 && this.cmeApi.hasJwtToken()) {
+      this.cmeApi.downloadCertificate(backendId).subscribe({
+        next: file => this.saveCertificateFile(file),
+        error: error => console.error('Failed to download certificate', error)
+      });
+      return;
+    }
+
+    if (!this.certCanvas) return;
 
     const canvas = this.certCanvas.nativeElement;
     const image = canvas.toDataURL('image/png');
@@ -834,6 +903,15 @@ export class MyLearningComponent implements OnInit {
     link.href = image;
     link.download = `CME_Certificate_${this.selectedCertificate.verificationCode}.png`;
     link.click();
+  }
+
+  private saveCertificateFile(file: Blob) {
+    const url = window.URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `CME_Certificate_${this.selectedCertificate?.verificationCode || 'certificate'}.pdf`;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 
   downloadCertificatePdf() {

@@ -229,6 +229,27 @@ export class CmeApiService {
     });
   }
 
+  getAllCertificates(): Observable<ApiResponse<{ totalCreditPoints: number; certificates: any[] }>> {
+    return this.http.get<ApiResponse<{ totalCreditPoints: number; certificates: any[] }>>(
+      `${this.apiRoot}/certificates/get-all-certificates`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  getCertificateDetails(certificateId: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiRoot}/certificates/get-certificate-details/${certificateId}`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  downloadCertificate(certificateId: number): Observable<Blob> {
+    return this.http.get(`${this.apiRoot}/certificates/my-certificates/${certificateId}/download-certificate`, {
+      headers: this.authHeaders(),
+      params: new HttpParams().set('format', 'pdf'),
+      responseType: 'blob'
+    });
+  }
+
   getAttendanceForEvent(eventId: number): Observable<ApiResponse<BackendEventAttendanceResponse[]>> {
     return this.http.get<ApiResponse<BackendEventAttendanceResponse[]>>(`${this.attendanceRoot}/event/${eventId}`, {
       headers: this.authHeaders()
@@ -242,5 +263,9 @@ export class CmeApiService {
   private authHeaders(): HttpHeaders {
     const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
     return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+  }
+
+  hasJwtToken(): boolean {
+    return this.isBrowser && !!localStorage.getItem('medcme_jwt_token');
   }
 }
