@@ -39,6 +39,7 @@ export interface Course {
 
 export interface Certificate {
   id: string;
+  backendId?: number;
   courseId: string;
   courseTitle: string;
   issueDate: string;
