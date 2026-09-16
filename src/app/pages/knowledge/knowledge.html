@@ -20,7 +20,7 @@
         <button class="nav-link" (click)="navigateToProfile()">My Profile</button>
       </nav>
       <div class="nav-right">
-        <span class="user-name">{{ authService.currentUser()?.name }}</span>
+        <span class="user-pill"><span class="user-name">{{ authService.currentUser()?.name }}</span><span class="role-badge">Doctor</span></span>
         <button class="btn-logout" (click)="logout()">Logout</button>
       </div>
     </div>

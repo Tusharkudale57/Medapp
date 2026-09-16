@@ -44,3 +44,150 @@ html:has(.login-page), body:has(.login-page) {
 input, button, select, textarea {
   font-family: inherit;
 }
+
+/* Shared navigation dimensions. Keep page changes from resizing the header. */
+.covelis-topbar {
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+.covelis-topbar-inner {
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+.dash-navbar .nav-inner,
+.top-nav .nav-inner,
+.courses-navbar .nav-inner,
+.host-navbar .nav-inner {
+  max-width: 1400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+  height: 68px !important;
+  min-height: 68px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  align-items: center !important;
+}
+
+.dash-navbar .nav-brand,
+.top-nav .nav-brand,
+.courses-navbar .nav-brand,
+.host-navbar .nav-brand {
+  height: 40px !important;
+  min-height: 40px !important;
+  align-items: center !important;
+}
+
+.dash-navbar .nav-brand img,
+.top-nav .nav-brand img,
+.courses-navbar .nav-brand img,
+.host-navbar .nav-brand img {
+  width: auto !important;
+  height: 34px !important;
+  max-height: 34px !important;
+  object-fit: contain !important;
+}
+
+.header-explore-slot {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 122px !important;
+  width: 122px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #0056d2 !important;
+  color: #ffffff !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  line-height: 20px !important;
+  cursor: pointer !important;
+}
+
+.header-explore-slot span {
+  margin-left: 8px;
+  font-size: 0.7rem;
+}
+
+.top-nav .user-pill,
+.courses-navbar .user-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+  white-space: nowrap !important;
+}
+
+.top-nav .role-badge,
+.courses-navbar .role-badge {
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(0, 86, 210, 0.1) !important;
+  color: #0056d2 !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+}
+
+.dash-navbar .nav-link,
+.top-nav .nav-link,
+.courses-navbar .nav-link,
+.host-navbar .nav-link,
+.dash-navbar .btn-explore,
+.top-nav .btn-explore,
+.courses-navbar .btn-explore,
+.host-navbar .btn-explore,
+.dash-navbar .btn-logout,
+.top-nav .btn-logout,
+.courses-navbar .btn-logout,
+.host-navbar .btn-logout {
+  height: 40px !important;
+  min-height: 40px !important;
+  line-height: 20px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.dash-navbar .nav-link:hover,
+.dash-navbar .nav-link.active,
+.top-nav .nav-link:hover,
+.top-nav .nav-link.active,
+.courses-navbar .nav-link:hover,
+.courses-navbar .nav-link.active,
+.host-navbar .nav-link:hover,
+.host-navbar .nav-link.active {
+  border-width: 0 !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+@media (max-width: 640px) {
+  .dash-navbar .nav-inner,
+  .top-nav .nav-inner,
+  .courses-navbar .nav-inner,
+  .host-navbar .nav-inner {
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    height: auto !important;
+    min-height: 116px !important;
+    padding: 8px 16px !important;
+    align-content: center !important;
+  }
+
+  .dash-navbar .nav-brand,
+  .top-nav .nav-brand,
+  .courses-navbar .nav-brand,
+  .host-navbar .nav-brand {
+    height: 40px !important;
+  }
+}
