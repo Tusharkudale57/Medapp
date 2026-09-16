@@ -307,8 +307,8 @@
           <button class="btn-view-cert" (click)="openCertificate(cert)">
             View Certificate
           </button>
-          <button class="btn-download-cert" (click)="openCertificate(cert)">
-            Download PNG / PDF
+          <button class="btn-download-cert" (click)="openCertificate(cert); downloadCertificate()">
+            Download PDF
           </button>
         </div>
       </div>
@@ -326,20 +326,21 @@
   <div class="modal-overlay" *ngIf="showCertModal && selectedCertificate">
     <div class="cert-modal-dialog">
       <div class="cert-dialog-header">
-        <h4>Accredited CME Certificate Preview</h4>
+        <h4>Accredited CME Certificate</h4>
         <button class="close-btn" (click)="closeCertificateModal()">✕</button>
       </div>
 
-      <div class="canvas-wrapper">
-        <canvas #certCanvas class="cert-canvas"></canvas>
+      <div class="cert-meta">
+        <div><span>Title:</span> <strong>{{ selectedCertificate.courseTitle }}</strong></div>
+        <div><span>Recipient:</span> <strong>{{ selectedCertificate.recipientName }}</strong></div>
+        <div><span>Issue Date:</span> <strong>{{ selectedCertificate.issueDate }}</strong></div>
+        <div><span>Issuer:</span> <strong>{{ selectedCertificate.issuer }}</strong></div>
+        <div><span>Verification Code:</span> <code>{{ selectedCertificate.verificationCode }}</code></div>
       </div>
 
       <div class="cert-dialog-footer">
         <button class="btn-secondary" (click)="closeCertificateModal()">Close</button>
-        <button class="btn-download-action" (click)="downloadCertificate()">
-          Download PNG
-        </button>
-        <button class="btn-download-pdf-action" (click)="downloadCertificatePdf()">
+        <button class="btn-download-pdf-action" (click)="downloadCertificate()">
           Download PDF
         </button>
       </div>

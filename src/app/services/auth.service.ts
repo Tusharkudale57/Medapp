@@ -74,28 +74,7 @@ export class AuthService {
     creditPoints: 2,
     purchasedCourseIds: ['course-1'],
     completedCourseIds: ['course-1'],
-    certificates: [
-      {
-        id: 'CERT-884921',
-        courseId: 'course-1',
-        courseTitle: 'Advanced Cardiovascular Life Support & ECG Mastery',
-        issueDate: '2026-06-15',
-        creditPoints: 1,
-        recipientName: 'Dr. Tushar Kudale',
-        verificationCode: 'ACLS-2026-88492',
-        issuer: 'Indian Council of Continuing Medical Education (ICCME)'
-      },
-      {
-        id: 'CERT-884922',
-        courseId: 'course-prior',
-        courseTitle: 'Pediatric Emergency Resuscitation & Trauma Care',
-        issueDate: '2026-05-10',
-        creditPoints: 1,
-        recipientName: 'Dr. Tushar Kudale',
-        verificationCode: 'PERTC-2026-33910',
-        issuer: 'Global Board of CME Accreditation'
-      }
-    ],
+    certificates: [],
     role: 'doctor',
     city: 'Mumbai',
     interests: ['Cardiology', 'Robotic Surgery', 'Free Cardiac Clinics'],
@@ -632,30 +611,11 @@ export class AuthService {
     return true;
   }
 
-  completeCourse(courseId: string, courseTitle: string, creditPointAwarded: number = 1): Certificate {
+  completeCourse(courseId: string, courseTitle: string, creditPointAwarded: number = 1): void {
     const user = this.currentUserSignal();
     if (!user) throw new Error('No active user');
 
     const alreadyCompleted = user.completedCourseIds.includes(courseId);
-    if (alreadyCompleted) {
-      const existingCert = user.certificates.find(c => c.courseId === courseId);
-      if (existingCert) return existingCert;
-    }
-
-    const certId = 'CERT-' + Math.floor(100000 + Math.random() * 900000);
-    const verCode = 'CME-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000);
-
-    const newCertificate: Certificate = {
-      id: certId,
-      courseId: courseId,
-      courseTitle: courseTitle,
-      issueDate: new Date().toISOString().split('T')[0],
-      creditPoints: creditPointAwarded,
-      recipientName: user.name,
-      verificationCode: verCode,
-      issuer: 'National Board of Medical Continuing Education (NBMCE)',
-      type: 'course'
-    };
 
     const newCompletedList = alreadyCompleted ? user.completedCourseIds : [...user.completedCourseIds, courseId];
     const newCreditPoints = user.creditPoints + (alreadyCompleted ? 0 : creditPointAwarded);
@@ -663,14 +623,12 @@ export class AuthService {
     const updatedUser: UserProfile = {
       ...user,
       creditPoints: newCreditPoints,
-      completedCourseIds: newCompletedList,
-      certificates: [newCertificate, ...user.certificates]
+      completedCourseIds: newCompletedList
     };
 
     this.currentUserSignal.set(updatedUser);
     this.saveUserToStorage(updatedUser);
 
-    return newCertificate;
   }
 
   updateProfile(name: string, specialty: string, registrationNo: string) {
@@ -719,6 +677,8 @@ export class AuthService {
   }
 
   getUserCertificates(): Certificate[] {
+    return [];
+    /*
     const user = this.currentUserSignal();
     if (!user) return [];
 
@@ -775,6 +735,7 @@ export class AuthService {
       }
     }
     return certs;
+    */
   }
 
   /**
@@ -788,6 +749,8 @@ export class AuthService {
     creditPoints: number,
     recipientName?: string
   ): Certificate | null {
+    return null;
+    /*
     const certId = 'EVT-CERT-' + Math.floor(100000 + Math.random() * 900000);
     const verCode = 'EVTCME-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000);
 
@@ -834,5 +797,6 @@ export class AuthService {
     }
 
     return newCertificate;
+    */
   }
 }

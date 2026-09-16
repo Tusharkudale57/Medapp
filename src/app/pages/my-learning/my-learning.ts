@@ -7,7 +7,6 @@ import { CmeApiService } from '../../services/cme-api.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
 import { Course, CmeEvent, Certificate, EventRegistration } from '../../models/course.model';
-import { jsPDF } from 'jspdf';
 
 @Component({
   selector: 'app-my-learning',
@@ -176,11 +175,16 @@ export class MyLearningComponent implements OnInit {
   }
 
   get certificates(): Certificate[] {
-    return this.backendCertificates.length > 0 ? this.backendCertificates : this.authService.getUserCertificates();
+    return this.backendCertificates;
   }
 
   private loadCertificates() {
-    if (!this.cmeApi.hasJwtToken()) return;
+    if (!this.cmeApi.hasJwtToken()) {
+      console.warn('Certificate API requires a backend JWT. Please sign in through the backend login flow.');
+      this.backendCertificates = [];
+      return;
+    }
+
     this.cmeApi.getAllCertificates().subscribe({
       next: (response) => {
         const payload = response?.data ?? response;
@@ -189,15 +193,18 @@ export class MyLearningComponent implements OnInit {
           this.backendCertificates = certificates.map(cert => this.mapBackendCertificate(cert));
         }
       },
-      error: (error) => console.error('Failed to load certificates from backend', error)
+      error: (error) => {
+        this.backendCertificates = [];
+        console.error('Failed to load certificates from backend', error);
+      }
     });
   }
 
   private mapBackendCertificate(cert: any): Certificate {
-    const backendId = Number(cert.id ?? cert.certificateId ?? cert.certificateID);
+    const backendId = String(cert.id ?? cert.certificateId ?? cert.certificateID ?? '');
     return {
       id: String(cert.id ?? cert.certificateId ?? cert.certificateID ?? ''),
-      backendId: Number.isInteger(backendId) && backendId > 0 ? backendId : undefined,
+      backendId: /^\d+$/.test(backendId) ? backendId : undefined,
       courseId: String(cert.eventId ?? cert.courseId ?? ''),
       courseTitle: cert.title ?? cert.courseTitle ?? cert.eventTitle ?? 'CME Certificate',
       issueDate: cert.issueDate ?? cert.issuedAt ?? '',
@@ -385,16 +392,6 @@ export class MyLearningComponent implements OnInit {
     this.liveFeedbackSubmitted = true;
     this.liveSessionCompleted = true;
 
-    // Automatically issue the certificate to the doctor
-    const user = this.authService.currentUser();
-    if (user && this.activeLiveEvent) {
-      this.authService.issueEventCertificate(
-        user.id,
-        this.activeLiveEvent.id,
-        this.activeLiveEvent.title,
-        this.activeLiveEvent.creditPoints || 1
-      );
-    }
   }
 
   closeCompletedSession() {
@@ -576,14 +573,11 @@ export class MyLearningComponent implements OnInit {
     this.selectedCertificate = cert;
     this.showCertModal = true;
     this.loadCertificateDetails(cert);
-    setTimeout(() => {
-      this.drawCertificateOnCanvas();
-    }, 150);
   }
 
   private loadCertificateDetails(cert: Certificate) {
-    const backendId = cert.backendId ?? Number(cert.id);
-    if (!Number.isInteger(backendId) || backendId <= 0 || !this.cmeApi.hasJwtToken()) return;
+    const backendId = cert.backendId ?? cert.id;
+    if (!/^\d+$/.test(backendId)) return;
 
     this.cmeApi.getCertificateDetails(backendId).subscribe({
       next: (response) => {
@@ -886,8 +880,8 @@ export class MyLearningComponent implements OnInit {
   downloadCertificate() {
     if (!this.isBrowser || !this.selectedCertificate) return;
 
-    const backendId = this.selectedCertificate.backendId ?? Number(this.selectedCertificate.id);
-    if (Number.isInteger(backendId) && backendId > 0 && this.cmeApi.hasJwtToken()) {
+    const backendId = this.selectedCertificate.backendId ?? this.selectedCertificate.id;
+    if (/^\d+$/.test(backendId)) {
       this.cmeApi.downloadCertificate(backendId).subscribe({
         next: file => this.saveCertificateFile(file),
         error: error => console.error('Failed to download certificate', error)
@@ -895,14 +889,7 @@ export class MyLearningComponent implements OnInit {
       return;
     }
 
-    if (!this.certCanvas) return;
-
-    const canvas = this.certCanvas.nativeElement;
-    const image = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = image;
-    link.download = `CME_Certificate_${this.selectedCertificate.verificationCode}.png`;
-    link.click();
+    console.error('Certificate has no backend ID; local certificate downloads are disabled.');
   }
 
   private saveCertificateFile(file: Blob) {
@@ -915,23 +902,6 @@ export class MyLearningComponent implements OnInit {
   }
 
   downloadCertificatePdf() {
-    if (!this.isBrowser || !this.certCanvas || !this.selectedCertificate) return;
-
-    try {
-      const canvas = this.certCanvas.nativeElement;
-      const imgData = canvas.toDataURL('image/png');
-
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
-      pdf.save(`CME_Certificate_${this.selectedCertificate.verificationCode}.pdf`);
-    } catch (e) {
-      console.error('Failed to generate PDF', e);
-      alert('Could not download PDF. Please download the PNG instead.');
-    }
+    this.downloadCertificate();
   }
 }

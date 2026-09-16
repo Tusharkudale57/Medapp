@@ -378,14 +378,6 @@ export class HostDashboardComponent implements OnInit {
       if (!reg.certificateIssued) {
         // Mark certificate issued in event service
         this.eventService.markCertificateIssued(reg.eventId, reg.userId);
-        // Issue event certificate to doctor's profile
-        this.authService.issueEventCertificate(
-          reg.userId,
-          reg.eventId,
-          event.title,
-          event.creditPoints,
-          reg.userName
-        );
         count++;
       }
     }

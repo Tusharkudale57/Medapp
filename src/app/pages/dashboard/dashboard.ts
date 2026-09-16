@@ -599,15 +599,6 @@ export class DashboardComponent implements OnInit {
 
     this.liveSessionCompleted = true;
 
-    // Automatically issue the certificate to the doctor
-    if (user && this.activeLiveEvent) {
-      this.authService.issueEventCertificate(
-        user.id,
-        this.activeLiveEvent.id,
-        this.activeLiveEvent.title,
-        this.activeLiveEvent.creditPoints || 1
-      );
-    }
   }
 
   closeCompletedSession() {
