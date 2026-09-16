@@ -137,8 +137,8 @@
           Panel</button>
       </nav>
       <div class="nav-right">
-        <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;"
-          title="Click to instantly switch between Doctor & Admin roles">
+        <!-- <div class="user-pill" (click)="toggleRole()" style="cursor: pointer;" -->
+        <div class="user-pill" style="cursor: pointer;" title="Click to instantly switch between Doctor & Admin roles">
           <span class="user-name">{{ authService.currentUser()?.name }}</span>
           <span class="role-badge" [class.admin-badge]="authService.isAdmin()">
             {{ authService.isAdmin() ? 'Admin 🔄' : 'Doctor 🔄' }}
@@ -393,7 +393,7 @@
 
               <div class="instructor-row-coursera">
                 <div class="avatar-circle">
-                   {{ (event.speakerName || 'D').charAt(0) }}
+                  {{ (event.speakerName || 'D').charAt(0) }}
                 </div>
 
                 <div class="inst-details">
@@ -961,7 +961,7 @@
         </div>
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" [(ngModel)]="newDate"  [min]="minEventDate" />
+          <input type="date" [(ngModel)]="newDate" [min]="minEventDate" />
         </div>
         <div class="form-group">
           <label>Time</label>
@@ -1816,7 +1816,7 @@
             <label
               style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Date
               *</label>
-          <input type="date" [(ngModel)]="newDate"  [min]="minEventDate" 
+            <input type="date" [(ngModel)]="newDate" [min]="minEventDate"
               style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
           </div>
           <div>
@@ -1835,9 +1835,10 @@
             style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
         </div>
 
-         <div>
+        <div>
           <label
-            style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Zoho Backstage link*</label>
+            style="font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 0.35rem;">Zoho
+            Backstage link*</label>
           <input type="text" [(ngModel)]="newZohoLink" placeholder="e.g. https://backstage.zoho.com/events/..."
             style="width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;" />
         </div>
