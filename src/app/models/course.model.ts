@@ -316,6 +316,7 @@ export interface EventResponse {
   category: string;
   mandatory: boolean;
   createdAt: string;
+  status: string;
   cmeCreditPoints: number | null;
   registrationFee: number;
   maxSeats: number | null;
@@ -338,6 +339,7 @@ export interface EventPageResponse {
 export interface CreateEventRequest {
   speakerName?: string;
   speakerRole?: string;
+  speakerEmail?: string;
   title: string;
   description?: string;
   sequenceNo?: number;

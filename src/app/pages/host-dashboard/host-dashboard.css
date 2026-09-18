@@ -740,3 +740,33 @@
   font-size: 0.9rem; font-weight: 600; cursor: pointer;
   white-space: nowrap;
 }
+
+.sync-zoho-btn {
+  background: linear-gradient(135deg, #eaf4ff, #dcecff);
+  color: #1769aa;
+  border: 1px solid #b9d8f5;
+}
+
+.sync-zoho-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dcecff, #cbe2fa);
+  border-color: #1769aa;
+  transform: translateY(-1px);
+}
+
+.publish-btn {
+  background: linear-gradient(135deg, #315eea, #5548e8);
+  color: #ffffff;
+  border: 1px solid #315eea;
+  box-shadow: 0 4px 10px rgba(49, 94, 234, 0.18);
+}
+
+.publish-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #264ed1, #4438d0);
+  transform: translateY(-1px);
+}
+
+.sync-zoho-btn:disabled,
+.publish-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

@@ -117,9 +117,9 @@
         <div class="filter-dropdowns">
           <select [(ngModel)]="selectedFormat">
             <option value="All">All Formats</option>
-            <option value="Online">Online / Virtual</option>
-            <option value="Offline">Offline / Live</option>
-            <option value="Hybrid">Hybrid</option>
+            <option value="ONLINE">Online / Virtual</option>
+            <option value="OFFLINE">Offline / Live</option>
+            <option value="HYBRID">Hybrid</option>
           </select>
           <button class="btn-filter-action"
             (click)="searchQuery = ''; selectedSpecialty = 'All'; selectedFormat = 'All'">Reset Filter</button>
@@ -151,9 +151,9 @@
             <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img"
               (error)="onImgError($event, event.category, event.title)" />
             <div class="event-poster-overlay"></div>
-            <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'"
-              [class.hybrid]="event.mode === 'Hybrid'">
-              {{ event.mode === 'Offline' ? 'LIVE EVENT' : event.mode === 'Online' ? 'VIRTUAL' : 'HYBRID' }}
+            <span class="format-badge" [class.live]="event.mode === 'OFFLINE'" [class.virtual]="event.mode === 'ONLINE'"
+              [class.hybrid]="event.mode === 'HYBRID'">
+              {{ event.mode === 'OFFLINE' ? 'LIVE EVENT' : event.mode === 'ONLINE' ? 'VIRTUAL' : 'HYBRID' }}
             </span>
             <span class="event-category-pill">
               {{ event.category }}

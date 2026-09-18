@@ -355,7 +355,7 @@ export class AuthService {
     return this.http.get<any>('/api/profile/get-my-profile', { headers }).pipe(
       catchError((err) => {
         if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}/api/profile/get-my-profile`, { headers });
+          return this.http.get<any>(`${this.backendUrl}/api/profile/get-my-profile`, { headers });
         }
         return throwError(() => err);
       })

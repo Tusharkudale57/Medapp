@@ -285,7 +285,7 @@ export class DashboardComponent implements OnInit {
         ? response.data.content
         : [];
 
-      console.log('🔥 ALL EVENTS STORED IN DASHBOARD:', this.events);
+      // console.log('🔥 ALL EVENTS STORED IN DASHBOARD:', this.events);
 
       this.cdr.detectChanges();
     },
@@ -1249,6 +1249,7 @@ const request: CreateEventRequest = {
   category: this.newCategory,
   speakerName: this.newSpeaker,
   speakerRole: this.newSpeakerRole,
+  speakerEmail:this.newSpeakerEmail,
   cmeCreditPoints: this.newCreditPoints,
   registrationFee: this.newPrice,
   maxSeats: this.newMaxSeats,
@@ -1270,7 +1271,7 @@ const updateRequest: CreateEventRequest = {
 
   speakerName: this.newSpeaker,
   speakerRole: this.newSpeakerRole,
-
+  speakerEmail:this.newSpeakerEmail,
   sequenceNo: 1,
   mandatory: false,
 

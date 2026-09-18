@@ -243,6 +243,11 @@ export class EventService {
       request.speakerRole || ''
     );
 
+     formData.append(
+      'speakerEmail',
+      request.speakerEmail || ''
+    );
+
     formData.append(
       'title',
       request.title
@@ -894,4 +899,97 @@ export class EventService {
   clearEvents(): void {
     this.eventsSignal.set([]);
   }
+
+  publishEvent(
+  id: number
+): Observable<ApiResponse<EventResponse>> {
+
+  const token = this.isBrowser
+    ? localStorage.getItem('medcme_jwt_token')
+    : null;
+
+  const headers: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  return this.http.patch<ApiResponse<EventResponse>>(
+    `${this.apiUrl}/${id}/publish`,
+    {},
+    { headers }
+  ).pipe(
+    tap(response => {
+      if (response?.data) {
+        this.eventsSignal.update(events =>
+          events.map(event =>
+            event.id === id
+              ? response.data!
+              : event
+          )
+        );
+      }
+    })
+  );
+}
+
+unpublishEvent(
+  id: number
+): Observable<ApiResponse<EventResponse>> {
+
+  const token = this.isBrowser
+    ? localStorage.getItem('medcme_jwt_token')
+    : null;
+
+  const headers: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  return this.http.patch<ApiResponse<EventResponse>>(
+    `${this.apiUrl}/${id}/unpublish`,
+    {},
+    { headers }
+  ).pipe(
+    tap(response => {
+      if (response?.data) {
+        this.eventsSignal.update(events =>
+          events.map(event =>
+            event.id === id
+              ? response.data!
+              : event
+          )
+        );
+      }
+    })
+  );
+}
+
+syncEventFromZoho(
+  id: number
+): Observable<ApiResponse<EventResponse>> {
+
+  const token = this.isBrowser
+    ? localStorage.getItem('medcme_jwt_token')
+    : null;
+
+  const headers: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  return this.http.post<ApiResponse<EventResponse>>(
+    `${this.apiUrl}/${id}/sync-from-zoho`,
+    {},
+    { headers }
+  ).pipe(
+    tap(response => {
+      if (response?.data) {
+        this.eventsSignal.update(events =>
+          events.map(event =>
+            event.id === id
+              ? response.data!
+              : event
+          )
+        );
+      }
+    })
+  );
+}
 }

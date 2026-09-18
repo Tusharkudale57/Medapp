@@ -50,10 +50,10 @@
         <div class="stat-num">{{ totalCertificatesIssued }}</div>
         <div class="stat-label">Certificates Issued</div>
       </div>
-      <div class="stat-card create-stat" (click)="openCreateModal()">
+      <!-- <div class="stat-card create-stat" (click)="openCreateModal()">
         <div class="create-plus">+</div>
         <div class="stat-label">Create New Event</div>
-      </div>
+      </div> -->
     </div>
   </section>
 
@@ -103,13 +103,15 @@
 
       <!-- Event Cards -->
       <div *ngIf="hostEvents.length > 0" class="hec-list">
-        <div *ngFor="let event of hostEvents" class="hec-card" [style.border-left-color]="event.cardAccentColor || '#0ea5e9'">
+        <div *ngFor="let event of hostEvents" class="hec-card"
+          [style.border-left-color]="event.cardAccentColor || '#0ea5e9'">
 
           <!-- Card Header -->
           <div class="hec-header"
             [style.background]="'linear-gradient(135deg,' + (event.cardAccentColor || '#0ea5e9') + '22,' + (event.cardAccentColor || '#0ea5e9') + '08)'">
             <div class="hec-meta">
-              <span class="hec-mode-badge" [style.background]="event.cardAccentColor || '#0ea5e9'">{{ event.mode }}</span>
+              <span class="hec-mode-badge" [style.background]="event.cardAccentColor || '#0ea5e9'">{{ event.mode
+                }}</span>
               <span class="hec-cat">{{ event.category }}</span>
             </div>
             <h3 class="hec-title">{{ event.title }}</h3>
@@ -173,34 +175,96 @@
             </div>
           </div>
 
-        <!-- Action Buttons -->
-        <div class="hec-actions">
-          <button class="action-btn attend-btn" (click)="openAttendanceModal(event)">
-            &#9998; Manage Attendance & Issue Certificates ({{ getEnrolledCount(event.id) }})
-          </button>
-          <div class="hec-actions-row">
-            <button class="action-btn copy-btn" (click)="copyPaymentLink(event)" [class.copied]="copiedEventId === event.id">
-              <span *ngIf="copiedEventId !== event.id">&#128279; Copy Link</span>
-              <span *ngIf="copiedEventId === event.id">&#10003; Copied!</span>
+          <!-- Action Buttons -->
+          <div class="hec-actions">
+
+            <!-- Attendance -->
+            <button class="action-btn attend-btn" (click)="openAttendanceModal(event)">
+              &#9998; Manage Attendance & Issue Certificates
+              ({{ getEnrolledCount(event.id) }})
             </button>
-            <button class="action-btn whatsapp-btn" (click)="shareOnWhatsApp(event)">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L0 24l6.32-1.508A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 01-5.002-1.367l-.359-.213-3.722.888.938-3.62-.234-.374A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
-              </svg>
-              Share WhatsApp
-            </button>
-            <button class="action-btn edit-btn" (click)="openEditModal(event)">
-              ✏️ Edit Event
-            </button>
-            <button class="action-btn delete-btn" (click)="deleteEvent(event.id)">
-              &#128465; Remove Event
-            </button>
+
+            <div class="hec-actions-row">
+
+              <!-- Copy Link -->
+              <button class="action-btn copy-btn" (click)="copyPaymentLink(event)"
+                [class.copied]="copiedEventId === event.id">
+
+                <span *ngIf="copiedEventId !== event.id">
+                  &#128279; Copy Link
+                </span>
+
+                <span *ngIf="copiedEventId === event.id">
+                  &#10003; Copied!
+                </span>
+              </button>
+
+              <!-- WhatsApp -->
+              <button class="action-btn whatsapp-btn" (click)="shareOnWhatsApp(event)">
+
+                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+
+                  <path
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371.074-.57.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+
+                  <path
+                    d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L0 24l6.32-1.508A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 01-5.002-1.367l-.359-.213-3.722.888.938-3.62-.234-.374A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z" />
+                </svg>
+
+                Share WhatsApp
+              </button>
+
+              <!-- Edit -->
+              <button class="action-btn edit-btn" (click)="openEditModal(event)">
+                ✏️ Edit Event
+              </button>
+
+              <!-- Delete -->
+              <button class="action-btn delete-btn" (click)="deleteEvent(event.id)">
+                &#128465; Remove Event
+              </button>
+
+              <!-- Sync with Zoho -->
+              <button class="action-btn sync-zoho-btn" (click)="syncEventWithZoho(event)"
+                [disabled]="syncingEventId === event.id">
+
+                <span *ngIf="syncingEventId !== event.id">
+                  &#128260; Sync with Zoho
+                </span>
+
+                <span *ngIf="syncingEventId === event.id">
+                  &#128260; Syncing...
+                </span>
+
+              </button>
+
+              <!-- Publish / Unpublish -->
+              <button class="action-btn publish-btn" (click)="toggleEventPublishStatus(event)"
+                [disabled]="publishingEventId === event.id">
+
+                <span *ngIf="publishingEventId !== event.id">
+
+                  <ng-container *ngIf="event.status === 'PUBLISHED'; else publishText">
+                    &#128683; Unpublish Event
+                  </ng-container>
+
+                  <ng-template #publishText>
+                    &#128228; Publish Event
+                  </ng-template>
+
+                </span>
+
+                <span *ngIf="publishingEventId === event.id">
+                  Processing...
+                </span>
+
+              </button>
+
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </ng-container>
+    </ng-container>
 
     <!-- View 2: CME Courses list -->
     <ng-container *ngIf="activeHostTab === 'courses'">
@@ -425,7 +489,8 @@
         <div>
           <div class="modal-tag">Attendance Sheet</div>
           <h2>{{ selectedEventForAttendance.title }}</h2>
-          <p class="modal-sub">{{ formatDate(selectedEventForAttendance.eventDateTime) }} at {{ selectedEventForAttendance.eventDateTime | date:'hh:mm a' }} &bull; {{
+          <p class="modal-sub">{{ formatDate(selectedEventForAttendance.eventDateTime) }} at {{
+            selectedEventForAttendance.eventDateTime | date:'hh:mm a' }} &bull; {{
             selectedEventForAttendance.joinLink || 'No meeting link' }}</p>
         </div>
         <button class="close-btn" (click)="closeAttendanceModal()">&#10005;</button>
@@ -593,7 +658,7 @@
         </div>
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" [(ngModel)]="newDate"  [min]="minEventDate" />
+          <input type="date" [(ngModel)]="newDate" [min]="minEventDate" />
         </div>
         <div class="form-group">
           <label>Time</label>
@@ -609,7 +674,8 @@
         </div>
         <div class="form-group full-width">
           <label>Internal Stream Embed URL</label>
-          <input type="text" [(ngModel)]="newStreamEmbedUrl" placeholder="e.g. https://www.youtube.com/embed/live-video-id" />
+          <input type="text" [(ngModel)]="newStreamEmbedUrl"
+            placeholder="e.g. https://www.youtube.com/embed/live-video-id" />
         </div>
         <div class="form-group">
           <label>Mode</label>
@@ -649,7 +715,8 @@
           <label>Max Seats</label>
           <input type="number" [(ngModel)]="newMaxSeats" min="1" />
         </div>
-        <div *ngIf="!editingEventId" class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div *ngIf="!editingEventId" class="form-group full-width"
+          style="display: flex; flex-direction: column; gap: 0.5rem;">
           <label style="font-weight: 700; color: #1e293b;">📚 Pre-Read Study Material &amp; Documents</label>
 
           <!-- Beautiful File Dropzone/Uploader -->
@@ -717,8 +784,7 @@
         </div>
         <div class="modal-actions">
           <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
-          <button class="btn-create-submit" (click)="saveEvent()"
-            [disabled]="!canSaveEvent()">
+          <button class="btn-create-submit" (click)="saveEvent()" [disabled]="!canSaveEvent()">
             {{ editingEventId ? 'Update Event Details' : 'Create Event & Generate Payment Link' }}
           </button>
         </div>

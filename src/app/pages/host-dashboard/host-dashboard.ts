@@ -8,6 +8,8 @@ import { AuthService } from '../../services/auth.service';
 import { CourseService } from '../../services/course.service';
 import { EmailService } from '../../services/email.service';
 import { EventRegistration, Course,EventResponse ,CreateEventRequest} from '../../models/course.model';
+import { ChangeDetectorRef } from '@angular/core';
+
 
 @Component({
   selector: 'app-host-dashboard',
@@ -21,6 +23,8 @@ export class HostDashboardComponent implements OnInit {
   showCreateModal = false;
 
   editingEventId: number | null = null;
+  syncingEventId: number | null = null;
+ publishingEventId: number | null = null;
 
   showAttendanceModal = false;
   selectedEventForAttendance: EventResponse | null = null;
@@ -116,7 +120,8 @@ export class HostDashboardComponent implements OnInit {
     public authService: AuthService,
     public courseService: CourseService,
     public emailService: EmailService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   // ===========================================================================
@@ -144,7 +149,7 @@ export class HostDashboardComponent implements OnInit {
     // Load events from backend.
     this.eventService.getAllEvents(0, 100).subscribe({
       next: response => {
-        console.log('Host dashboard events loaded:', response.data.content);
+        // console.log('Host dashboard events loaded:', response.data.content);
       },
       error: error => {
         console.error('Failed to load events:', error);
@@ -435,7 +440,7 @@ export class HostDashboardComponent implements OnInit {
       const request: CreateEventRequest = {
         speakerName: this.newSpeaker,
         speakerRole: this.newSpeakerRole,
-
+          speakerEmail: this.newSpeakerEmail,
         title: this.newTitle,
         description: this.newDescription,
 
@@ -504,6 +509,7 @@ export class HostDashboardComponent implements OnInit {
 
       speakerName: this.newSpeaker,
       speakerRole: this.newSpeakerRole,
+      speakerEmail: this.newSpeakerEmail,
 
       title: this.newTitle,
       description: this.newDescription,
@@ -1243,5 +1249,105 @@ export class HostDashboardComponent implements OnInit {
   );
 
   alert('EmailJS settings updated and saved to system registry!');
+}
+
+syncEventWithZoho(event: EventResponse): void {
+  if (!event?.id) {
+    return;
+  }
+
+  this.syncingEventId = event.id;
+
+  this.eventService.syncEventFromZoho(event.id).subscribe({
+    next: (response) => {
+      this.syncingEventId = null;
+
+      if (response?.success) {
+        alert(
+          response.message || 'Event synced with Zoho successfully.'
+        );
+
+        // Update current event with latest backend data
+        if (response.data) {
+          Object.assign(event, response.data);
+        }
+      } else {
+        alert(
+          response?.message || 'Failed to sync event with Zoho.'
+        );
+      }
+    },
+
+    error: (error) => {
+      this.syncingEventId = null;
+
+      const message =
+        error?.error?.message ||
+        error?.message ||
+        'Failed to sync event with Zoho.';
+
+      alert(message);
+    }
+  });
+}
+
+toggleEventPublishStatus(event: EventResponse): void {
+  if (!event?.id) {
+    return;
+  }
+
+  const isPublished =
+    event.status?.toUpperCase() === 'PUBLISHED';
+
+  this.publishingEventId = event.id;
+
+  const request$ = isPublished
+    ? this.eventService.unpublishEvent(event.id)
+    : this.eventService.publishEvent(event.id);
+
+  request$.subscribe({
+    next: (response) => {
+      this.publishingEventId = null;
+
+      if (response?.success) {
+
+        if (response.data) {
+          Object.assign(event, response.data);
+        } else {
+          event.status = isPublished
+            ? 'UNPUBLISHED'
+            : 'PUBLISHED';
+        }
+
+        alert(
+          response.message ||
+          (isPublished
+            ? 'Event unpublished successfully.'
+            : 'Event published successfully.')
+        );
+
+      } else {
+        alert(
+          response?.message ||
+          (isPublished
+            ? 'Failed to unpublish event.'
+            : 'Failed to publish event.')
+        );
+      }
+    },
+
+    error: (error) => {
+      this.publishingEventId = null;
+
+      const message =
+        error?.error?.message ||
+        error?.message ||
+        (isPublished
+          ? 'Failed to unpublish event.'
+          : 'Failed to publish event.');
+
+      alert(message);
+    }
+  });
 }
 }

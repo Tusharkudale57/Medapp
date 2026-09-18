@@ -178,6 +178,7 @@ export class LoginComponent implements OnInit {
     this.eventService.getUpcomingEvents().subscribe({
       next: (response) => {
         this.events = response.data ?? [];
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load upcoming events:', error);
