@@ -294,3 +294,44 @@ export interface ApiResponse<T = any> {
   data: T;
 }
 
+export interface AttendanceEntryPayload {
+  registrationId: number;
+  present: boolean;
+}
+
+export interface BulkAttendancePayload {
+  entries: AttendanceEntryPayload[];
+}
+
+export interface AttendanceSheetRow {
+  registrationId: number;
+  doctorName: string;
+  mobileNumber: string;
+  paymentStatus: string;
+  attended: boolean;
+  creditsStatus: string;
+}
+
+export interface AttendanceSheetData {
+  eventTitle: string;
+  enrolledCount: number;
+  presentCount: number;
+  absentCount: number;
+  certsIssuedCount: number;
+  rows: AttendanceSheetRow[];
+}
+
+export interface AllocateCreditsResponse {
+  certificatesIssued: number;
+  alreadyIssued: number;
+  sheet: AttendanceSheetData;
+}
+
+export interface AttendanceStatusSummary {
+  enrolledCount: number;
+  presentCount: number;
+  absentCount: number;
+  certsIssuedCount: number;
+}
+
+

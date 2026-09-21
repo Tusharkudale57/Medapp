@@ -2,6 +2,11 @@ import { Injectable, signal, computed, Inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { firstValueFrom, timeout } from 'rxjs';
 import {
+  AllocateCreditsResponse,
+  AttendanceEntryPayload,
+  AttendanceSheetData,
+  AttendanceSheetRow,
+  AttendanceStatusSummary,
   BackendEventAttendanceResponse,
   BackendEventRegistrationResponse,
   BackendEventRequest,
@@ -736,7 +741,205 @@ export class EventService {
     } catch (e) {
       console.warn('Backend attendance unavailable; using local attendance.', e);
     }
+    await this.syncAttendanceSheetFromBackend(eventId);
   }
+
+  /**
+   * GET /api/admin/attendance/event/{eventId}/get-attendance-sheet
+   * Sync full attendance sheet data & update local stats/registrations
+   */
+  async syncAttendanceSheetFromBackend(eventId: string): Promise<AttendanceSheetData | null> {
+    const event = this.getEventById(eventId);
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+    if (!backendId) return null;
+    try {
+      const response = await firstValueFrom(this.api.getAttendanceSheet(backendId));
+      const sheetData: AttendanceSheetData | null = response?.data || (response?.rows ? response : null);
+      if (sheetData) {
+        // Update event statistics
+        this.eventsSignal.update(events =>
+          events.map(e => e.id === eventId ? {
+            ...e,
+            registeredCount: sheetData.enrolledCount ?? e.registeredCount,
+            presentCount: sheetData.presentCount ?? e.presentCount,
+            absentCount: sheetData.absentCount ?? e.absentCount,
+            certificateIssuedCount: sheetData.certsIssuedCount ?? e.certificateIssuedCount
+          } : e)
+        );
+        this.saveEventsToStorage();
+
+        // Update registrations signal from backend rows
+        if (Array.isArray(sheetData.rows)) {
+          this.registrationsSignal.update(regs => {
+            const list = [...regs];
+            for (const row of sheetData.rows) {
+              const idx = list.findIndex(r => r.eventId === eventId && (
+                r.registrationId === row.registrationId ||
+                r.userName === row.doctorName ||
+                (r.userPhone && row.mobileNumber && r.userPhone === row.mobileNumber)
+              ));
+              if (idx >= 0) {
+                list[idx] = {
+                  ...list[idx],
+                  registrationId: row.registrationId || list[idx].registrationId,
+                  attended: row.attended,
+                  attendanceStatus: row.attended ? 'PRESENT' : 'ABSENT',
+                  certificateIssued: row.creditsStatus === 'Issued' || row.creditsStatus === 'Allocated',
+                  paymentStatus: (row.paymentStatus?.toLowerCase() === 'confirmed' ? 'paid' : list[idx].paymentStatus) as any
+                };
+              } else {
+                // Add missing row from backend as new UI registration
+                list.push({
+                  registrationId: row.registrationId,
+                  eventId: eventId,
+                  backendEventId: backendId,
+                  userId: 'doc_backend_' + row.registrationId,
+                  userName: row.doctorName || 'Dr. Doctor',
+                  userPhone: row.mobileNumber || '9876543210',
+                  registeredAt: new Date().toISOString(),
+                  paymentStatus: (row.paymentStatus?.toLowerCase() === 'confirmed' ? 'paid' : 'pending') as any,
+                  attended: row.attended,
+                  attendanceStatus: row.attended ? 'PRESENT' : 'ABSENT',
+                  certificateIssued: row.creditsStatus === 'Issued' || row.creditsStatus === 'Allocated'
+                });
+              }
+            }
+            return list;
+          });
+          this.saveRegistrationsToStorage();
+        }
+        return sheetData;
+      }
+    } catch (e) {
+      console.warn('Backend attendance sheet unavailable; using local sheet.', e);
+    }
+    return null;
+  }
+
+  /**
+   * PUT /api/admin/attendance/event/{eventId}/attendance-update-one-or-bulk
+   * Single or bulk update doctor attendance
+   */
+  async updateAttendanceOneOrBulk(eventId: string, entries: AttendanceEntryPayload[]): Promise<boolean> {
+    const event = this.getEventById(eventId);
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+    
+    // Update local signal state immediately for high responsiveness
+    const entryMap = new Map<number, boolean>();
+    entries.forEach(e => entryMap.set(e.registrationId, e.present));
+
+    this.registrationsSignal.update(regs =>
+      regs.map(r => {
+        if (r.eventId === eventId && r.registrationId && entryMap.has(r.registrationId)) {
+          const isPresent = entryMap.get(r.registrationId)!;
+          return {
+            ...r,
+            attended: isPresent,
+            attendanceStatus: isPresent ? 'PRESENT' : 'ABSENT',
+            attendedAt: isPresent ? new Date().toISOString() : undefined,
+            certificateIssued: isPresent ? r.certificateIssued : false
+          };
+        }
+        return r;
+      })
+    );
+    this.saveRegistrationsToStorage();
+
+    if (backendId) {
+      try {
+        await firstValueFrom(this.api.updateAttendanceBulk(backendId, entries));
+        await this.syncAttendanceSheetFromBackend(eventId);
+        return true;
+      } catch (e) {
+        console.warn('Backend bulk attendance update failed; local attendance retained.', e);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * POST /api/admin/attendance/event/{eventId}/allocate-credits
+   * Allocate CME credits and issue certificates end-to-end
+   */
+  async allocateCreditsForEvent(eventId: string): Promise<{ certificatesIssued: number; alreadyIssued: number; sheet?: AttendanceSheetData }> {
+    const event = this.getEventById(eventId);
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+
+    let result = { certificatesIssued: 0, alreadyIssued: 0, sheet: undefined as AttendanceSheetData | undefined };
+
+    if (backendId) {
+      try {
+        const response = await firstValueFrom(this.api.allocateCredits(backendId));
+        const resData = response?.data || response;
+        if (resData && typeof resData.certificatesIssued === 'number') {
+          result.certificatesIssued = resData.certificatesIssued;
+          result.alreadyIssued = resData.alreadyIssued ?? 0;
+          result.sheet = resData.sheet;
+        }
+      } catch (e) {
+        console.warn('Backend allocate-credits endpoint call failed; falling back to local allocation.', e);
+      }
+    }
+
+    // Update local registrations to mark certificateIssued = true
+    let localIssuedCount = 0;
+    this.registrationsSignal.update(list =>
+      list.map(r => {
+        if (r.eventId === eventId && r.attended) {
+          if (!r.certificateIssued) {
+            localIssuedCount++;
+          }
+          return { ...r, certificateIssued: true };
+        }
+        return r;
+      })
+    );
+    this.saveRegistrationsToStorage();
+
+    if (result.certificatesIssued === 0 && localIssuedCount > 0) {
+      result.certificatesIssued = localIssuedCount;
+    }
+
+    // Update event stats
+    if (event) {
+      this.eventsSignal.update(events =>
+        events.map(e => e.id === eventId ? {
+          ...e,
+          certificateIssuedCount: Math.max((e.certificateIssuedCount || 0), (this.getPresentCount(eventId)))
+        } : e)
+      );
+      this.saveEventsToStorage();
+    }
+
+    return result;
+  }
+
+  /**
+   * GET /api/admin/attendance/event/{eventId}/export-attendance-sheet
+   * Download/Export event attendance sheet
+   */
+  async exportAttendanceSheet(eventId: string): Promise<boolean> {
+    const event = this.getEventById(eventId);
+    const backendId = event?.backendId ?? this.toBackendId(eventId);
+    if (backendId) {
+      try {
+        const blob = await firstValueFrom(this.api.exportAttendanceSheet(backendId));
+        if (blob && blob.size > 0) {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `CME_Attendance_Sheet_${event?.title ? event.title.replace(/\s+/g, '_') : backendId}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          return true;
+        }
+      } catch (e) {
+        console.warn('Backend export-attendance-sheet failed; client CSV export fallback will handle download.', e);
+      }
+    }
+    return false;
+  }
+
 
   private loadFromStorage() {
     if (!this.isBrowser) return;
@@ -897,19 +1100,10 @@ export class EventService {
       this.saveRegistrationsToStorage();
       const reg = this.getRegistration(eventId, userId);
       if (reg?.registrationId) {
-        this.api.markAttendance({
+        this.updateAttendanceOneOrBulk(eventId, [{
           registrationId: reg.registrationId,
-          status: attended ? 'PRESENT' : 'ABSENT',
-          minutesAttended: attended ? 60 : 0
-        }).subscribe({
-          next: (response) => {
-            if (response?.success && response.data) {
-              this.applyBackendAttendance([response.data]);
-              this.refreshEventFromBackend(eventId);
-            }
-          },
-          error: (e) => console.warn('Backend attendance update failed; local attendance retained.', e)
-        });
+          present: attended
+        }]);
       }
     }
     return found;

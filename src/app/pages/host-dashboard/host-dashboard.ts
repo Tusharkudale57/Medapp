@@ -310,7 +310,7 @@ export class HostDashboardComponent implements OnInit {
     this.absentMsg = '';
     this.presentMsg = '';
     this.eventService.syncEventRegistrationsFromBackend(event.id).then(() => {
-      this.eventService.syncAttendanceFromBackend(event.id);
+      this.eventService.syncAttendanceSheetFromBackend(event.id);
     });
   }
 
@@ -362,7 +362,7 @@ export class HostDashboardComponent implements OnInit {
     this.certIssuedMsg = '';
   }
 
-  allocateCreditsToSelected() {
+  async allocateCreditsToSelected() {
     if (!this.selectedEventForAttendance) return;
     const event = this.selectedEventForAttendance;
     const attendees = this.getAttendees(event.id);
@@ -373,29 +373,29 @@ export class HostDashboardComponent implements OnInit {
       return;
     }
 
-    let count = 0;
+    // Call backend POST /api/admin/attendance/event/{eventId}/allocate-credits
+    const res = await this.eventService.allocateCreditsForEvent(event.id);
+
+    // Issue certificates locally for attendees so doctor user profiles update immediately
     for (const reg of selectedAttendees) {
-      if (!reg.certificateIssued) {
-        // Mark certificate issued in event service
-        this.eventService.markCertificateIssued(reg.eventId, reg.userId);
-        // Issue event certificate to doctor's profile
-        this.authService.issueEventCertificate(
-          reg.userId,
-          reg.eventId,
-          event.title,
-          event.creditPoints,
-          reg.userName
-        );
-        count++;
-      }
+      this.authService.issueEventCertificate(
+        reg.userId,
+        reg.eventId,
+        event.title,
+        event.creditPoints,
+        reg.userName
+      );
     }
 
-    if (count > 0) {
-      this.certIssuedMsg = `Successfully allocated CME credit points and issued certificates to ${count} selected attendee(s)!`;
+    if (res.certificatesIssued > 0) {
+      this.certIssuedMsg = `Successfully allocated CME credit points & issued ${res.certificatesIssued} certificate(s)! (Already issued: ${res.alreadyIssued})`;
+    } else if (res.alreadyIssued > 0) {
+      this.certIssuedMsg = `Selected attendees already have credits allocated (${res.alreadyIssued} certificates previously issued).`;
     } else {
-      this.certIssuedMsg = `Selected attendees already have credits allocated.`;
+      this.certIssuedMsg = `Successfully allocated CME credit points and issued certificates to selected attendee(s)!`;
     }
-    setTimeout(() => this.certIssuedMsg = '', 5000);
+
+    setTimeout(() => this.certIssuedMsg = '', 6000);
   }
 
   sendCourseLinkWhatsApp(course: Course) {
@@ -414,20 +414,22 @@ export class HostDashboardComponent implements OnInit {
     }
   }
 
-  downloadCsvReport() {
+  async downloadCsvReport() {
     if (!this.selectedEventForAttendance) return;
     const event = this.selectedEventForAttendance;
-    const attendees = this.getAttendees(event.id);
     
+    // Try downloading export file from backend GET /api/admin/attendance/event/{eventId}/export-attendance-sheet
+    const exported = await this.eventService.exportAttendanceSheet(event.id);
+    if (exported) return;
+
+    // Fallback to client CSV generation if backend download is unavailable/offline
+    const attendees = this.getAttendees(event.id);
     if (attendees.length === 0) {
       alert('No registrations to download.');
       return;
     }
 
-    // CSV Headers
     const headers = ['Doctor Name', 'Email', 'Mobile Number', 'Registration Status', 'Attended (Y/N)', 'Credits Status', 'Registered At'];
-    
-    // CSV Rows
     const rows = attendees.map(reg => [
       `"${reg.userName.replace(/"/g, '""')}"`,
       `"${(reg.userEmail || '').replace(/"/g, '""')}"`,
@@ -439,8 +441,6 @@ export class HostDashboardComponent implements OnInit {
     ]);
 
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    
-    // Create download blob
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

@@ -83,6 +83,7 @@ export class ProfileComponent implements OnInit {
 
       this.user = user;
       this.initializeProfileFields();
+      this.loadCertificates();
     });
   }
 
@@ -94,7 +95,8 @@ export class ProfileComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
- ngOnInit(): void {
+  ngOnInit(): void {
+    this.loadCertificates();
     if (this.isBrowser) {
       const savedPhoto = localStorage.getItem('medcme_profile_photo');
       if (savedPhoto) {
@@ -106,139 +108,139 @@ export class ProfileComponent implements OnInit {
 
   private initializeProfileFields(): void {
 
-  if (!this.user) {
-    return;
+    if (!this.user) {
+      return;
+    }
+
+    // ============================================
+    // Name
+    // ============================================
+
+    let cleanName = (this.user.name || '').trim();
+
+    // Remove Dr / Dr. / DR / DR. from the beginning
+    cleanName = cleanName.replace(/^dr\.?\s*/i, '').trim();
+
+    const nameParts = cleanName.split(/\s+/);
+
+    // First Name
+    this.editFirstName = nameParts[0] || '';
+
+    // Middle Name
+    this.editMiddleName =
+      this.user.middleName ||
+      (
+        nameParts.length > 2
+          ? nameParts.slice(1, -1).join(' ')
+          : ''
+      );
+
+    // Last Name
+    this.editLastName =
+      this.user.sirName ||
+      (
+        nameParts.length > 1
+          ? nameParts[nameParts.length - 1]
+          : ''
+      );
+
+    // ============================================
+    // Basic Profile Fields
+    // ============================================
+
+    this.editRegNo =
+      this.user.registrationNo || '';
+
+    this.editEmail =
+      this.user.email || '';
+
+    this.editPhone =
+      this.user.phone || '';
+
+    this.editCity =
+      this.user.city || '';
+
+    // ============================================
+    // Specialty
+    // ============================================
+
+    const knownSpecialties = [
+      'Cardiology',
+      'Pediatrics',
+      'Neurology',
+      'Surgery',
+      'General Medicine'
+    ];
+
+    if (knownSpecialties.includes(this.user.specialty)) {
+
+      this.editSpecialtyDropdown =
+        this.user.specialty;
+
+      this.editSpecialtyOther = '';
+
+    } else {
+
+      this.editSpecialtyDropdown = 'Others';
+
+      this.editSpecialtyOther =
+        this.user.specialty || '';
+    }
+
+    // ============================================
+    // Additional Profile Fields
+    // ============================================
+
+    this.editGender =
+      this.user.gender || 'Male';
+
+    this.editDob =
+      this.user.dob || '';
+
+    this.editDesignation =
+      this.user.designation || '';
+
+    this.editDepartment =
+      this.user.department || '';
+
+    this.editQualification =
+      this.user.qualification || '';
+
+    this.editHospital =
+      this.user.hospital || '';
+
+    this.editOrganization =
+      this.user.organization || '';
+
+    this.editClinicAddress =
+      this.user.clinicAddress || '';
+
+    this.editPracticingInterest =
+      this.user.practicingInterest || '';
+
+    this.editExperience =
+      this.user.experience || 0;
+
+    this.editLanguage =
+      this.user.language || 'English';
+
+    this.editEmailConsent =
+      this.user.emailConsent !== false;
+
+    this.editWhatsappConsent =
+      this.user.whatsappConsent !== false;
+
+    this.selectedInterests =
+      [...(this.user.interests || [])];
+
+    // ============================================
+    // Debug
+    // ============================================
+
+    console.log('Edit First Name:', this.editFirstName);
+    console.log('Edit Middle Name:', this.editMiddleName);
+    console.log('Edit Last Name:', this.editLastName);
   }
-
-  // ============================================
-  // Name
-  // ============================================
-
-  let cleanName = (this.user.name || '').trim();
-
-  // Remove Dr / Dr. / DR / DR. from the beginning
-  cleanName = cleanName.replace(/^dr\.?\s*/i, '').trim();
-
-  const nameParts = cleanName.split(/\s+/);
-
-  // First Name
-  this.editFirstName = nameParts[0] || '';
-
-  // Middle Name
-  this.editMiddleName =
-    this.user.middleName ||
-    (
-      nameParts.length > 2
-        ? nameParts.slice(1, -1).join(' ')
-        : ''
-    );
-
-  // Last Name
-  this.editLastName =
-    this.user.sirName ||
-    (
-      nameParts.length > 1
-        ? nameParts[nameParts.length - 1]
-        : ''
-    );
-
-  // ============================================
-  // Basic Profile Fields
-  // ============================================
-
-  this.editRegNo =
-    this.user.registrationNo || '';
-
-  this.editEmail =
-    this.user.email || '';
-
-  this.editPhone =
-    this.user.phone || '';
-
-  this.editCity =
-    this.user.city || '';
-
-  // ============================================
-  // Specialty
-  // ============================================
-
-  const knownSpecialties = [
-    'Cardiology',
-    'Pediatrics',
-    'Neurology',
-    'Surgery',
-    'General Medicine'
-  ];
-
-  if (knownSpecialties.includes(this.user.specialty)) {
-
-    this.editSpecialtyDropdown =
-      this.user.specialty;
-
-    this.editSpecialtyOther = '';
-
-  } else {
-
-    this.editSpecialtyDropdown = 'Others';
-
-    this.editSpecialtyOther =
-      this.user.specialty || '';
-  }
-
-  // ============================================
-  // Additional Profile Fields
-  // ============================================
-
-  this.editGender =
-    this.user.gender || 'Male';
-
-  this.editDob =
-    this.user.dob || '';
-
-  this.editDesignation =
-    this.user.designation || '';
-
-  this.editDepartment =
-    this.user.department || '';
-
-  this.editQualification =
-    this.user.qualification || '';
-
-  this.editHospital =
-    this.user.hospital || '';
-
-  this.editOrganization =
-    this.user.organization || '';
-
-  this.editClinicAddress =
-    this.user.clinicAddress || '';
-
-  this.editPracticingInterest =
-    this.user.practicingInterest || '';
-
-  this.editExperience =
-    this.user.experience || 0;
-
-  this.editLanguage =
-    this.user.language || 'English';
-
-  this.editEmailConsent =
-    this.user.emailConsent !== false;
-
-  this.editWhatsappConsent =
-    this.user.whatsappConsent !== false;
-
-  this.selectedInterests =
-    [...(this.user.interests || [])];
-
-  // ============================================
-  // Debug
-  // ============================================
-
-  console.log('Edit First Name:', this.editFirstName);
-  console.log('Edit Middle Name:', this.editMiddleName);
-  console.log('Edit Last Name:', this.editLastName);
-}
 
   toggleInterest(interest: string) {
     const idx = this.selectedInterests.indexOf(interest);
@@ -368,23 +370,58 @@ export class ProfileComponent implements OnInit {
   }
 
   get certificates(): Certificate[] {
-    const certificates = this.backendCertificates.length > 0 ? this.backendCertificates : this.authService.getUserCertificates();
-    return [...certificates].sort(
+    const userCerts = this.authService.getUserCertificates();
+    const combined = [...this.backendCertificates];
+    for (const uc of userCerts) {
+      const alreadyPresent = combined.some(c =>
+        (c.id && c.id === uc.id) ||
+        (c.backendId && uc.backendId && c.backendId === uc.backendId) ||
+        (c.verificationCode && uc.verificationCode && c.verificationCode === uc.verificationCode)
+      );
+      if (!alreadyPresent) {
+        combined.push(uc);
+      }
+    }
+    return combined.sort(
       (a, b) => this.getCertificateTimestamp(b) - this.getCertificateTimestamp(a)
     );
   }
 
   private loadCertificates() {
-    if (!this.cmeApi.hasJwtToken()) return;
+    if (!this.isBrowser) return;
+
+    // Load from local storage cache immediately for zero-latency refresh
+    const cached = localStorage.getItem('medcme_cached_db_certificates');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.backendCertificates = parsed;
+        }
+      } catch (e) { }
+    }
+
     this.cmeApi.getAllCertificates().subscribe({
-      next: (response) => {
+      next: (response: any) => {
         const payload = response?.data ?? response;
-        const certificates = Array.isArray(payload) ? payload : payload?.certificates;
-        if (Array.isArray(certificates)) {
-          this.backendCertificates = certificates.map(cert => this.mapBackendCertificate(cert));
+        let certificates: any[] = [];
+        if (Array.isArray(payload)) {
+          certificates = payload;
+        } else if (Array.isArray(payload?.certificates)) {
+          certificates = payload.certificates;
+        } else if (Array.isArray(response?.certificates)) {
+          certificates = response.certificates;
+        }
+
+        if (certificates.length > 0) {
+          const mapped = certificates.map(cert => this.mapBackendCertificate(cert));
+          this.backendCertificates = mapped;
+          this.authService.updateUserCertificates(mapped);
         }
       },
-      error: (error) => console.error('Failed to load certificates from backend', error)
+      error: (error) => {
+        console.warn('Failed to load certificates from backend DB', error);
+      }
     });
   }
 
@@ -393,14 +430,14 @@ export class ProfileComponent implements OnInit {
     return {
       id: String(cert.id ?? cert.certificateId ?? cert.certificateID ?? ''),
       backendId: Number.isInteger(backendId) && backendId > 0 ? backendId : undefined,
-      courseId: String(cert.eventId ?? cert.courseId ?? ''),
-      courseTitle: cert.title ?? cert.courseTitle ?? cert.eventTitle ?? 'CME Certificate',
-      issueDate: cert.issueDate ?? cert.issuedAt ?? '',
-      creditPoints: Number(cert.creditPoints ?? cert.credits ?? 0),
-      recipientName: cert.recipientName ?? this.authService.currentUser()?.name ?? '',
-      verificationCode: cert.verificationCode ?? cert.verificationId ?? '',
-      issuer: cert.issuer ?? 'Indian Council of Continuing Medical Education (ICCME)',
-      type: 'event'
+      courseId: String(cert.eventId ?? cert.event_id ?? cert.courseId ?? ''),
+      courseTitle: cert.title ?? cert.eventTitle ?? cert.courseTitle ?? 'CME Certificate',
+      issueDate: cert.issueDate ?? cert.issue_date ?? cert.issuedAt ?? cert.createdAt ?? '',
+      creditPoints: Number(cert.creditPoints ?? cert.credit_points ?? cert.credits ?? cert.cmeCreditPoints ?? 0),
+      recipientName: cert.recipientName ?? cert.doctorName ?? cert.fullName ?? this.authService.currentUser()?.name ?? '',
+      verificationCode: cert.verificationCode ?? cert.verification_code ?? cert.verificationId ?? cert.verificationNumber ?? cert.certificateNo ?? '',
+      issuer: cert.issuer ?? cert.issuingAuthority ?? 'Indian Council of Continuing Medical Education (ICCME)',
+      type: cert.type || 'event'
     };
   }
 
@@ -410,7 +447,7 @@ export class ProfileComponent implements OnInit {
   }
 
   get totalCreditPoints(): number {
-    return this.certificates.reduce((sum, c) => sum + (c.creditPoints || 1), 0);
+    return this.certificates.reduce((sum, c) => sum + (c.creditPoints || 0), 0);
   }
 
   openCertificate(cert: Certificate) {
