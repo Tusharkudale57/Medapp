@@ -419,7 +419,61 @@ export class EventService {
       bannerColor: '#f59e0b'
     },
     {
-      id: 'evt-020',
+  id: '3',
+  backendId: 3,
+  title: 'Advanced Cardiology CME Workshop',
+  description: 'A live CME workshop covering recent advances in cardiology.',
+  date: '2026-10-15',
+  time: '10:00 AM IST',
+  venue: 'Online',
+  mode: 'Online',
+  speaker: 'Dr. Rahul Sharma',
+  speakerEmail: 'rahul.sharma@example.com',
+  speakerRole: 'Senior Cardiologist',
+  category: 'Cardiology',
+  creditPoints: 2,
+  price: 1000,
+  maxSeats: 100,
+  registeredCount: 0,
+  hostId: 'admin_001',
+  hostName: 'Dr. Administrator (Chief CME Director)',
+  paymentLink: 'https://example.com/join/cardiology',
+  status: 'upcoming',
+  publicationStatus: 'PUBLISHED',
+  bannerColor: '#1976D2',
+  zohoBackstageLink: 'https://example.com/event/cardiology',
+  streamEmbedUrl: 'https://example.com/embed/cardiology'
+},
+
+{
+  id: '4',
+  backendId: 4,
+  title: 'Recent Advances in Neurology',
+  description: 'An interactive CME session covering recent developments in neurology, diagnosis, and patient management.',
+  date: '2026-11-20',
+  time: '10:00 AM IST',
+  venue: 'Online',
+  mode: 'Online',
+  speaker: 'Dr. Priya Mehta',
+  speakerEmail: 'priya.mehta@example.com',
+  speakerRole: 'Senior Neurologist',
+  category: 'Neurology',
+  creditPoints: 3,
+  price: 750,
+  maxSeats: 150,
+  registeredCount: 0,
+  hostId: 'admin_001',
+  hostName: 'Dr. Administrator (Chief CME Director)',
+  paymentLink: 'https://example.com/join/neurology',
+  status: 'upcoming',
+  publicationStatus: 'PUBLISHED',
+  bannerColor: '#7B1FA2',
+  zohoBackstageLink: 'https://example.com/event/neurology',
+  streamEmbedUrl: 'https://example.com/embed/neurology'
+},
+    {
+      id: 'evt-002',
+      backendId: 2,
       title: 'Clinical Pharmacology & Dangerous Drug Interactions',
       description: 'Accredited session focused on pharmacokinetics, CYP450 enzyme inducers/inhibitors, and preventing adverse drug events in clinical practice.',
       date: '2027-04-02',
@@ -435,7 +489,7 @@ export class EventService {
       registeredCount: 0,
       hostId: 'admin_001',
       hostName: 'Dr. Administrator (Chief CME Director)',
-      paymentLink: 'https://medcme.org/pay/evt-020',
+      paymentLink: 'https://medcme.org/pay/evt-002',
       status: 'upcoming',
       bannerColor: '#ef4444'
     },
@@ -966,9 +1020,9 @@ export class EventService {
   }
 
   addEvent(partial: Partial<CmeEvent>, hostId: string, hostName: string): CmeEvent {
-    const id = 'evt-' + Date.now();
+    const tempId = 'evt-' + Date.now();
     const newEvent: CmeEvent = {
-      id,
+      id: tempId,
       title: partial.title || 'Untitled CME Event',
       description: partial.description || '',
       date: partial.date || new Date().toISOString().split('T')[0],
@@ -985,7 +1039,7 @@ export class EventService {
       registeredCount: 0,
       hostId,
       hostName,
-      paymentLink: `https://medcme.org/pay/${id}`,
+      paymentLink: `https://medcme.org/pay/${tempId}`,
       status: 'upcoming',
       publicationStatus: 'DRAFT',
       bannerColor: partial.bannerColor || '#0ea5e9',
@@ -999,15 +1053,18 @@ export class EventService {
       next: (response) => {
         if (response?.success && response.data) {
           const saved = this.mapBackendEventToUi(response.data);
-          this.eventsSignal.update(events => this.sortEventsByDateDesc(events.map(e => e.id === id ? saved : e)));
+          this.eventsSignal.update(events => {
+            const filtered = events.filter(event => event.id !== tempId);
+            return this.sortEventsByDateDesc([saved, ...filtered]);
+          });
           this.saveEventsToStorage();
         }
       },
-        error: (e) => {
-          this.eventsSignal.update(events => events.filter(event => event.id !== id));
-          this.saveEventsToStorage();
-          this.showBackendError('Event creation failed', e);
-        }
+      error: (e) => {
+        this.eventsSignal.update(events => events.filter(event => event.id !== tempId));
+        this.saveEventsToStorage();
+        this.showBackendError('Event creation failed', e);
+      }
     });
     return newEvent;
   }
