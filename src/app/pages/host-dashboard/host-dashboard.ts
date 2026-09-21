@@ -7,8 +7,9 @@ import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { CourseService } from '../../services/course.service';
 import { EmailService } from '../../services/email.service';
-import { EventRegistration, Course,EventResponse ,CreateEventRequest} from '../../models/course.model';
+import { EventRegistration, Course,EventResponse ,CreateEventRequest,DoctorBankRecord} from '../../models/course.model';
 import { ChangeDetectorRef } from '@angular/core';
+import * as XLSX from 'xlsx';
 
 
 @Component({
@@ -39,13 +40,59 @@ export class HostDashboardComponent implements OnInit {
   presentMsg = '';
 
   // Admin section views toggle
-  activeHostTab: 'events' | 'courses' | 'users' | 'settings' = 'events';
+  activeHostTab: 'events' | 'courses' | 'users' | 'settings'| 'doctors' = 'events';
 
   coursesList: Course[] = [];
   searchUserQuery = '';
 
   minEventDate = '';
 
+
+  doctorsBank: DoctorBankRecord[] = [];
+
+selectedDoctor: DoctorBankRecord | null = null;
+
+showDoctorEditModal = false;
+
+doctorSearchQuery = '';
+
+doctorCurrentPage = 1;
+
+doctorPageSize = 10;
+
+showImportDoctorsModal = false;
+
+selectedDoctorExcelFile: File | null = null;
+
+importedDoctorPreview: DoctorBankRecord[] = [];
+
+doctorImportErrors: string[] = [];
+
+doctorImportLoading = false;
+
+doctorImportComplete = false;
+
+readonly doctorImportHeaders = [
+  'Designation',
+  'First Name',
+  'Middle Name',
+  'Last Name',
+  'Mobile Number',
+  'Email Address',
+  'Gender',
+  'Date of Birth',
+  'Specialty Category',
+  'Qualification',
+  'Medical Registration Number (MMC)',
+  'Hospital / Institution',
+  'Organization',
+  'Department',
+  'Years of Experience',
+  'Preferred Language',
+  'City',
+  'Clinic Address',
+  'CME Interests'
+];
   // ---------------------------------------------------------------------------
   // Event form
   // ---------------------------------------------------------------------------
@@ -155,7 +202,1025 @@ export class HostDashboardComponent implements OnInit {
         console.error('Failed to load events:', error);
       }
     });
+
+    this.initializeDummyDoctors();
   }
+
+  onDoctorExcelSelected(event: Event): void {
+
+  const input = event.target as HTMLInputElement;
+
+  if (!input.files || input.files.length === 0) {
+    return;
+  }
+
+  const file = input.files[0];
+
+  const validExtensions = [
+    '.xlsx',
+    '.xls'
+  ];
+
+  const extension =
+    file.name.substring(
+      file.name.lastIndexOf('.')
+    ).toLowerCase();
+
+  if (!validExtensions.includes(extension)) {
+
+    alert(
+      'Please select a valid Excel file (.xlsx or .xls).'
+    );
+
+    input.value = '';
+
+    return;
+  }
+
+  this.selectedDoctorExcelFile = file;
+
+  this.readDoctorExcel(file);
+}
+
+readDoctorExcel(file: File): void {
+
+  this.doctorImportErrors = [];
+
+  this.importedDoctorPreview = [];
+
+  const reader = new FileReader();
+
+  reader.onload = (e: any) => {
+
+    try {
+
+      const workbook =
+        XLSX.read(
+          e.target.result,
+          {
+            type: 'array'
+          }
+        );
+
+      const sheetName =
+        workbook.SheetNames[0];
+
+      const worksheet =
+        workbook.Sheets[sheetName];
+
+      const rows =
+        XLSX.utils.sheet_to_json(
+          worksheet,
+          {
+            header: 1,
+            defval: ''
+          }
+        ) as any[][];
+
+      if (!rows.length) {
+
+        this.doctorImportErrors.push(
+          'Excel file is empty.'
+        );
+
+        return;
+      }
+
+      this.validateDoctorExcelHeaders(
+        rows[0]
+      );
+
+      if (this.doctorImportErrors.length > 0) {
+        return;
+      }
+
+      const dataRows = rows.slice(1);
+
+      dataRows.forEach(
+        (row, index) => {
+
+          const excelRowNumber =
+            index + 2;
+
+          // Skip completely empty rows
+
+          if (
+            row.every(
+              value =>
+                String(value).trim() === ''
+            )
+          ) {
+            return;
+          }
+
+          const doctor =
+            this.convertExcelRowToDoctor(
+              row,
+              excelRowNumber
+            );
+
+          if (doctor) {
+
+            this.importedDoctorPreview.push(
+              doctor
+            );
+
+          }
+
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        'Excel processing error:',
+        error
+      );
+
+      this.doctorImportErrors.push(
+        'Unable to read the Excel file.'
+      );
+
+    }
+
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+validateDoctorExcelHeaders(
+  headers: any[]
+): void {
+
+  const actualHeaders =
+    headers.map(
+      header =>
+        String(header)
+          .trim()
+    );
+
+  const expectedHeaders =
+    this.doctorImportHeaders;
+
+  if (
+    actualHeaders.length !==
+    expectedHeaders.length
+  ) {
+
+    this.doctorImportErrors.push(
+      'Invalid Excel template. Please use the official Doctors Import template.'
+    );
+
+    return;
+  }
+
+  expectedHeaders.forEach(
+    (expected, index) => {
+
+      if (
+        actualHeaders[index] !==
+        expected
+      ) {
+
+        this.doctorImportErrors.push(
+          `Column ${index + 1} should be "${expected}".`
+        );
+
+      }
+
+    }
+  );
+
+}
+
+convertExcelRowToDoctor(
+  row: any[],
+  rowNumber: number
+): DoctorBankRecord | null {
+
+  const firstName =
+    String(row[1] || '').trim();
+
+  const lastName =
+    String(row[3] || '').trim();
+
+  const mobile =
+    String(row[4] || '').trim();
+
+  const email =
+    String(row[5] || '').trim();
+
+  const specialty =
+    String(row[8] || '').trim();
+
+  const qualification =
+    String(row[9] || '').trim();
+
+  const mmc =
+    String(row[10] || '').trim();
+
+  const hospital =
+    String(row[11] || '').trim();
+
+  const city =
+    String(row[16] || '').trim();
+
+  const requiredFields = [
+
+    {
+      value: firstName,
+      name: 'First Name'
+    },
+
+    {
+      value: lastName,
+      name: 'Last Name'
+    },
+
+    {
+      value: mobile,
+      name: 'Mobile Number'
+    },
+
+    {
+      value: email,
+      name: 'Email Address'
+    },
+
+    {
+      value: specialty,
+      name: 'Specialty Category'
+    },
+
+    {
+      value: qualification,
+      name: 'Qualification'
+    },
+
+    {
+      value: mmc,
+      name: 'Medical Registration Number (MMC)'
+    },
+
+    {
+      value: hospital,
+      name: 'Hospital / Institution'
+    },
+
+    {
+      value: city,
+      name: 'City'
+    }
+
+  ];
+
+  for (const field of requiredFields) {
+
+    if (!field.value) {
+
+      this.doctorImportErrors.push(
+        `Row ${rowNumber}: ${field.name} is required.`
+      );
+
+      return null;
+    }
+
+  }
+
+
+  // Mobile validation
+
+  if (
+    !/^[6-9][0-9]{9}$/.test(
+      mobile
+    )
+  ) {
+
+    this.doctorImportErrors.push(
+      `Row ${rowNumber}: Invalid mobile number.`
+    );
+
+    return null;
+  }
+
+
+  // Email validation
+
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      email
+    )
+  ) {
+
+    this.doctorImportErrors.push(
+      `Row ${rowNumber}: Invalid email address.`
+    );
+
+    return null;
+  }
+
+
+  return {
+
+    id:
+      Date.now() +
+      Math.floor(
+        Math.random() * 10000
+      ),
+
+    designation:
+      String(row[0] || 'Dr.').trim(),
+
+    firstName,
+
+    middleName:
+      String(row[2] || '').trim(),
+
+    lastName,
+
+    mobile,
+
+    email,
+
+    gender:
+      String(row[6] || '').trim(),
+
+    dateOfBirth:
+      String(row[7] || '').trim(),
+
+    specialtyCategory:
+      specialty,
+
+    qualification,
+
+    mmcNumber:
+      mmc,
+
+    hospital,
+
+    organization:
+      String(row[12] || '').trim(),
+
+    department:
+      String(row[13] || '').trim(),
+
+    yearsExperience:
+      Number(row[14] || 0),
+
+    preferredLanguage:
+      String(row[15] || 'English').trim(),
+
+    city,
+
+    clinicAddress:
+      String(row[17] || '').trim(),
+
+    cmeInterests:
+      this.parseCmeInterests(
+        String(row[18] || '')
+      ),
+
+    emailConsent: false,
+
+    whatsappConsent: false,
+
+    termsAccepted: false
+
+  };
+
+}
+
+parseCmeInterests(
+  value: string
+) {
+
+  const interests =
+    value
+      .split(',')
+      .map(x =>
+        x.trim().toLowerCase()
+      );
+
+  return {
+
+    cardio:
+      interests.includes(
+        'cardiology'
+      ),
+
+    pediatrics:
+      interests.includes(
+        'pediatrics'
+      ),
+
+    neurology:
+      interests.includes(
+        'neurology'
+      ),
+
+    surgery:
+      interests.includes(
+        'surgery'
+      ),
+
+    generalMedicine:
+      interests.includes(
+        'general medicine'
+      )
+
+  };
+
+}
+
+importDoctorsFromExcel(): void {
+
+  if (
+    this.importedDoctorPreview.length === 0
+  ) {
+
+    alert(
+      'There are no valid doctors to import.'
+    );
+
+    return;
+  }
+
+  this.doctorImportLoading = true;
+
+  setTimeout(() => {
+
+    this.doctorsBank = [
+
+      ...this.doctorsBank,
+
+      ...this.importedDoctorPreview
+
+    ];
+
+    this.doctorCurrentPage = 1;
+
+    this.doctorImportLoading = false;
+
+    this.doctorImportComplete = true;
+
+    alert(
+      `${this.importedDoctorPreview.length} doctors imported successfully.`
+    );
+
+    this.closeDoctorImportModal();
+
+  }, 500);
+
+}
+
+openDoctorImportModal(): void {
+
+  this.showImportDoctorsModal = true;
+
+  this.selectedDoctorExcelFile = null;
+
+  this.importedDoctorPreview = [];
+
+  this.doctorImportErrors = [];
+
+  this.doctorImportComplete = false;
+
+}
+
+
+closeDoctorImportModal(): void {
+
+  this.showImportDoctorsModal = false;
+
+  this.selectedDoctorExcelFile = null;
+
+  this.importedDoctorPreview = [];
+
+  this.doctorImportErrors = [];
+
+}
+
+downloadDoctorImportTemplate(): void {
+
+  const link =
+    document.createElement('a');
+
+  link.href =
+    'assets/templates/doctors-import-template.xlsx';
+
+  link.download =
+    'doctors-import-template.xlsx';
+
+  link.click();
+
+}
+
+  initializeDummyDoctors(): void {
+
+  this.doctorsBank = [
+
+    {
+      id: 1001,
+      designation: 'Dr.',
+      firstName: 'Rahul',
+      middleName: '',
+      lastName: 'Sharma',
+
+      mobile: '9876543210',
+      email: 'rahul.sharma@example.com',
+
+      gender: 'Male',
+      dateOfBirth: '1985-05-12',
+
+      specialtyCategory: 'Cardiology',
+      qualification: 'MD',
+
+      mmcNumber: 'MMC123456',
+
+      hospital: 'Ruby Hall Clinic',
+      organization: 'Ruby Hall Group',
+      department: 'Cardiology',
+
+      yearsExperience: 12,
+      preferredLanguage: 'English',
+
+      city: 'Pune',
+      clinicAddress: 'Sassoon Road, Pune',
+
+      cmeInterests: {
+        cardio: true,
+        pediatrics: false,
+        neurology: false,
+        surgery: false,
+        generalMedicine: false
+      },
+
+      emailConsent: true,
+      whatsappConsent: true,
+      termsAccepted: true
+    },
+
+    {
+      id: 1002,
+      designation: 'Dr.',
+      firstName: 'Priya',
+      middleName: 'A.',
+      lastName: 'Patil',
+
+      mobile: '9876543211',
+      email: 'priya.patil@example.com',
+
+      gender: 'Female',
+      dateOfBirth: '1988-02-20',
+
+      specialtyCategory: 'Pediatrics',
+      qualification: 'MBBS',
+
+      mmcNumber: 'MMC123457',
+
+      hospital: 'Deenanath Mangeshkar Hospital',
+      organization: 'DMH',
+      department: 'Pediatrics',
+
+      yearsExperience: 9,
+      preferredLanguage: 'Marathi',
+
+      city: 'Pune',
+      clinicAddress: 'Erandwane, Pune',
+
+      cmeInterests: {
+        cardio: false,
+        pediatrics: true,
+        neurology: false,
+        surgery: false,
+        generalMedicine: false
+      },
+
+      emailConsent: true,
+      whatsappConsent: true,
+      termsAccepted: true
+    },
+
+    {
+      id: 1003,
+      designation: 'Dr.',
+      firstName: 'Amit',
+      middleName: '',
+      lastName: 'Kulkarni',
+
+      mobile: '9876543212',
+      email: 'amit.kulkarni@example.com',
+
+      gender: 'Male',
+      dateOfBirth: '1982-09-15',
+
+      specialtyCategory: 'Neurology',
+      qualification: 'DM',
+
+      mmcNumber: 'MMC123458',
+
+      hospital: 'Jehangir Hospital',
+      organization: 'Jehangir Medical Centre',
+      department: 'Neurology',
+
+      yearsExperience: 15,
+      preferredLanguage: 'English',
+
+      city: 'Pune',
+      clinicAddress: 'Sassoon Road, Pune',
+
+      cmeInterests: {
+        cardio: false,
+        pediatrics: false,
+        neurology: true,
+        surgery: false,
+        generalMedicine: false
+      },
+
+      emailConsent: true,
+      whatsappConsent: true,
+      termsAccepted: true
+    }
+  ];
+
+
+  // Generate remaining dummy doctors
+  for (let i = this.doctorsBank.length + 1; i <= 25; i++) {
+
+    this.doctorsBank.push({
+
+      id: 1000 + i,
+
+      designation: 'Dr.',
+
+      firstName: `Doctor${i}`,
+
+      middleName: '',
+
+      lastName: `Test${i}`,
+
+      mobile: `987654${String(3200 + i).padStart(4, '0')}`,
+
+      email: `doctor${i}@example.com`,
+
+      gender: i % 2 === 0
+        ? 'Female'
+        : 'Male',
+
+      dateOfBirth: '1987-06-15',
+
+      specialtyCategory:
+        i % 5 === 0
+          ? 'General Medicine'
+          : i % 4 === 0
+            ? 'Surgery'
+            : i % 3 === 0
+              ? 'Neurology'
+              : i % 2 === 0
+                ? 'Pediatrics'
+                : 'Cardiology',
+
+      qualification:
+        i % 2 === 0
+          ? 'MD'
+          : 'MBBS',
+
+      mmcNumber:
+        `MMC${123459 + i}`,
+
+      hospital:
+        `City Hospital ${i}`,
+
+      organization:
+        `Healthcare Organization ${i}`,
+
+      department:
+        'Medical Department',
+
+      yearsExperience:
+        3 + (i % 15),
+
+      preferredLanguage:
+        i % 3 === 0
+          ? 'Marathi'
+          : i % 3 === 1
+            ? 'Hindi'
+            : 'English',
+
+      city:
+        i % 3 === 0
+          ? 'Mumbai'
+          : i % 2 === 0
+            ? 'Pune'
+            : 'Nashik',
+
+      clinicAddress:
+        `Clinic Address ${i}, Maharashtra`,
+
+      cmeInterests: {
+
+        cardio: i % 2 === 0,
+
+        pediatrics: i % 3 === 0,
+
+        neurology: i % 4 === 0,
+
+        surgery: i % 5 === 0,
+
+        generalMedicine: i % 2 !== 0
+
+      },
+
+      emailConsent: true,
+
+      whatsappConsent: true,
+
+      termsAccepted: true
+
+    });
+
+  }
+
+  this.doctorCurrentPage = 1;
+}
+
+get filteredDoctors(): DoctorBankRecord[] {
+
+  const query =
+    this.doctorSearchQuery
+      .trim()
+      .toLowerCase();
+
+  if (!query) {
+    return this.doctorsBank;
+  }
+
+  return this.doctorsBank.filter(doctor => {
+
+    const fullName =
+      `${doctor.firstName} ${doctor.middleName} ${doctor.lastName}`
+        .toLowerCase();
+
+    return (
+
+      fullName.includes(query) ||
+
+      doctor.email
+        .toLowerCase()
+        .includes(query) ||
+
+      doctor.mobile
+        .toLowerCase()
+        .includes(query) ||
+
+      doctor.mmcNumber
+        .toLowerCase()
+        .includes(query) ||
+
+      doctor.specialtyCategory
+        .toLowerCase()
+        .includes(query) ||
+
+      doctor.hospital
+        .toLowerCase()
+        .includes(query) ||
+
+      doctor.city
+        .toLowerCase()
+        .includes(query)
+
+    );
+
+  });
+
+}
+
+
+get doctorTotalPages(): number {
+
+  return Math.max(
+    1,
+    Math.ceil(
+      this.filteredDoctors.length /
+      this.doctorPageSize
+    )
+  );
+
+}
+
+
+get paginatedDoctors(): DoctorBankRecord[] {
+
+  const startIndex =
+    (this.doctorCurrentPage - 1) *
+    this.doctorPageSize;
+
+  return this.filteredDoctors.slice(
+    startIndex,
+    startIndex + this.doctorPageSize
+  );
+
+}
+
+
+get doctorPageNumbers(): number[] {
+
+  return Array.from(
+    { length: this.doctorTotalPages },
+    (_, i) => i + 1
+  );
+
+}
+
+
+get doctorRangeStart(): number {
+
+  if (this.filteredDoctors.length === 0) {
+    return 0;
+  }
+
+  return (
+    (this.doctorCurrentPage - 1) *
+    this.doctorPageSize
+  ) + 1;
+
+}
+
+
+get doctorRangeEnd(): number {
+
+  return Math.min(
+    this.doctorCurrentPage *
+    this.doctorPageSize,
+
+    this.filteredDoctors.length
+  );
+
+}
+
+onDoctorSearchChange(): void {
+
+  this.doctorCurrentPage = 1;
+
+}
+
+
+resetDoctorSearch(): void {
+
+  this.doctorSearchQuery = '';
+
+  this.doctorCurrentPage = 1;
+
+}
+
+
+goToDoctorPage(page: number): void {
+
+  if (
+    page >= 1 &&
+    page <= this.doctorTotalPages
+  ) {
+
+    this.doctorCurrentPage = page;
+
+  }
+
+}
+
+
+doctorPreviousPage(): void {
+
+  if (this.doctorCurrentPage > 1) {
+
+    this.doctorCurrentPage--;
+
+  }
+
+}
+
+
+doctorNextPage(): void {
+
+  if (
+    this.doctorCurrentPage <
+    this.doctorTotalPages
+  ) {
+
+    this.doctorCurrentPage++;
+
+  }
+
+}
+
+getDoctorInitials(
+  doctor: DoctorBankRecord
+): string {
+
+  const first =
+    doctor.firstName?.charAt(0) || '';
+
+  const last =
+    doctor.lastName?.charAt(0) || '';
+
+  return (
+    first + last
+  ).toUpperCase() || 'DR';
+
+}
+
+
+openDoctorEditModal(
+  doctor: DoctorBankRecord
+): void {
+
+  this.selectedDoctor = {
+    ...doctor,
+
+    cmeInterests: {
+      ...doctor.cmeInterests
+    }
+
+  };
+
+  this.showDoctorEditModal = true;
+
+}
+
+
+closeDoctorEditModal(): void {
+
+  this.showDoctorEditModal = false;
+
+  this.selectedDoctor = null;
+
+}
+
+
+saveDoctorChanges(): void {
+
+  if (!this.selectedDoctor) {
+    return;
+  }
+
+  const index =
+    this.doctorsBank.findIndex(
+      doctor =>
+        doctor.id === this.selectedDoctor!.id
+    );
+
+  if (index === -1) {
+    return;
+  }
+
+  this.doctorsBank[index] = {
+    ...this.selectedDoctor,
+
+    cmeInterests: {
+      ...this.selectedDoctor.cmeInterests
+    }
+
+  };
+
+  this.closeDoctorEditModal();
+
+  alert(
+    'Doctor details updated successfully.'
+  );
+
+}
+
+removeDoctor(
+  doctor: DoctorBankRecord
+): void {
+
+  const doctorName =
+    `${doctor.firstName} ${doctor.lastName}`;
+
+  const confirmed =
+    window.confirm(
+      `Are you sure you want to remove ${doctorName} from Doctors Bank?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  this.doctorsBank =
+    this.doctorsBank.filter(
+      d => d.id !== doctor.id
+    );
+
+  if (
+    this.doctorCurrentPage >
+    this.doctorTotalPages
+  ) {
+
+    this.doctorCurrentPage =
+      this.doctorTotalPages;
+
+  }
+
+}
 
   // ===========================================================================
   // USERS

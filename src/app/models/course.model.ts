@@ -355,3 +355,45 @@ export interface CreateEventRequest {
   maxSeats?: number;
   cardAccentColor?: string;
 }
+
+export interface DoctorBankRecord {
+  id: number;
+  designation: string;
+
+  firstName: string;
+  middleName: string;
+  lastName: string;
+
+  mobile: string;
+  email: string;
+
+  gender: string;
+  dateOfBirth: string;
+
+  specialtyCategory: string;
+  qualification: string;
+
+  mmcNumber: string;
+
+  hospital: string;
+  organization: string;
+  department: string;
+
+  yearsExperience: number;
+  preferredLanguage: string;
+
+  city: string;
+  clinicAddress: string;
+
+  cmeInterests: {
+    cardio: boolean;
+    pediatrics: boolean;
+    neurology: boolean;
+    surgery: boolean;
+    generalMedicine: boolean;
+  };
+
+  emailConsent: boolean;
+  whatsappConsent: boolean;
+  termsAccepted: boolean;
+}
