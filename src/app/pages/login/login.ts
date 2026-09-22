@@ -75,9 +75,9 @@ export class LoginComponent implements OnInit {
   slides = [
     {
       icon: '≡ƒÅå',
-      tag: 'Accredited CME Platform',
+      tag: 'CME Platform',
       title: 'Earn & Track CME Credit Points',
-      desc: 'Seamlessly participate in MMC & National Medical Council accredited sessions in real time.'
+      desc: 'Seamlessly participate in CME sessions in real time.'
     },
     {
       icon: '≡ƒô£',

@@ -3,7 +3,7 @@
   min-height: 100vh;
   background-color: #ffffff;
   color: #1f1f1f;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body, 'Instrument Sans', sans-serif);
   display: flex;
   flex-direction: column;
 }

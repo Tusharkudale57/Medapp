@@ -607,7 +607,7 @@ export class ProfileComponent implements OnInit {
 
     ctx.fillStyle = '#d4a017';
     ctx.font = '11px Georgia, serif';
-    ctx.fillText('ACCREDITED CME CERTIFICATE OF CLINICAL EXCELLENCE  ·  INDIA', W / 2, embY + 14);
+    ctx.fillText('CME CERTIFICATE OF CLINICAL EXCELLENCE  ·  INDIA', W / 2, embY + 14);
 
     // ── 7. Thin gold rule below header ─────────────────────────────
     ctx.strokeStyle = '#d4a017';
@@ -648,8 +648,8 @@ export class ProfileComponent implements OnInit {
     ctx.fillStyle = '#475569';
     ctx.font = '15px Georgia, serif';
     const completionText = cert.type === 'event'
-      ? 'has successfully attended the accredited continuing medical education event'
-      : 'has successfully completed the accredited medical continuing education course';
+      ? 'has successfully attended the continuing medical education event'
+      : 'has successfully completed the medical continuing education course';
     ctx.fillText(completionText, W / 2, 326);
 
     // ── 12. Course/event title ─────────────────────────────────────

@@ -400,7 +400,7 @@ export class HostDashboardComponent implements OnInit {
 
   sendCourseLinkWhatsApp(course: Course) {
     const courseUrl = window.location.origin + '/course/' + course.id;
-    const text = `Hi Doctor, please register for the CME course: "${course.title}". Enrolling gives you accredited CME points. Enroll here: ${courseUrl}`;
+    const text = `Hi Doctor, please register for the CME course: "${course.title}". Enrolling gives you CME credit points. Enroll here: ${courseUrl}`;
     window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
   }
 

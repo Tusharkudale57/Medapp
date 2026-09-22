@@ -2,17 +2,11 @@
 
   <!-- ==================== HEADER ==================== -->
   <header class="main-header">
-    <!-- Covelis Top Bar (Sony-style) -->
-    <div class="covelis-topbar">
-      <div class="covelis-topbar-inner">
-        <span class="covelis-tagline">India's Official MMC &amp; NMC Accredited CME Platform</span>
-        <span class="covelis-brand">powered by <strong>COVELIS</strong></span>
-      </div>
-    </div>
     <div class="header-inner">
 
       <!-- Logo -->
-      <div class="logo-wrapper" (click)="selectExploreOption('All')" style="cursor: pointer; display: flex; align-items: center;">
+      <div class="logo-wrapper" (click)="selectExploreOption('All')"
+        style="cursor: pointer; display: flex; align-items: center;">
         <img src="assets/logo.png" alt="All India CME Logo" style="height: 34px; width: auto; object-fit: contain;" />
       </div>
 
@@ -62,32 +56,10 @@
       <div class="hero-content">
         <span class="hero-badge">LEARN. EARN. GROW.</span>
         <h1 class="hero-title">Advance Your Medical <br />Career with <span class="highlight-blue">CME</span></h1>
-        <p class="hero-subtitle">Join accredited CME events, earn credits, and stay up-to-date with the latest
+        <p class="hero-subtitle">Join CME events, earn credits, and stay up-to-date with the latest
           advancements in healthcare.</p>
 
-        <div class="hero-metrics">
-          <div class="metric-card">
-            <span class="metric-icon">👥</span>
-            <div>
-              <h3>500+</h3>
-              <p>CME Events</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <span class="metric-icon">🎓</span>
-            <div>
-              <h3>50,000+</h3>
-              <p>Healthcare Professionals</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <span class="metric-icon">📜</span>
-            <div>
-              <h3>Recognized</h3>
-              <p>Accredited CME</p>
-            </div>
-          </div>
-        </div>
+
 
         <div class="hero-actions">
           <button class="btn-primary-hero" (click)="selectExploreOption('All')">Browse CME Events &rarr;</button>
@@ -194,18 +166,18 @@
         style="text-align: center; margin-top: 2rem;">
         <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()"
           style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
-          Show More ({{ filteredEvents.length - eventsLimit }} remaining) 
+          Show More ({{ filteredEvents.length - eventsLimit }} remaining)
         </button>
         <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()"
           style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Show Less 
+          Show Less
         </button>
       </div>
 
     </div>
   </section>
 
-  <!-- ==================== ACCREDITED COURSES SECTION ==================== -->
+  <!-- ==================== CME COURSES SECTION ==================== -->
   <section class="courses-section" id="courses-section">
     <div class="section-container">
       <div class="section-header-row">
@@ -247,11 +219,11 @@
       <div *ngIf="filteredCourses.length > 3" style="text-align: center; margin-top: 2rem;">
         <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()"
           style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
-          Show More ({{ filteredCourses.length - coursesLimit }} remaining) 
+          Show More ({{ filteredCourses.length - coursesLimit }} remaining)
         </button>
         <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()"
           style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Show Less 
+          Show Less
         </button>
       </div>
     </div>
@@ -265,7 +237,8 @@
 
       <div class="footer-brand-section">
         <div class="footer-brand-logo">
-          <img src="assets/logo-light.png" alt="All India CME Logo" style="height: 36px; width: auto; object-fit: contain; margin-bottom: 0.35rem;" />
+          <img src="assets/logo-light.png" alt="All India CME Logo"
+            style="height: 36px; width: auto; object-fit: contain; margin-bottom: 0.35rem;" />
         </div>
 
         <div class="footer-copyright-text">
@@ -285,9 +258,11 @@
 
         <!-- Left Side: Brand Showcase -->
         <div class="left-showcase-panel">
-          <div class="hero-logo-showcase" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <img src="assets/logo-light.png" alt="All India CME Logo" style="height: 60px; width: auto; object-fit: contain; margin-bottom: 0.75rem;" />
-            <p>Official MMC & NMC Accredited CME Sessions, Courses & Real-Time Credit Tracking</p>
+          <div class="hero-logo-showcase"
+            style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <img src="assets/logo-light.png" alt="All India CME Logo"
+              style="height: 60px; width: auto; object-fit: contain; margin-bottom: 0.75rem;" />
+            <p>Official CME Sessions, Courses & Real-Time Credit Tracking</p>
           </div>
           <div class="modal-metrics-grid">
             <div class="metric-item">
@@ -296,7 +271,7 @@
             </div>
             <div class="metric-item">
               <span class="m-val">100%</span>
-              <span class="m-lbl">Accredited</span>
+              <span class="m-lbl">Verified</span>
             </div>
           </div>
         </div>
@@ -529,8 +504,9 @@
           </div>
 
           <div class="form-group">
-            <label>Medical Registration Number (MMC) *</label>
-            <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" placeholder="MMC / MCI Number" required />
+            <label>Medical Registration Number *</label>
+            <input type="text" [(ngModel)]="regMmcNo" name="regMmcNo" placeholder="Medical Registration Number"
+              required />
           </div>
 
           <div class="form-group">
@@ -705,8 +681,8 @@
               selectedEventForDetail?.speakerRole }})</span>
           </div>
           <div class="meta-cell">
-            <span class="cell-label">🎖️ ACCREDITATION</span>
-            <span class="cell-val">{{ selectedEventForDetail?.creditPoints }} MMC/NMC Accredited CME Points</span>
+            <span class="cell-label">🎖️ CME CREDITS</span>
+            <span class="cell-val">{{ selectedEventForDetail?.creditPoints }} CME Credit Points</span>
           </div>
         </div>
 
@@ -874,4 +850,4 @@
     </div>
   </div>
 
-</div>
+</div>

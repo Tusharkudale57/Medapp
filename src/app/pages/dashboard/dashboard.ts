@@ -478,7 +478,7 @@ export class DashboardComponent implements OnInit {
     this.liveChatMessages = [
       { sender: 'Moderator 1 (Dr. Anjali Sharma)', text: `Welcome to the Live CME: ${event.title}! Use this chat for Q&A with our panel.`, time: '10:00 AM', isUser: false },
       { sender: `Consultant 1 (Dr. ${event.speaker})`, text: `Hello doctors. I am online to answer your questions regarding today's session: ${event.title}.`, time: '10:02 AM', isUser: false },
-      { sender: 'Moderator 2 (Dr. Renu Kapoor)', text: 'Please answer the pre-test MCQ below to get started. All questions are CME accredited.', time: '10:04 AM', isUser: false }
+      { sender: 'Moderator 2 (Dr. Renu Kapoor)', text: 'Please answer the pre-test MCQ below to get started.', time: '10:04 AM', isUser: false }
     ];
     
     // Reset quizzes
