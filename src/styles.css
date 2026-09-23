@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=Instrument+Sans:ital,wght@0,400..600;1,400..600&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&display=swap');
+
+:root {
+  --font-heading: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Noto Sans Devanagari', 'Noto Sans Tamil', 'Noto Sans Telugu', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
 
 * {
   box-sizing: border-box;
@@ -7,11 +13,29 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   background-color: #f8fafc;
   color: #1e293b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global Headings: Bricolage Grotesque (600–700) */
+h1, h2, h3, h4, h5, h6,
+.heading, .section-title, .card-title, .hero-title,
+.modal-header h3, .upcoming-title, .section-header-coursera h3 {
+  font-family: var(--font-heading) !important;
+  font-weight: 600;
+}
+
+h1, .h1-title {
+  font-weight: 700;
+}
+
+/* Phone numbers & Monospace digits: JetBrains Mono */
+.phone, .phone-number, .phone-text, .phone-mono, .mono-number, a[href^="tel:"], input[type="tel"] {
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.02em;
 }
 
 html:has(.login-page), body:has(.login-page) {

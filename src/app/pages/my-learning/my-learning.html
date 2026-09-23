@@ -2,13 +2,6 @@
 
   <!-- Covelis Brand Navbar -->
   <header class="dash-navbar">
-    <!-- Covelis Top Bar (Sony-style) -->
-    <div class="covelis-topbar">
-      <div class="covelis-topbar-inner">
-        <span class="covelis-tagline">India's Official MMC &amp; NMC Accredited CME Platform</span>
-        <span class="covelis-brand">powered by <strong>COVELIS</strong></span>
-      </div>
-    </div>
     <!-- Main White Nav -->
     <div class="nav-inner">
       <div class="nav-brand" (click)="navigateToEvents()"
@@ -73,7 +66,7 @@
 
               <!-- Degrees & Fellowships Content -->
               <div class="details-content" *ngIf="activeSubMenu === 'degrees'">
-                <h4>Accredited Fellowships & Diplomas</h4>
+                <h4>Fellowships & Diplomas</h4>
                 <div class="details-grid">
                   <div class="details-item-card"
                     (click)="selectDemoEvent('Fellowship in Clinical Cardiology', 'Cardiology')">
@@ -83,7 +76,7 @@
                   <div class="details-item-card"
                     (click)="selectDemoEvent('Postgraduate Diploma in Pediatrics', 'Pediatrics')">
                     <h5>Postgraduate Diploma in Pediatrics</h5>
-                    <p>Accredited specialization in child health care.</p>
+                    <p>Specialization in child health care.</p>
                   </div>
                   <div class="details-item-card"
                     (click)="selectDemoEvent('Certificate in Emergency Medicine', 'General Medicine')">
@@ -117,7 +110,7 @@
                   </div>
                   <div class="details-item-card" (click)="selectDemoEvent('Oncology Board Review', 'General Medicine')">
                     <h5>Oncology Board Review</h5>
-                    <p>Accredited hybrid review program.</p>
+                    <p>Hybrid review program.</p>
                   </div>
                 </div>
               </div>
@@ -306,7 +299,7 @@
           </svg>
         </div>
         <h3>No learning in progress right now</h3>
-        <p>Explore our catalog of accredited medical conferences, live events, or self-paced courses to start earning
+        <p>Explore our catalog of medical conferences, live events, or self-paced courses to start earning
           CME points.</p>
         <div class="empty-actions">
           <button class="btn-empty-primary" (click)="navigateToEvents()">Browse CME Event</button>
@@ -427,7 +420,7 @@
       <div class="empty-state-card" *ngIf="certificates.length === 0">
         <div class="empty-vector"></div>
         <h3>No certificates issued yet</h3>
-        <p>Complete a course or get marked as present in a registered CME live event to receive your accredited
+        <p>Complete a course or get marked as present in a registered CME live event to receive your
           certificates.</p>
       </div>
     </section>
@@ -554,7 +547,7 @@
   <div class="modal-overlay" *ngIf="showCertModal && selectedCertificate" (click)="closeCertificateModal()">
     <div class="cert-modal-dialog" (click)="$event.stopPropagation()">
       <div class="cert-dialog-header">
-        <h4>Accredited CME Certificate Preview</h4>
+        <h4>CME Certificate Preview</h4>
         <button class="close-btn" (click)="closeCertificateModal()">✕</button>
       </div>
 

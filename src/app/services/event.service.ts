@@ -3,15 +3,23 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { EventRegistration, EventDocument, EventResponse, EventPageResponse, CreateEventRequest, ApiResponse } from '../models/course.model';
+import { firstValueFrom, timeout } from 'rxjs';
+import {
+  AllocateCreditsResponse,
+  AttendanceEntryPayload,
+  AttendanceSheetData,
+  AttendanceSheetRow,
+  AttendanceStatusSummary,
+  BackendEventAttendanceResponse,
+  BackendEventRegistrationResponse,
+  BackendEventRequest,
+  BackendEventResponse,
+  CmeEvent,
+  EventDocument,
+  EventRegistration
+} from '../models/course.model';
+import { CmeApiService } from './cme-api.service';
 
-
-
-/**
- * ============================================================
- * EVENT SERVICE
- * ============================================================
- */
 @Injectable({
   providedIn: 'root'
 })

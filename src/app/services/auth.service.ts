@@ -165,10 +165,11 @@ export class AuthService {
               const freshUser = this.mapBackendProfileToUser(res.data);
               console.log("The freshUser is ========", freshUser);
               const stored = this.currentUserSignal();
-              console.log("The current stored user is ", stored);
-              const merged = { ...freshUser, role: stored?.role || 'doctor' };
+              const existingCerts = (stored?.certificates && stored.certificates.length > 0)
+                ? stored.certificates
+                : (freshUser.certificates && freshUser.certificates.length > 0 ? freshUser.certificates : []);
+              const merged = { ...freshUser, role: stored?.role || 'doctor', certificates: existingCerts };
               this.user = merged;
-              console.log("The merged user is ", merged);
               this.currentUserSignal.set(merged);
               this.saveUserToStorage(merged);
             }
@@ -184,7 +185,6 @@ export class AuthService {
   private saveUserToStorage(user: UserProfile | null) {
     if (!this.isBrowser) return;
     if (user) {
-      // Store ONLY required basic fields in session storage
       const basicUser: UserProfile = {
         id: user.id,
         name: user.name,
@@ -196,7 +196,7 @@ export class AuthService {
         creditPoints: user.creditPoints || 0,
         purchasedCourseIds: [],
         completedCourseIds: [],
-        certificates: []
+        certificates: user.certificates || []
       };
       localStorage.setItem('medcme_user', JSON.stringify(basicUser));
     } else {
@@ -735,54 +735,54 @@ export class AuthService {
     });
   }
 
+  updateUserCertificates(certificates: Certificate[]): void {
+    if (!certificates || certificates.length === 0) return;
+    const current = this.currentUserSignal();
+    if (current) {
+      const merged = { ...current, certificates };
+      this.user = merged;
+      this.currentUserSignal.set(merged);
+      this.saveUserToStorage(merged);
+    }
+    if (this.isBrowser) {
+      localStorage.setItem('medcme_cached_db_certificates', JSON.stringify(certificates));
+    }
+  }
+
   getUserCertificates(): Certificate[] {
     const user = this.currentUserSignal();
     if (!user) return [];
 
-    let certs = [...user.certificates];
+    let certs = [...(user.certificates || [])];
 
     if (this.isBrowser) {
       try {
-        // 1. Check persistent issued certificates list
+        const dbCached = localStorage.getItem('medcme_cached_db_certificates');
+        if (dbCached) {
+          const list: Certificate[] = JSON.parse(dbCached);
+          for (const item of list) {
+            const alreadyInList = certs.some(c =>
+              (c.id && c.id === item.id) ||
+              (c.backendId && item.backendId && c.backendId === item.backendId) ||
+              (c.verificationCode && item.verificationCode && c.verificationCode === item.verificationCode)
+            );
+            if (!alreadyInList) {
+              certs.push(item);
+            }
+          }
+        }
+
         const savedCerts = localStorage.getItem('medcme_issued_event_certificates');
         if (savedCerts) {
           const list: Array<{ userId: string; cert: Certificate }> = JSON.parse(savedCerts);
           for (const item of list) {
             if (item.userId === user.id || item.cert.recipientName === user.name) {
-              if (!certs.some(c => c.id === item.cert.id || (c.courseId === item.cert.courseId && c.type === 'event'))) {
-                certs.unshift(item.cert);
-              }
-            }
-          }
-        }
-
-        // 2. Check event registrations where certificateIssued === true
-        const savedRegs = localStorage.getItem('medcme_registrations');
-        const savedEvents = localStorage.getItem('medcme_events');
-        if (savedRegs) {
-          const regs: any[] = JSON.parse(savedRegs);
-          const events: any[] = savedEvents ? JSON.parse(savedEvents) : [];
-
-          for (const reg of regs) {
-            if (reg.certificateIssued && (reg.userId === user.id || reg.userName === user.name)) {
-              const eventObj = events.find((e: any) => e.id === reg.eventId);
-              const eventTitle = eventObj ? eventObj.title : 'CME Medical Conference & Clinical Seminar';
-              const creditPoints = eventObj ? (eventObj.creditPoints || 2) : 2;
-
-              const alreadyInList = certs.some(c => c.courseId === reg.eventId && c.type === 'event');
+              const alreadyInList = certs.some(c =>
+                (c.id && c.id === item.cert.id) ||
+                (c.verificationCode && item.cert.verificationCode && c.verificationCode === item.cert.verificationCode)
+              );
               if (!alreadyInList) {
-                const autoCert: Certificate = {
-                  id: 'EVT-CERT-' + reg.eventId,
-                  courseId: reg.eventId,
-                  courseTitle: eventTitle,
-                  issueDate: reg.attendedAt ? reg.attendedAt.split('T')[0] : new Date().toISOString().split('T')[0],
-                  creditPoints,
-                  recipientName: reg.userName || user.name,
-                  verificationCode: 'EVTCME-2026-' + reg.eventId.replace(/[^0-9]/g, '88'),
-                  issuer: 'Indian Council of Continuing Medical Education (ICCME)',
-                  type: 'event'
-                };
-                certs.unshift(autoCert);
+                certs.unshift(item.cert);
               }
             }
           }

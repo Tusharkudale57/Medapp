@@ -4,7 +4,7 @@
 
 :host {
   display: block;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body, 'Instrument Sans', sans-serif);
   color: #1e293b;
   background-color: #f8fafc;
 }
@@ -24,6 +24,7 @@
   padding: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .covelis-topbar-inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -33,12 +34,14 @@
   align-items: center;
   justify-content: space-between;
 }
+
 .covelis-tagline {
   font-size: 0.68rem;
   color: rgba(255, 255, 255, 0.75);
   font-weight: 400;
   letter-spacing: 0.03em;
 }
+
 .covelis-brand {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.75);
@@ -46,6 +49,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+
 .covelis-brand strong {
   font-size: 0.82rem;
   font-weight: 800;
@@ -449,7 +453,7 @@
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, rgba(56,189,248,0.1) 100%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(56, 189, 248, 0.1) 100%);
   z-index: 1;
 }
 
@@ -459,7 +463,7 @@
   object-fit: cover;
   border-radius: 50%;
   border: 8px solid #ffffff;
-  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   z-index: 2;
   position: relative;
 }
@@ -654,7 +658,7 @@
 
 .thumb-icon {
   font-size: 3rem;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
 .format-badge {
@@ -668,12 +672,20 @@
   border-radius: 9999px;
   letter-spacing: 0.04em;
   z-index: 10;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.format-badge.live { background-color: #ef4444; }
-.format-badge.virtual { background-color: #8b5cf6; }
-.format-badge.hybrid { background-color: #10b981; }
+.format-badge.live {
+  background-color: #ef4444;
+}
+
+.format-badge.virtual {
+  background-color: #8b5cf6;
+}
+
+.format-badge.hybrid {
+  background-color: #10b981;
+}
 
 .event-category-pill {
   position: absolute;
@@ -826,7 +838,7 @@
 
 .course-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
 .course-thumb-wrapper {
@@ -1061,13 +1073,25 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleUp {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 
@@ -1125,7 +1149,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 1.5rem;
 }
 
@@ -1281,7 +1305,8 @@
   font-size: 1rem;
 }
 
-.btn-next-step, .btn-submit-main {
+.btn-next-step,
+.btn-submit-main {
   width: 100%;
   padding: 0.75rem;
   background-color: #2563eb;
@@ -1294,7 +1319,8 @@
   transition: background-color 0.15s ease;
 }
 
-.btn-next-step:hover, .btn-submit-main:hover {
+.btn-next-step:hover,
+.btn-submit-main:hover {
   background-color: #1d4ed8;
 }
 
@@ -1565,8 +1591,15 @@
 }
 
 @keyframes slideUpIn {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 
@@ -1577,7 +1610,7 @@
   border-radius: 16px;
   padding: 1.5rem;
   position: relative;
-  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
 }
 
 .forgot-body {
@@ -1652,7 +1685,7 @@
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
 }
 
 .detail-header {
@@ -1666,7 +1699,7 @@
 .detail-format-tag {
   font-size: 0.7rem;
   font-weight: 800;
-  background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
@@ -1772,7 +1805,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  box-shadow: 0 4px 10px rgba(37,99,235,0.2);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 }
 
 .btn-register-action-trigger:hover {
@@ -1871,7 +1904,8 @@
   padding: 0.85rem;
 }
 
-.checkout-summary-card h4, .checkout-user-details-card h4 {
+.checkout-summary-card h4,
+.checkout-user-details-card h4 {
   margin: 0 0 0.5rem 0;
   font-size: 0.78rem;
   font-weight: 800;
@@ -1970,8 +2004,13 @@
   font-weight: 600;
 }
 
-.sponsor-validation-msg.error { color: #b91c1c; }
-.sponsor-validation-msg.success { color: #059669; }
+.sponsor-validation-msg.error {
+  color: #b91c1c;
+}
+
+.sponsor-validation-msg.success {
+  color: #059669;
+}
 
 .terms-label {
   display: flex;
@@ -2095,8 +2134,11 @@
 
 .payment-loading-overlay {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255,255,255,0.9);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2116,7 +2158,10 @@
 
 .payment-success-overlay {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -2138,7 +2183,7 @@
   font-size: 1.6rem;
   font-weight: 800;
   margin-bottom: 0.75rem;
-  box-shadow: 0 4px 10px rgba(16,185,129,0.25);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
 }
 
 .payment-footer-row {
@@ -2168,7 +2213,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner {
@@ -2181,7 +2228,9 @@
   display: inline-block;
 }
 
-.text-center { text-align: center; }
+.text-center {
+  text-align: center;
+}
 
 /* ==================== SONY-STYLE COVELIS FOOTER ==================== */
 .covelis-pro-footer {
@@ -2285,4 +2334,3 @@
   color: rgba(255, 255, 255, 0.35);
   font-size: 0.75rem;
 }
-
