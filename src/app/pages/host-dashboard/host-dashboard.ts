@@ -1699,9 +1699,9 @@ removeDoctor(
     this.certIssuedMsg = '';
     this.absentMsg = '';
     this.presentMsg = '';
-    this.eventService.syncEventRegistrationsFromBackend(event.id).then(() => {
-      this.eventService.syncAttendanceSheetFromBackend(event.id);
-    });
+    // this.eventService.syncEventRegistrationsFromBackend(event.id).then(() => {
+    //   this.eventService.syncAttendanceSheetFromBackend(event.id);
+    // });
   }
 
   onRecordingSelected(eventId: string, event: Event) {
@@ -1802,8 +1802,8 @@ removeDoctor(
     }
 
     // Call backend POST /api/admin/attendance/event/{eventId}/allocate-credits
-    const res = await this.eventService.allocateCreditsForEvent(event.id);
-
+    // const res = await this.eventService.allocateCreditsForEvent(event.id);
+    let count = 0;
     // Issue certificates locally for attendees so doctor user profiles update immediately
 
     for (const reg of selectedAttendees) {

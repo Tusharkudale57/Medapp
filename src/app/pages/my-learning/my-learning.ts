@@ -212,6 +212,11 @@ export class MyLearningComponent implements OnInit {
     );
   }
 
+  private getCertificateTimestamp(cert: Certificate): number {
+    const value = new Date(cert.issueDate || '').getTime();
+    return Number.isFinite(value) ? value : 0;
+  }
+
   private loadCertificates() {
     if (!this.isBrowser) return;
 
@@ -270,9 +275,7 @@ export class MyLearningComponent implements OnInit {
     return this.eventService.getEnrolledCount(String(event.id));
   }
 
-  getRegisteredCount(event: EventResponse): number {
-    return this.eventService.getEnrolledCount(String(event.id));
-  }
+ 
 
   // --- Course Navigation ---
   resumeCourse(courseId: string) {
