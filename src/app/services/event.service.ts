@@ -16,7 +16,11 @@ import {
   BackendEventResponse,
   CmeEvent,
   EventDocument,
-  EventRegistration
+  EventRegistration,
+  EventResponse,
+  ApiResponse,
+  EventPageResponse,
+  CreateEventRequest
 } from '../models/course.model';
 import { CmeApiService } from './cme-api.service';
 
