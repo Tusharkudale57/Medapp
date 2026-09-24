@@ -1,8 +1,7 @@
 import { Component, signal, HostListener, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { Router, RouterLink } from '@angular/router';import { AuthService } from '../../services/auth.service';
 import { EmailService } from '../../services/email.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
@@ -12,7 +11,7 @@ import { Course, CmeEvent, RegisterRequest } from '../../models/course.model';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -165,6 +164,15 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    const navigationState = history.state;
+
+if (navigationState?.registrationSuccess) {
+  this.userId = navigationState.userId || '';
+  this.loginStep = 2;
+  this.loginMethod = 'otp';
+  this.otpSentForLogin = true;
+}
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }

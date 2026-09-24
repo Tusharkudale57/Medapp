@@ -1,0 +1,256 @@
+
+<div class="landing-page-container">
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="main-header">
+    <div class="header-inner">
+
+      <!-- Logo -->
+      <div class="logo-wrapper" (click)="selectExploreOption('All')"
+        style="cursor: pointer; display: flex; align-items: center;">
+        <img src="assets/logo.png" alt="All India CME Logo" style="height: 34px; width: auto; object-fit: contain;" />
+      </div>
+
+      <!-- Explore Dropdown -->
+      <div class="explore-dropdown-container">
+        <button class="btn-explore" (click)="toggleExploreDropdown($event)">
+          Explore CME
+          <span class="chevron-down" [class.rotated]="showExploreDropdown">&#9662;</span>
+        </button>
+        <div class="explore-dropdown-menu" *ngIf="showExploreDropdown">
+          <button (click)="selectExploreOption('Online')">🌐 Online / Virtual CME</button>
+          <button (click)="selectExploreOption('Offline')">🏢 Offline / In-Person CME</button>
+          <button (click)="selectExploreOption('Hybrid')">💻 Hybrid (Online + In-Person)</button>
+          <button (click)="selectExploreOption('Courses')">📚 Self-Paced Courses</button>
+          <button (click)="selectExploreOption('All')">🎓 Browse All CME</button>
+        </div>
+      </div>
+
+      <!-- Global Search Bar -->
+      <!-- <div class="search-bar-wrapper">
+        <div class="search-input-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search CME events, topics, speakers..." />
+          <button class="btn-search-trigger">Search</button>
+        </div>
+      </div> -->
+
+      <!-- Header Navigation Actions -->
+      <div class="header-actions">
+        <ng-container *ngIf="!authService.currentUser()">
+         <button class="btn-login-header" routerLink="/login">
+  Log In
+</button>
+
+<button class="btn-signup-header" routerLink="/signup">
+  Sign Up
+</button>
+        </ng-container>
+        <ng-container *ngIf="authService.currentUser()">
+          <span class="user-greeting">Welcome, <strong>{{ authService.currentUser()?.name }}</strong></span>
+          <button class="btn-dashboard-header" routerLink="/dashboard">Go to Dashboard</button>
+          <button class="btn-logout-header" (click)="authService.logout()">Log Out</button>
+        </ng-container>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="hero-section">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-badge">LEARN. EARN. GROW.</span>
+        <h1 class="hero-title">Advance Your Medical <br />Career with <span class="highlight-blue">CME</span></h1>
+        <p class="hero-subtitle">Join CME events, earn credits, and stay up-to-date with the latest
+          advancements in healthcare.</p>
+
+
+
+        <div class="hero-actions">
+          <button class="btn-primary-hero" (click)="selectExploreOption('All')">Browse CME Events &rarr;</button>
+        </div>
+      </div>
+      <div class="hero-graphic">
+        <div class="graphic-bg-circle"></div>
+        <img src="assets/hero-doctor.jpg" alt="Professional Doctor" class="doctor-img" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== UPCOMING EVENTS SECTION ==================== -->
+  <section class="events-section" id="events-section">
+    <div class="section-container">
+      <div class="section-header-row">
+        <h2 class="section-title">Upcoming CME Events</h2>
+        <span class="view-all-link" (click)="selectSpecialtyBadge('All')">View All Events &rarr;</span>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="events-filter-bar">
+        <div class="filter-search-box" style="flex: 2;">
+          <span class="box-icon">🔍</span>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search events by title, topic, or speaker..." />
+        </div>
+        <div class="filter-dropdowns">
+          <select [(ngModel)]="selectedFormat">
+            <option value="All">All Formats</option>
+            <option value="Online">Online / Virtual</option>
+            <option value="Offline">Offline / Live</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+          <button class="btn-filter-action"
+            (click)="searchQuery = ''; selectedSpecialty = 'All'; selectedFormat = 'All'">Reset Filter</button>
+        </div>
+      </div>
+
+      <!-- Specialty Pills Row (under the search bar!) -->
+      <div class="specialty-pills-row">
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'All'"
+          (click)="selectSpecialtyBadge('All')">View All</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Cardiology'"
+          (click)="selectSpecialtyBadge('Cardiology')">Cardiology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Oncology'"
+          (click)="selectSpecialtyBadge('Oncology')">Oncology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Neurology'"
+          (click)="selectSpecialtyBadge('Neurology')">Neurology</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Pediatrics'"
+          (click)="selectSpecialtyBadge('Pediatrics')">Pediatrics</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'Surgery'"
+          (click)="selectSpecialtyBadge('Surgery')">Surgery</button>
+        <button type="button" class="spec-pill" [class.active]="selectedSpecialty === 'General Medicine'"
+          (click)="selectSpecialtyBadge('General Medicine')">General Medicine</button>
+      </div>
+
+      <!-- Events Grid -->
+      <div class="events-grid">
+        <div class="event-card animate-fade-in" *ngFor="let event of visibleEvents">
+          <div class="card-image-wrapper">
+            <img [src]="getEventPoster(event)" [alt]="event.title" class="event-poster-img"
+              (error)="onImgError($event, event.category, event.title)" />
+            <div class="event-poster-overlay"></div>
+            <span class="format-badge" [class.live]="event.mode === 'Offline'" [class.virtual]="event.mode === 'Online'"
+              [class.hybrid]="event.mode === 'Hybrid'">
+              {{ event.mode === 'Offline' ? 'LIVE EVENT' : event.mode === 'Online' ? 'VIRTUAL' : 'HYBRID' }}
+            </span>
+            <span class="event-category-pill">
+              {{ event.category }}
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="card-date-badge">
+              <span class="date-day">{{ event.date | date:'dd' }}</span>
+              <span class="date-month">{{ event.date | date:'MMM' | uppercase }}</span>
+            </div>
+            <div class="card-main-content">
+              <h3 class="card-title">{{ event.title }}</h3>
+              <div class="card-meta">
+                <span>👤 {{ event.speaker }}</span>
+                <span>🕒 {{ event.time }}</span>
+                <span>📍 {{ event.venue }}</span>
+              </div>
+              <div class="card-footer-row">
+                <span class="credits-badge">{{ event.creditPoints }} CME Credits</span>
+                <span class="card-price" [class.free-green]="event.price === 0">{{ event.price === 0 ? 'FREE' : '₹' +
+                  event.price }}</span>
+              </div>
+              <button class="btn-view-details" (click)="openEventDetail(event)">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="filteredEvents.length === 0">
+          <span class="empty-icon">📂</span>
+          <h3>No events found</h3>
+          <p>Try resetting the search terms or filters above.</p>
+        </div>
+      </div>
+
+      <!-- Show More / Show Less Button -->
+      <div class="show-more-events-container" *ngIf="filteredEvents.length > 4"
+        style="text-align: center; margin-top: 2rem;">
+        <button class="btn-primary-hero" *ngIf="eventsLimit < filteredEvents.length" (click)="showMoreEvents()"
+          style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+          Show More ({{ filteredEvents.length - eventsLimit }} remaining)
+        </button>
+        <button class="btn-secondary-hero" *ngIf="eventsLimit >= filteredEvents.length" (click)="showLessEvents()"
+          style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Show Less
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== CME COURSES SECTION ==================== -->
+  <section class="courses-section" id="courses-section">
+    <div class="section-container">
+      <div class="section-header-row">
+        <h2 class="section-title">Self-Paced CME Courses</h2>
+      </div>
+
+      <div class="courses-grid">
+        <div class="course-card" *ngFor="let course of visibleCourses">
+          <div class="course-thumb-wrapper">
+            <img [src]="getCoursePoster(course)" [alt]="course.title" class="course-thumbnail"
+              (error)="onImgError($event, course.category, course.title)" />
+            <div class="course-poster-overlay"></div>
+            <span class="course-category-tag">{{ course.category }}</span>
+          </div>
+          <div class="course-body">
+            <h3 class="course-title">{{ course.title }}</h3>
+            <p class="course-desc">{{ course.shortDescription }}</p>
+            <div class="course-instructor-info">
+              <img [src]="course.instructorImage" [alt]="course.instructor" class="inst-avatar" />
+              <div>
+                <span class="inst-name">{{ course.instructor }}</span>
+                <span class="inst-role">{{ course.instructorRole }}</span>
+              </div>
+            </div>
+            <div class="course-stats-row">
+              <span class="stat-item">⭐ {{ course.rating }} ({{ course.reviewsCount }} reviews)</span>
+              <span class="stat-item">⏱️ {{ course.duration }}</span>
+            </div>
+            <div class="course-footer-row">
+              <span class="credits-badge blue-credits">{{ course.creditPoints }} CME Credit</span>
+              <span class="course-price">₹{{ course.price }}</span>
+            </div>
+            <button class="btn-enroll-course" (click)="viewCourse(course.id)">View Course Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show More / Show Less Button for Courses -->
+      <div *ngIf="filteredCourses.length > 3" style="text-align: center; margin-top: 2rem;">
+        <button *ngIf="coursesLimit < filteredCourses.length" (click)="showMoreCourses()"
+          style="background-color: #2563eb; color: #ffffff; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">
+          Show More ({{ filteredCourses.length - coursesLimit }} remaining)
+        </button>
+        <button *ngIf="coursesLimit >= filteredCourses.length" (click)="showLessCourses()"
+          style="background-color: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Show Less
+        </button>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- ==================== SONY-STYLE COVELIS FOOTER ==================== -->
+  <footer class="covelis-pro-footer">
+    <div class="footer-container">
+
+      <div class="footer-brand-section">
+        <div class="footer-brand-logo">
+          <img src="assets/logo-light.png" alt="All India CME Logo"
+            style="height: 36px; width: auto; object-fit: contain; margin-bottom: 0.35rem;" />
+        </div>
+
+        <div class="footer-copyright-text">
+          &copy; 2026 Covelis | A Venture of Covelis Health Tech LLP | All Rights Reserved | +91 73776 79778
+        </div>
+      </div>
+
+    </div>
+  </footer>
