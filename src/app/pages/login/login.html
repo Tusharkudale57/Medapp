@@ -1,341 +1,549 @@
 <div class="login-page">
-<a routerLink="/" class="home-btn">Home</a>
+
+  <a routerLink="/" class="home-btn">Home</a>
+
   <div class="login-card">
 
     <!-- Left: Brand -->
     <section class="login-brand-panel">
+
       <div class="login-brand-content">
-        <img src="assets/logo-light.png"
-             alt="All India CME Logo"
-             class="login-logo">
+
+        <img
+          src="assets/logo-light.png"
+          alt="All India CME Logo"
+          class="login-logo"
+        >
 
         <h1>All India CME</h1>
-        <p>Official CME Sessions, Courses & Real-Time Credit Tracking</p>
+
+        <p>
+          Official CME Sessions, Courses & Real-Time Credit Tracking
+        </p>
+
       </div>
 
       <div class="login-metrics">
+
         <div>
           <strong>50,000+</strong>
           <span>Doctors</span>
         </div>
+
         <div>
           <strong>100%</strong>
           <span>Verified</span>
         </div>
+
       </div>
+
     </section>
+
 
     <!-- Right: Login -->
     <section class="login-form-panel">
 
       <div class="login-form-content">
 
+        <!-- Role Selection -->
         <div class="role-selector-tabs">
-          <button type="button"
-                  [class.active]="activeRole() === 'doctor'"
-                  (click)="switchRole('doctor')">
+
+          <button
+            type="button"
+            [class.active]="activeRole() === 'doctor'"
+            (click)="switchRole('doctor')"
+          >
             👨‍⚕️ Doctor Sign In
           </button>
 
-          <button type="button"
-                  [class.active]="activeRole() === 'admin'"
-                  (click)="switchRole('admin')">
+          <button
+            type="button"
+            [class.active]="activeRole() === 'admin'"
+            (click)="switchRole('admin')"
+          >
             ⚡ Admin Sign In
           </button>
+
         </div>
 
+
+        <!-- Step Progress -->
         <div class="step-progress-bar">
-          <div class="step-item" [class.active]="loginStep >= 1">
+
+          <div
+            class="step-item"
+            [class.active]="loginStep >= 1"
+          >
             <span class="step-num">1</span>
             <span>Account ID</span>
           </div>
-          <div class="card-body">
-            <div class="card-date-badge">
-              <span class="date-day">{{ event.eventDateTime | date:'dd' }}</span>
-              <span class="date-month">{{ event.eventDateTime | date:'MMM' | uppercase }}</span>
-            </div>
-            <div class="card-main-content">
-              <h3 class="card-title">{{ event.title }}</h3>
-              <div class="card-meta">
-                <span>👤 {{ event.speakerName }}</span>
-                <span>🕒 {{ event.eventDateTime | date:'hh:mm a' }}</span>
-                <span>📍 {{ event.joinLink || 'Online' }}</span>
-              </div>
-              <div class="card-footer-row">
-                <span class="credits-badge">{{ event.cmeCreditPoints ?? 0 }} CME Credits</span>
-                <span class="card-price" [class.free-green]="event.registrationFee === 0">{{ event.registrationFee === 0 ? 'FREE' : '₹' +
-                  event.registrationFee }}</span>
-              </div>
-              <button class="btn-view-details" (click)="openEventDetail(event)">View Details</button>
-            </div>
 
-          <div class="step-line" [class.filled]="loginStep === 2"></div>
+          <div
+            class="step-line"
+            [class.filled]="loginStep === 2"
+          ></div>
 
-          <div class="step-item" [class.active]="loginStep === 2">
+          <div
+            class="step-item"
+            [class.active]="loginStep === 2"
+          >
             <span class="step-num">2</span>
             <span>Security</span>
           </div>
+
         </div>
 
-        <div *ngIf="errorMessage" class="error-alert">
+
+        <!-- Error Message -->
+        <div
+          *ngIf="errorMessage"
+          class="error-alert"
+        >
           ⚠️ {{ errorMessage }}
         </div>
 
+
+        <!-- Login Form -->
         <form (ngSubmit)="onLogin()">
 
           <!-- STEP 1 -->
           <div *ngIf="loginStep === 1">
 
             <div class="form-group">
+
               <label>
-                {{ activeRole() === 'doctor'
-                  ? 'Doctor Email / Registered Mobile'
-                  : 'Admin Username / Email' }}
+                {{
+                  activeRole() === 'doctor'
+                    ? 'Doctor Email / Registered Mobile'
+                    : 'Admin Username / Email'
+                }}
               </label>
 
               <div class="input-icon-wrapper">
+
                 <span class="field-icon">👤</span>
 
-                <input type="text"
-                       [(ngModel)]="userId"
-                       name="userId"
-                       [placeholder]="activeRole() === 'doctor'
-                         ? 'doctor@medcme.org or 9876543210'
-                         : 'admin@medcme'"
-                       required>
+                <input
+                  type="text"
+                  [(ngModel)]="userId"
+                  name="userId"
+                  [placeholder]="
+                    activeRole() === 'doctor'
+                      ? 'doctor@medcme.org or 9876543210'
+                      : 'admin@medcme'
+                  "
+                  required
+                >
+
               </div>
+
             </div>
 
-            <button type="button"
-                    class="btn-next-step"
-                    (click)="nextStep()">
-              {{ activeRole() === 'doctor'
-                ? 'Continue to OTP Verification →'
-                : 'Continue to Password Authentication →' }}
+
+            <button
+              type="button"
+              class="btn-next-step"
+              (click)="nextStep()"
+            >
+              {{
+                activeRole() === 'doctor'
+                  ? 'Continue to OTP Verification →'
+                  : 'Continue to Password Authentication →'
+              }}
             </button>
 
           </div>
 
+
           <!-- STEP 2 -->
           <div *ngIf="loginStep === 2">
 
-            <button type="button"
-                    class="btn-back-step"
-                    (click)="goToStep(1)">
+            <button
+              type="button"
+              class="btn-back-step"
+              (click)="goToStep(1)"
+            >
               ← Back ({{ userId }})
             </button>
 
+
             <!-- Doctor OTP -->
-            <div *ngIf="activeRole() === 'doctor' && loginMethod === 'otp'">
+            <div
+              *ngIf="
+                activeRole() === 'doctor' &&
+                loginMethod === 'otp'
+              "
+            >
 
               <div class="security-info">
                 📱 Secure Login via OTP Verification
               </div>
 
-              <div *ngIf="!otpSentForLogin" class="otp-request-box">
-                <p>We will send a 6-digit code to {{ userId }}</p>
 
-                <button type="button"
-                        class="btn-send-otp"
-                        (click)="sendLoginOtp()">
+              <!-- Request OTP -->
+              <div
+                *ngIf="!otpSentForLogin"
+                class="otp-request-box"
+              >
+
+                <p>
+                  We will send a 6-digit code to {{ userId }}
+                </p>
+
+                <button
+                  type="button"
+                  class="btn-send-otp"
+                  (click)="sendLoginOtp()"
+                >
                   Send Verification OTP
                 </button>
+
               </div>
 
-              <div *ngIf="otpSentForLogin" class="form-group">
+
+              <!-- OTP Input -->
+              <div
+                *ngIf="otpSentForLogin"
+                class="form-group"
+              >
 
                 <div class="otp-info">
-                  📱 <strong>Verification OTP:</strong>
+
+                  📱
+                  <strong>Verification OTP:</strong>
+
                   A 6-digit OTP has been dispatched to
                   <strong>{{ userId }}</strong>.
+
                 </div>
 
-                <label>Enter 6-Digit OTP Code *</label>
+
+                <label>
+                  Enter 6-Digit OTP Code *
+                </label>
+
 
                 <div class="input-icon-wrapper">
+
                   <span class="field-icon">🔢</span>
 
-                  <input type="text"
-                         [(ngModel)]="userPass"
-                         name="userPass"
-                         placeholder="Enter 6-digit code"
-                         maxlength="6"
-                         required>
+                  <input
+                    type="text"
+                    [(ngModel)]="userPass"
+                    name="userPass"
+                    placeholder="Enter 6-digit code"
+                    maxlength="6"
+                    required
+                  >
+
                 </div>
 
-                <div class="otp-resend-row">
-                  <span class="otp-sent-txt">✓ OTP Sent!</span>
 
-                  <button type="button"
-                          class="btn-resend-otp-link"
-                          [disabled]="loginOtpCountdown > 0"
-                          (click)="sendLoginOtp()">
-                    {{ loginOtpCountdown > 0
-                      ? 'Resend in ' + loginOtpCountdown + 's'
-                      : 'Resend Code' }}
+                <div class="otp-resend-row">
+
+                  <span class="otp-sent-txt">
+                    ✓ OTP Sent!
+                  </span>
+
+                  <button
+                    type="button"
+                    class="btn-resend-otp-link"
+                    [disabled]="loginOtpCountdown > 0"
+                    (click)="sendLoginOtp()"
+                  >
+                    {{
+                      loginOtpCountdown > 0
+                        ? 'Resend in ' + loginOtpCountdown + 's'
+                        : 'Resend Code'
+                    }}
                   </button>
+
                 </div>
 
               </div>
+
             </div>
 
+
             <!-- Admin Password -->
-            <div *ngIf="activeRole() === 'admin' || loginMethod === 'password'">
+            <div
+              *ngIf="
+                activeRole() === 'admin' ||
+                loginMethod === 'password'
+              "
+            >
 
               <div class="admin-info">
                 ⚡ Admin Authentication
               </div>
 
+
               <div class="form-group">
-                <label>Admin Password *</label>
+
+                <label>
+                  Admin Password *
+                </label>
 
                 <div class="input-icon-wrapper">
+
                   <span class="field-icon">🔑</span>
 
-                  <input [type]="showPassword ? 'text' : 'password'"
-                         [(ngModel)]="userPass"
-                         name="userPass"
-                         placeholder="Enter Admin Password"
-                         required>
+                  <input
+                    [type]="
+                      showPassword
+                        ? 'text'
+                        : 'password'
+                    "
+                    [(ngModel)]="userPass"
+                    name="userPass"
+                    placeholder="Enter Admin Password"
+                    required
+                  >
 
-                  <button type="button"
-                          class="password-toggle"
-                          (click)="togglePasswordVisibility()">
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    (click)="togglePasswordVisibility()"
+                  >
                     {{ showPassword ? '🙈' : '👁️' }}
                   </button>
+
                 </div>
+
               </div>
 
             </div>
 
+
+            <!-- Remember Device -->
             <label class="remember-checkbox">
-              <input type="checkbox" name="rememberDevice">
-              <span>Keep me signed in on this device</span>
+
+              <input
+                type="checkbox"
+                name="rememberDevice"
+              >
+
+              <span>
+                Keep me signed in on this device
+              </span>
+
             </label>
 
-            <button type="submit"
-                    class="btn-submit-main"
-                    [disabled]="loading ||
-                      (activeRole() === 'doctor' && !otpSentForLogin) ||
-                      (activeRole() === 'admin' && !userPass.trim())">
 
-              <span *ngIf="!loading && activeRole() === 'doctor'">
+            <!-- Submit -->
+            <button
+              type="submit"
+              class="btn-submit-main"
+              [disabled]="
+                loading ||
+                (activeRole() === 'doctor' && !otpSentForLogin) ||
+                (activeRole() === 'admin' && !userPass.trim())
+              "
+            >
+
+              <span
+                *ngIf="
+                  !loading &&
+                  activeRole() === 'doctor'
+                "
+              >
                 Verify OTP & Sign In →
               </span>
 
-              <span *ngIf="!loading && activeRole() === 'admin'">
+              <span
+                *ngIf="
+                  !loading &&
+                  activeRole() === 'admin'
+                "
+              >
                 Authenticate Admin & Sign In →
               </span>
 
-              <span *ngIf="loading" class="spinner"></span>
+              <span
+                *ngIf="loading"
+                class="spinner"
+              ></span>
+
             </button>
 
           </div>
 
         </form>
 
+
+        <!-- Login Links -->
         <div class="login-links">
-<a routerLink="/signup">🆕 Create Account</a>
-          <a href="#"
-             (click)="$event.preventDefault(); openForgotPassword()">
+
+          <a routerLink="/signup">
+            🆕 Create Account
+          </a>
+
+          <a
+            href="#"
+            (click)="$event.preventDefault(); openForgotPassword()"
+          >
             Forgot Password?
           </a>
+
         </div>
 
       </div>
+
     </section>
 
   </div>
+
 </div>
 
-<!-- Forgot Password -->
-<div class="modal-overlay animate-fade-in"
-     *ngIf="showForgotPassword"
-     (click)="closeForgotPassword()">
 
-  <div class="forgot-modal-box animate-scale-up"
-       (click)="$event.stopPropagation()">
+<!-- Forgot Password Modal -->
+<div
+  class="modal-overlay animate-fade-in"
+  *ngIf="showForgotPassword"
+  (click)="closeForgotPassword()"
+>
+
+  <div
+    class="forgot-modal-box animate-scale-up"
+    (click)="$event.stopPropagation()"
+  >
 
     <div class="modal-header">
+
       <h3>🔑 Password Recovery</h3>
-      <button class="close-btn"
-              type="button"
-              (click)="closeForgotPassword()">
+
+      <button
+        class="close-btn"
+        type="button"
+        (click)="closeForgotPassword()"
+      >
         &#10005;
       </button>
+
     </div>
 
-    <div *ngIf="forgotErrorMsg"
-         class="alert-error-recovery">
+
+    <!-- Recovery Error -->
+    <div
+      *ngIf="forgotErrorMsg"
+      class="alert-error-recovery"
+    >
       ⚠️ {{ forgotErrorMsg }}
     </div>
 
-    <div *ngIf="forgotSuccessMsg"
-         class="alert-success-recovery">
+
+    <!-- Recovery Success -->
+    <div
+      *ngIf="forgotSuccessMsg"
+      class="alert-success-recovery"
+    >
       ✓ {{ forgotSuccessMsg }}
     </div>
 
-    <div *ngIf="!otpSent"
-         class="forgot-body">
+
+    <!-- Request Recovery OTP -->
+    <div
+      *ngIf="!otpSent"
+      class="forgot-body"
+    >
 
       <p>
         Enter your registered Email or Mobile number.
         We will send a code.
       </p>
 
-      <input type="text"
-             [(ngModel)]="forgotEmailOrMobile"
-             placeholder="e.g. doctor@medcme.org"
-             class="forgot-input">
+      <input
+        type="text"
+        [(ngModel)]="forgotEmailOrMobile"
+        placeholder="e.g. doctor@medcme.org"
+        class="forgot-input"
+      >
 
-      <button type="button"
-              (click)="sendForgotOtp()"
-              class="btn-send-recovery">
+      <button
+        type="button"
+        (click)="sendForgotOtp()"
+        class="btn-send-recovery"
+      >
         Send Recovery OTP
       </button>
+
     </div>
 
-    <div *ngIf="otpSent && !forgotSuccessMsg"
-         class="forgot-body">
+
+    <!-- Verify Recovery OTP -->
+    <div
+      *ngIf="otpSent && !forgotSuccessMsg"
+      class="forgot-body"
+    >
 
       <div class="simulated-otp-info">
+
         📟 Simulated OTP dispatched.
-        Enter code: <strong>{{ forgotOtpCode }}</strong>.
+
+        Enter code:
+        <strong>{{ forgotOtpCode }}</strong>.
+
       </div>
+
 
       <div class="form-group">
-        <label>Verification Code</label>
 
-        <input type="text"
-               [(ngModel)]="otpCode"
-               placeholder="Code"
-               class="forgot-input">
+        <label>
+          Verification Code
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="otpCode"
+          placeholder="Code"
+          class="forgot-input"
+        >
+
       </div>
+
 
       <div class="form-group">
-        <label>New Password</label>
 
-        <input type="password"
-               [(ngModel)]="newPassword"
-               placeholder="Min 6 chars"
-               class="forgot-input">
+        <label>
+          New Password
+        </label>
+
+        <input
+          type="password"
+          [(ngModel)]="newPassword"
+          placeholder="Min 6 chars"
+          class="forgot-input"
+        >
+
       </div>
+
 
       <div class="form-group">
-        <label>Confirm Password</label>
 
-        <input type="password"
-               [(ngModel)]="newPasswordConfirm"
-               placeholder="Retype password"
-               class="forgot-input">
+        <label>
+          Confirm Password
+        </label>
+
+        <input
+          type="password"
+          [(ngModel)]="newPasswordConfirm"
+          placeholder="Retype password"
+          class="forgot-input"
+        >
+
       </div>
 
-      <button type="button"
-              (click)="verifyOtpAndReset()"
-              class="btn-send-recovery">
+
+      <button
+        type="button"
+        (click)="verifyOtpAndReset()"
+        class="btn-send-recovery"
+      >
         Reset Password
       </button>
 
     </div>
+
   </div>
+
 </div>

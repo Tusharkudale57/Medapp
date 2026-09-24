@@ -6,7 +6,10 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
-import { Course, CmeEvent } from '../../models/course.model';
+import {
+  Course,
+  EventResponse
+} from '../../models/course.model';
 
 @Component({
   selector: 'app-home',
@@ -30,8 +33,11 @@ export class HomeComponent implements OnInit {
 
   showExploreDropdown = false;
 
-  selectedEventForDetail: CmeEvent | null = null;
+  selectedEventForDetail: EventResponse | null = null;
   showEventDetailModal = false;
+
+  // Events loaded from backend API
+  events: EventResponse[] = [];
 
   constructor(
     public authService: AuthService,
@@ -41,40 +47,89 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
+
+    this.loadUpcomingEvents();
   }
 
-  get filteredEvents(): CmeEvent[] {
-    let list = this.eventService.getUpcomingEvents();
+  /**
+   * Load upcoming events from backend
+   */
+  loadUpcomingEvents(): void {
 
+    this.eventService.getUpcomingEvents().subscribe({
+      next: (response) => {
+
+        this.events = response.data ?? [];
+
+      },
+
+      error: (error) => {
+
+        console.error(
+          'Failed to load upcoming events:',
+          error
+        );
+
+        this.events = [];
+      }
+    });
+  }
+
+  /**
+   * Filter events
+   */
+  get filteredEvents(): EventResponse[] {
+
+    let list = [...this.events];
+
+    // Specialty filter
     if (this.selectedSpecialty !== 'All') {
+
       list = list.filter(
-        e => e.category?.toLowerCase() === this.selectedSpecialty.toLowerCase()
+        event =>
+          event.category?.toLowerCase() ===
+          this.selectedSpecialty.toLowerCase()
       );
     }
 
+    // Format filter
     if (this.selectedFormat !== 'All') {
-      list = list.filter(e => e.mode === this.selectedFormat);
+
+      list = list.filter(
+        event =>
+          event.mode?.toLowerCase() ===
+          this.selectedFormat.toLowerCase()
+      );
     }
 
+    // Search filter
     if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase().trim();
 
-      list = list.filter(e =>
-        (e.title || '').toLowerCase().includes(q) ||
-        (e.description || '').toLowerCase().includes(q) ||
-        (e.speaker || '').toLowerCase().includes(q) ||
-        (e.category || '').toLowerCase().includes(q)
+      const q = this.searchQuery
+        .toLowerCase()
+        .trim();
+
+      list = list.filter(event =>
+        (event.title || '').toLowerCase().includes(q) ||
+        (event.description || '').toLowerCase().includes(q) ||
+        (event.speakerName || '').toLowerCase().includes(q) ||
+        (event.speakerRole || '').toLowerCase().includes(q) ||
+        (event.category || '').toLowerCase().includes(q)
       );
     }
 
     return list;
   }
 
-  get visibleEvents(): CmeEvent[] {
-    return this.filteredEvents.slice(0, this.eventsLimit);
+  get visibleEvents(): EventResponse[] {
+    return this.filteredEvents.slice(
+      0,
+      this.eventsLimit
+    );
   }
 
   showMoreEvents(): void {
@@ -85,23 +140,35 @@ export class HomeComponent implements OnInit {
     this.eventsLimit = 4;
   }
 
+  /**
+   * Filter courses
+   */
   get filteredCourses(): Course[] {
+
     let list = this.courseService.getCourses();
 
+    // Specialty filter
     if (this.selectedSpecialty !== 'All') {
+
       list = list.filter(
-        c => c.category?.toLowerCase() === this.selectedSpecialty.toLowerCase()
+        course =>
+          course.category?.toLowerCase() ===
+          this.selectedSpecialty.toLowerCase()
       );
     }
 
+    // Search filter
     if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase().trim();
 
-      list = list.filter(c =>
-        (c.title || '').toLowerCase().includes(q) ||
-        (c.shortDescription || '').toLowerCase().includes(q) ||
-        (c.category || '').toLowerCase().includes(q) ||
-        (c.instructor || '').toLowerCase().includes(q)
+      const q = this.searchQuery
+        .toLowerCase()
+        .trim();
+
+      list = list.filter(course =>
+        (course.title || '').toLowerCase().includes(q) ||
+        (course.shortDescription || '').toLowerCase().includes(q) ||
+        (course.category || '').toLowerCase().includes(q) ||
+        (course.instructor || '').toLowerCase().includes(q)
       );
     }
 
@@ -109,7 +176,10 @@ export class HomeComponent implements OnInit {
   }
 
   get visibleCourses(): Course[] {
-    return this.filteredCourses.slice(0, this.coursesLimit);
+    return this.filteredCourses.slice(
+      0,
+      this.coursesLimit
+    );
   }
 
   showMoreCourses(): void {
@@ -121,12 +191,16 @@ export class HomeComponent implements OnInit {
   }
 
   toggleExploreDropdown(event: MouseEvent): void {
+
     event.stopPropagation();
-    this.showExploreDropdown = !this.showExploreDropdown;
+
+    this.showExploreDropdown =
+      !this.showExploreDropdown;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
+
     const target = event.target as HTMLElement;
 
     if (!target.closest('.explore-dropdown-container')) {
@@ -137,24 +211,37 @@ export class HomeComponent implements OnInit {
   selectExploreOption(
     option: 'Online' | 'Offline' | 'Hybrid' | 'Courses' | 'All'
   ): void {
+
     this.showExploreDropdown = false;
 
     if (option === 'Courses') {
-      const element = document.getElementById('courses-section');
+
+      const element =
+        document.getElementById('courses-section');
 
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+
+        element.scrollIntoView({
+          behavior: 'smooth'
+        });
       }
 
       return;
     }
 
-    this.selectedFormat = option === 'All' ? 'All' : option;
+    this.selectedFormat =
+      option === 'All'
+        ? 'All'
+        : option;
 
-    const element = document.getElementById('events-section');
+    const element =
+      document.getElementById('events-section');
 
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+
+      element.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   }
 
@@ -163,30 +250,58 @@ export class HomeComponent implements OnInit {
   }
 
   viewCourse(courseId: string): void {
-    this.router.navigate(['/course', courseId]);
+    this.router.navigate([
+      '/course',
+      courseId
+    ]);
   }
 
-  openEventDetail(event: CmeEvent): void {
+  /**
+   * Open event details
+   */
+  openEventDetail(event: EventResponse): void {
+
     this.selectedEventForDetail = event;
     this.showEventDetailModal = true;
   }
 
+  /**
+   * Close event details
+   */
   closeEventDetail(): void {
+
     this.selectedEventForDetail = null;
     this.showEventDetailModal = false;
   }
 
-  getEventPoster(event: CmeEvent): string {
+  /**
+   * Get event poster
+   *
+   * Use API photoUrl when available.
+   * Otherwise use category-based fallback.
+   */
+  getEventPoster(event: EventResponse): string {
+
+    if (event.photoUrl) {
+      return event.photoUrl;
+    }
+
     return this.courseService.getCategoryPoster(
       event.category,
       event.title
     );
   }
 
+  /**
+   * Get course poster
+   */
   getCoursePoster(course: Course): string {
+
     if (
       course.thumbnail &&
-      !course.thumbnail.includes('photo-1576091160399-112ba8d25d1d')
+      !course.thumbnail.includes(
+        'photo-1576091160399-112ba8d25d1d'
+      )
     ) {
       return course.thumbnail;
     }
@@ -197,28 +312,38 @@ export class HomeComponent implements OnInit {
     );
   }
 
+  /**
+   * Image fallback
+   */
   onImgError(
     event: Event,
     category: string,
     title?: string
   ): void {
-    const image = event.target as HTMLImageElement;
+
+    const image =
+      event.target as HTMLImageElement;
 
     if (!image) {
       return;
     }
 
     if (image.dataset['fallbackApplied']) {
+
       image.onerror = null;
+
       image.src =
         'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80';
+
       return;
     }
 
     image.dataset['fallbackApplied'] = 'true';
-    image.src = this.courseService.getCategoryPoster(
-      category,
-      title
-    );
+
+    image.src =
+      this.courseService.getCategoryPoster(
+        category,
+        title
+      );
   }
 }
