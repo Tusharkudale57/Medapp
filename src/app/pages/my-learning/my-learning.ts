@@ -148,12 +148,8 @@ export class MyLearningComponent implements OnInit {
   get registeredEvents(): CmeEvent[] {
     const user = this.authService.currentUser();
     if (!user) return [];
-    
-    // Get all events from service
-    const allEvents = this.eventService.getUpcomingEvents();
-    
-    // Filter events where registration exists for user
-    return this.sortEventsByDateDesc(allEvents.filter(e => this.eventService.isRegistered(e.id, user.id)));
+
+    return this.eventService.getRegisteredEvents(user.id, user.email);
   }
 
   get inProgressEvents(): CmeEvent[] {

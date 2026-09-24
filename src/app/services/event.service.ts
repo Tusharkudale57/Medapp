@@ -702,7 +702,7 @@ export class EventService {
       paymentLink: 'https://medcme.org/pay/evt-030',
       status: 'upcoming',
       bannerColor: '#ec4899'
-    }
+    },
   ]);
 
   private registrationsSignal = signal<EventRegistration[]>([]);
@@ -754,9 +754,11 @@ export class EventService {
       const response = await firstValueFrom(this.api.getEnrolledEvents());
       if (response?.success && Array.isArray(response.data)) {
         const userRegistrations = response.data.map(r => this.mapBackendRegistrationToUi(r));
-        this.mergeRegistrations(userRegistrations);
+        this.replaceBackendRegistrations(userRegistrations);
       }
     } catch (e) {
+      this.registrationsSignal.set([]);
+      this.saveRegistrationsToStorage();
       console.warn('Backend enrolled events unavailable; using local registrations.', e);
     }
   }
@@ -795,10 +797,6 @@ export class EventService {
   private loadFromStorage() {
     if (!this.isBrowser) return;
     try {
-      const savedRegs = localStorage.getItem('medcme_registrations');
-      if (savedRegs) {
-        this.registrationsSignal.set(JSON.parse(savedRegs));
-      }
       const savedEvents = localStorage.getItem('medcme_events');
       if (savedEvents) {
         const parsed = JSON.parse(savedEvents);
@@ -855,6 +853,24 @@ export class EventService {
 
   getRegistrationsByEvent(eventId: string): EventRegistration[] {
     return this.registrationsSignal().filter(r => r.eventId === eventId);
+  }
+
+  getRegisteredEvents(userId?: string, userEmail?: string): CmeEvent[] {
+    const registrations = this.registrationsSignal().filter(reg =>
+      (!userId && !userEmail) ||
+      reg.userId === userId ||
+      Boolean(userEmail && reg.userEmail?.toLowerCase() === userEmail.toLowerCase())
+    );
+    const events = registrations.map(registration => {
+      const event = this.eventsSignal().find(candidate =>
+        candidate.backendId === registration.backendEventId ||
+        (candidate.backendId === this.toBackendId(registration.eventId) && candidate.id !== registration.eventId)
+      );
+      return event || this.mapRegistrationToEvent(registration);
+    });
+    return this.sortEventsByDateDesc(events.filter((event, index, list) =>
+      list.findIndex(candidate => candidate.id === event.id) === index
+    ));
   }
 
   isRegistered(eventId: string, userId: string): boolean {
@@ -925,7 +941,7 @@ export class EventService {
         return;
       }
 
-      this.api.registerForEvent(backendEventId, true, userEmail).subscribe({
+      this.api.registerForEvent(backendEventId, true).subscribe({
         next: (response) => {
           if (response?.success && response.data) {
             const registration = this.mapBackendRegistrationToUi(response.data, userId);
@@ -1351,6 +1367,11 @@ export class EventService {
     this.saveRegistrationsToStorage();
   }
 
+  private replaceBackendRegistrations(registrations: EventRegistration[]): void {
+    this.registrationsSignal.set(registrations);
+    this.saveRegistrationsToStorage();
+  }
+
   private applyBackendAttendance(attendance: BackendEventAttendanceResponse[]): void {
     this.registrationsSignal.update(list => list.map(reg => {
       const found = attendance.find(a => a.registrationId === reg.registrationId);
@@ -1385,6 +1406,9 @@ export class EventService {
       registrationId: reg.registrationId,
       eventId: String(reg.eventId),
       backendEventId: reg.eventId,
+      eventTitle: reg.eventTitle,
+      eventDate: reg.eventDate,
+      eventTime: reg.eventTime,
       userId: fallbackUserId || String(reg.doctorProfileId),
       userName: reg.fullName,
       userEmail: reg.email,
@@ -1402,9 +1426,36 @@ export class EventService {
     };
   }
 
+  private mapRegistrationToEvent(registration: EventRegistration): CmeEvent {
+    const eventDate = registration.eventDate || new Date().toISOString();
+    return {
+      id: registration.eventId,
+      backendId: registration.backendEventId ?? (this.toBackendId(registration.eventId) || undefined),
+      title: registration.eventTitle || `CME Event ${registration.eventId}`,
+      description: '',
+      date: this.toDatePart(eventDate),
+      time: this.toDisplayTime(registration.eventTime || eventDate),
+      venue: 'Online',
+      mode: 'Online',
+      speaker: '',
+      speakerRole: '',
+      category: 'General Medicine',
+      creditPoints: 0,
+      price: Number(registration.registrationFee || 0),
+      maxSeats: 0,
+      registeredCount: 1,
+      hostId: 'backend',
+      hostName: 'All India CME',
+      paymentLink: registration.meetingLink || '',
+      status: 'upcoming',
+      bannerColor: '#bae6fd'
+    };
+  }
+
   private mapBackendEventToUi(event: BackendEventResponse): CmeEvent {
-    const datePart = this.toDatePart(event.eventDate);
-    const timePart = this.toDisplayTime(event.eventTime || event.eventDate);
+    const eventDateTime = event.eventDateTime || event.eventDate;
+    const datePart = this.toDatePart(eventDateTime);
+    const timePart = this.toDisplayTime(event.eventTime || eventDateTime);
     const status = event.status === 'COMPLETED' ? 'completed' : event.status === 'CANCELLED' ? 'completed' : 'upcoming';
     return {
       id: String(event.id),

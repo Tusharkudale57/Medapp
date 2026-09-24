@@ -139,6 +139,9 @@ export interface EventRegistration {
   registrationId?: number;
   eventId: string;
   backendEventId?: number;
+  eventTitle?: string;
+  eventDate?: string;
+  eventTime?: string;
   userId: string;
   userName: string;
   userEmail?: string;
@@ -190,6 +193,7 @@ export interface BackendEventRequest {
 
 export interface BackendEventResponse extends BackendEventRequest {
   id: number;
+  eventDateTime?: string;
   createdAt?: string;
   zohoBackstageEventId?: string;
   recordingFileName?: string;
@@ -218,15 +222,25 @@ export interface BackendEventRegistrationResponse {
   email: string;
   mobileNumber: string;
   specialtyCategory: string;
+  medicalRegistrationNo?: string;
+  hospitalOrInstitutionName?: string;
+  city?: string;
   eventId: number;
   eventTitle: string;
   eventDate: string;
   eventTime: string;
-  meetingLink: string;
-  cmeCreditPoints: number;
+  meetingLink?: string;
+  cmeCreditPoints?: number;
   registrationFee: number;
   gstAmount: number;
   totalAmount: number;
+  amountPaid?: number;
+  paymentStatus?: string;
+  paymentRequired?: boolean;
+  razorpayKeyId?: string;
+  razorpayOrderId?: string;
+  razorpayAmount?: number;
+  razorpayCurrency?: string;
 }
 
 export interface BackendEventJoinResponse {
