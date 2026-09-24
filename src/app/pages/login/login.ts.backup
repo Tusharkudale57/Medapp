@@ -1,17 +1,18 @@
 import { Component, signal, HostListener, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { EmailService } from '../../services/email.service';
 import { CourseService } from '../../services/course.service';
 import { EventService } from '../../services/event.service';
 import { RazorpayService } from '../../services/razorpay.service';
-import { Course, EventResponse, RegisterRequest } from '../../models/course.model';
-import { ChangeDetectorRef } from '@angular/core';
+import { Course, CmeEvent, RegisterRequest } from '../../models/course.model';
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule,RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -26,14 +27,13 @@ export class LoginComponent implements OnInit {
   eventsLimit = 4;
   coursesLimit = 3;
   showExploreDropdown = false;
-  events: EventResponse[] = [];
 
   // Selected event details modal
-  selectedEventForDetail: EventResponse | null = null;
+  selectedEventForDetail: CmeEvent | null = null;
   showEventDetailModal = false;
 
   // Checkout states for Event Registration
-  selectedEvent: EventResponse | null = null;
+  selectedEvent: CmeEvent | null = null;
   showRegisterModal = false;
   agreeTermsCheckout = false;
   showSponsorInput = false;
@@ -55,7 +55,7 @@ export class LoginComponent implements OnInit {
   showLoginModal = false;
 
   // Pending guest actions
-  pendingEventForCheckout: EventResponse | null = null;
+  pendingEventForCheckout: CmeEvent | null = null;
 
   // Form Fields
   userId: string = 'doctor@medcme.org';
@@ -154,8 +154,7 @@ export class LoginComponent implements OnInit {
     public courseService: CourseService,
     public eventService: EventService,
     private razorpayService: RazorpayService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private router: Router
   ) {
     effect(() => {
       const user = this.authService.currentUser();
@@ -166,33 +165,9 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-
-    const navigationState = history.state;
-
-if (navigationState?.registrationSuccess) {
-  this.userId = navigationState.userId || '';
-  this.loginStep = 2;
-  this.loginMethod = 'otp';
-  this.otpSentForLogin = true;
-}
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
-
-    this.loadUpcomingEvents();
-  }
-
-  loadUpcomingEvents(): void {
-    this.eventService.getUpcomingEvents().subscribe({
-      next: (response) => {
-        this.events = response.data ?? [];
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Failed to load upcoming events:', error);
-        this.events = [];
-      }
-    });
   }
 
   switchRole(role: 'doctor' | 'admin') {
@@ -549,23 +524,14 @@ if (navigationState?.registrationSuccess) {
       this.loginOtpCountdown = 60;
       this.startOtpCountdown();
       this.loading = false;
-      this.authService.sendLoginOtpBackend(identifier).subscribe({
 
+      this.authService.sendLoginOtpBackend(identifier).subscribe({
         next: (res) => {
           console.log('OTP dispatched successfully:', res);
         },
-
         error: (err) => {
           console.warn('Send OTP background notice:', err);
-
-          const message =
-            err?.error?.message ||
-            'Unable to send OTP. Please try again.';
-
-          alert(message);
-          return;
         }
-
       });
     } else {
       // Admin simulation
@@ -600,39 +566,35 @@ if (navigationState?.registrationSuccess) {
 
       this.authService.verifyLoginOtpBackend(identifier, otp, purpose).subscribe({
         next: (res) => {
-          console.log("inside response of verifyLoginOtpBackend ===");
           this.loading = false;
-
           if (res && res.success) {
-
             const token = res.data?.token || res.data?.jwt || '';
-
             if (token) {
               localStorage.setItem('medcme_jwt_token', token);
             }
-
+            // const prof = res.data?.profile || (res.data?.fullName ? {
+            //   id: String(res.data.doctorId || 'doc_' + Date.now()),
+            //   name: res.data.fullName,
+            //   phone: res.data.mobileNumber || identifier,
+            //   email: identifier.includes('@') ? identifier : '',
+            //   role: 'doctor'
+            // } : null);
             this.authService.fetchProfileBackend().subscribe({
               next: (res) => {
                 if (res?.success && res?.data) {
-
-                  const freshUser =
-                    this.authService.mapBackendProfileToUser(res.data);
-
+                  const freshUser = this.authService.mapBackendProfileToUser(res.data);
                   if (freshUser) {
-                    this.authService.loginWithBackendUser(
-                      freshUser,
-                      token
-                    );
+                    this.authService.loginWithBackendUser(freshUser, token);
                   } else {
-                    this.authService.authenticateDoctor(
-                      identifier,
-                      otp
-                    );
+                    this.authService.authenticateDoctor(identifier, otp);
                   }
                 }
               },
               error: () => { }
             });
+
+
+
 
             if (this.pendingEventForCheckout) {
               this.showLoginModal = false;
@@ -642,33 +604,19 @@ if (navigationState?.registrationSuccess) {
               this.showLoginModal = false;
               this.router.navigate(['/dashboard']);
             }
-
           } else {
-
-            const message =
-              res?.message || 'OTP verification failed.';
-
-            this.errorMessage = message;
-            alert(message);
+            this.errorMessage = res?.message || 'OTP verification failed.';
           }
         },
-
         error: (err) => {
-          console.log("inside error of verifyLoginOtpBackend ===");
-
           this.loading = false;
-
-          const message =
-            err?.error?.message ||
-            err?.message ||
-            'Invalid or expired OTP. Please try again.';
-
-          this.errorMessage = message;
-
-          setTimeout(() => {
-            alert(message);
-          }, 0);
-          this.cdr.detectChanges();
+          const localRes = this.authService.authenticateDoctor(identifier, otp);
+          if (localRes.success) {
+            this.showLoginModal = false;
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.errorMessage = err?.error?.message || err?.message || 'Invalid or expired OTP. Please try again.';
+          }
         }
       });
     } else {
@@ -692,69 +640,55 @@ if (navigationState?.registrationSuccess) {
             this.showLoginModal = false;
             this.router.navigate(['/dashboard']);
           } else {
-            this.loading = false;
-          const message =
-            res?.error?.message ||
-            res?.message ||
-            'Admin authentication failed. Please check credentials.';
-            // this.errorMessage = res?.message || 'Admin authentication failed. Please check credentials.';
-          setTimeout(() => {
-            alert(message);
-          }, 0);
-          this.cdr.detectChanges();
+            this.errorMessage = res?.message || 'Admin authentication failed. Please check credentials.';
           }
         },
         error: (err) => {
-
           this.loading = false;
+          console.warn('Admin API login response/notice:', err);
 
-          const message =
-            err?.error?.message ||
-            err?.message ||
-            'Invalid or expired OTP. Please try again.';
+          // If backend API returns explicit 401 / 403 Unauthorized
+          if (err?.status === 401 || err?.status === 403) {
+            this.errorMessage = err?.error?.message || err?.error || 'Invalid Admin Username or Password.';
+            return;
+          }
 
-          this.errorMessage = message;
-
-          setTimeout(() => {
-            alert(message);
-          }, 0);
-          this.cdr.detectChanges();
+          // For proxy error, connection error, timeout, 500, 502, 504, 404, or status 0:
+          // Fall back gracefully to local admin authentication
+          const adminRes = this.authService.authenticateAdmin(username, password);
+          if (adminRes.success) {
+            this.showLoginModal = false;
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.errorMessage = adminRes.message || 'Invalid Admin Username or Password.';
+          }
         }
       });
     }
   }
 
   // --- Dynamic Search, Filters & Checkout Helpers ---
-  get filteredEvents(): EventResponse[] {
-    let list: EventResponse[] = [...this.events];
-
+  get filteredEvents(): CmeEvent[] {
+    let list = this.eventService.getUpcomingEvents();
     if (this.selectedSpecialty !== 'All') {
-      list = list.filter((e: EventResponse) =>
-        e.category?.toLowerCase() === this.selectedSpecialty.toLowerCase()
-      );
+      list = list.filter(e => e.category.toLowerCase() === this.selectedSpecialty.toLowerCase());
     }
-
     if (this.selectedFormat !== 'All') {
-      list = list.filter((e: EventResponse) =>
-        e.mode === this.selectedFormat
-      );
+      list = list.filter(e => e.mode === this.selectedFormat);
     }
-
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
-
-      list = list.filter((e: EventResponse) =>
+      list = list.filter(e =>
         (e.title || '').toLowerCase().includes(q) ||
         (e.description || '').toLowerCase().includes(q) ||
-        (e.speakerName || '').toLowerCase().includes(q) ||
+        (e.speaker || '').toLowerCase().includes(q) ||
         (e.category || '').toLowerCase().includes(q)
       );
     }
-
     return list;
   }
 
-  get visibleEvents(): EventResponse[] {
+  get visibleEvents(): CmeEvent[] {
     return this.filteredEvents.slice(0, this.eventsLimit);
   }
 
@@ -836,7 +770,7 @@ if (navigationState?.registrationSuccess) {
     this.router.navigate(['/course', courseId]);
   }
 
-  openEventDetail(event: EventResponse) {
+  openEventDetail(event: CmeEvent) {
     this.selectedEventForDetail = event;
     this.showEventDetailModal = true;
   }
@@ -860,7 +794,7 @@ if (navigationState?.registrationSuccess) {
     }
   }
 
-  openRegisterModal(event: EventResponse) {
+  openRegisterModal(event: CmeEvent) {
     this.selectedEvent = event;
     this.registrationSuccess = false;
     this.showRegisterModal = true;
@@ -913,9 +847,9 @@ if (navigationState?.registrationSuccess) {
     const user = this.authService.currentUser();
     if (!user || !this.selectedEvent) return;
 
-    if (this.selectedEvent.registrationFee === 0) {
+    if (this.selectedEvent.price === 0) {
       const success = this.eventService.registerForEvent(
-        String(this.selectedEvent.id),
+        this.selectedEvent.id,
         user.id,
         user.name,
         user.email,
@@ -928,7 +862,7 @@ if (navigationState?.registrationSuccess) {
       }
     } else if (this.sponsorNameDetected) {
       const success = this.eventService.registerForEvent(
-        String(this.selectedEvent.id),
+        this.selectedEvent.id,
         user.id,
         user.name,
         user.email,
@@ -942,9 +876,9 @@ if (navigationState?.registrationSuccess) {
       }
     } else {
       const details = {
-        courseId: String(this.selectedEvent.id),
+        courseId: this.selectedEvent.id,
         courseTitle: this.selectedEvent.title,
-        amount: this.selectedEvent.registrationFee,
+        amount: this.selectedEvent.price,
         userName: user.name,
         userEmail: user.email,
         userPhone: user.phone || '9876543210'
@@ -981,7 +915,7 @@ if (navigationState?.registrationSuccess) {
     if (!user || !this.selectedEvent) return;
 
     this.eventService.registerForEvent(
-      String(this.selectedEvent.id),
+      this.selectedEvent.id,
       user.id,
       user.name,
       user.email,
@@ -1044,7 +978,7 @@ if (navigationState?.registrationSuccess) {
     this.showRegistrationForm = true;
   }
 
-  getEventPoster(event: EventResponse): string {
+  getEventPoster(event: CmeEvent): string {
     return this.courseService.getCategoryPoster(event.category, event.title);
   }
 
