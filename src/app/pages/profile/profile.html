@@ -1,13 +1,6 @@
 <div class="profile-page-layout">
   <!-- Navbar Header -->
   <div class="top-nav">
-    <!-- Covelis Top Bar (Sony-style) -->
-    <div class="covelis-topbar">
-      <div class="covelis-topbar-inner">
-        <span class="covelis-tagline">India's Official MMC &amp; NMC Accredited CME Platform</span>
-        <span class="covelis-brand">powered by <strong>COVELIS</strong></span>
-      </div>
-    </div>
     <!-- Main White Nav -->
     <div class="container nav-inner">
       <button class="nav-brand" (click)="backToDashboard()" aria-label="Go to CME Events">
@@ -54,7 +47,7 @@
 
         <p class="specialty-text">
           <strong>Specialization:</strong> {{ user.specialty }} &bull;
-          <strong>MMC Reg No:</strong> {{ user.registrationNo || 'N/A' }}
+          <strong>Medical Reg No:</strong> {{ user.registrationNo || 'N/A' }}
         </p>
 
         <div class="contact-strip">
@@ -129,8 +122,8 @@
               </div>
             </div>
             <div>
-              <label>MMC Registration Number</label>
-              <input type="text" [(ngModel)]="editRegNo" placeholder="MMC Registration No" />
+              <label>Medical Registration Number</label>
+              <input type="text" [(ngModel)]="editRegNo" placeholder="Medical Registration No" />
             </div>
             <div>
               <label>Email Address</label>
@@ -326,7 +319,7 @@
   <div class="modal-overlay" *ngIf="showCertModal && selectedCertificate">
     <div class="cert-modal-dialog">
       <div class="cert-dialog-header">
-        <h4>Accredited CME Certificate Preview</h4>
+        <h4>CME Certificate Preview</h4>
         <button class="close-btn" (click)="closeCertificateModal()">✕</button>
       </div>
 

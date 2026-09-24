@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  AttendanceEntryPayload,
   BackendEventAttendanceResponse,
   BackendEventJoinResponse,
   BackendEventRegistrationResponse,
@@ -257,16 +258,80 @@ export class CmeApiService {
     });
   }
 
+  // ─── Admin Attendance & Certificate APIs ────────────────────────────────────
+
+  private readonly adminAttendanceRoot = '/api/admin/attendance/event';
+
+  /**
+   * PUT /api/admin/attendance/event/{eventId}/attendance-update-one-or-bulk
+   * Update attendance status for single or bulk doctor registrations
+   */
+  updateAttendanceBulk(eventId: number, entries: AttendanceEntryPayload[]): Observable<any> {
+    return this.http.put<any>(
+      `${this.adminAttendanceRoot}/${eventId}/attendance-update-one-or-bulk`,
+      { entries },
+      { headers: this.jsonAuthHeaders() }
+    );
+  }
+
+  /**
+   * POST /api/admin/attendance/event/{eventId}/allocate-credits
+   * Allocate CME credits & issue certificates to present attendees
+   */
+  allocateCredits(eventId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.adminAttendanceRoot}/${eventId}/allocate-credits`,
+      {},
+      { headers: this.jsonAuthHeaders() }
+    );
+  }
+
+  /**
+   * GET /api/admin/attendance/event/{eventId}/get-attendance-sheet
+   * Fetch full event attendance sheet with rows
+   */
+  getAttendanceSheet(eventId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.adminAttendanceRoot}/${eventId}/get-attendance-sheet`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  /**
+   * GET /api/admin/attendance/event/{eventId}/export-attendance-sheet
+   * Export/download event attendance sheet file
+   */
+  exportAttendanceSheet(eventId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.adminAttendanceRoot}/${eventId}/export-attendance-sheet`,
+      { headers: this.authHeaders(), responseType: 'blob' }
+    );
+  }
+
+  /**
+   * GET /api/admin/attendance/event/{eventId}/attendance-status
+   * Fetch quick summary counts (enrolled, present, absent, certsIssued)
+   */
+  getAttendanceStatus(eventId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.adminAttendanceRoot}/${eventId}/attendance-status`,
+      { headers: this.authHeaders() }
+    );
+  }
+
   private jsonAuthHeaders(): HttpHeaders {
     return this.authHeaders().set('Content-Type', 'application/json');
   }
 
   private authHeaders(): HttpHeaders {
-    const token = this.isBrowser ? localStorage.getItem('medcme_jwt_token') : null;
+    const token = this.isBrowser
+      ? (localStorage.getItem('medcme_jwt_token') || sessionStorage.getItem('medcme_jwt_token'))
+      : null;
     return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
   }
 
   hasJwtToken(): boolean {
-    return this.isBrowser && !!localStorage.getItem('medcme_jwt_token');
+    return this.isBrowser && !!(localStorage.getItem('medcme_jwt_token') || sessionStorage.getItem('medcme_jwt_token'));
   }
 }
+

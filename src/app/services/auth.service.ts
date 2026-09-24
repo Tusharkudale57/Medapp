@@ -12,7 +12,7 @@ export class AuthService {
 
   private currentUserSignal = signal<UserProfile | null>(null);
   public currentUser = computed(() => this.currentUserSignal());
-  
+
   private usersSignal = signal<UserProfile[]>([]);
   public users = computed(() => this.usersSignal());
   public user: UserProfile = {
@@ -163,17 +163,17 @@ export class AuthService {
           next: (res) => {
             if (res?.success && res?.data) {
               const freshUser = this.mapBackendProfileToUser(res.data);
-              console.log("The freshUser is ========",freshUser);
               const stored = this.currentUserSignal();
-              console.log("The current stored user is ",stored);
-              const merged = { ...freshUser, role: stored?.role || 'doctor' };
-              this.user=merged;
-              console.log("The merged user is ",merged);
+              const existingCerts = (stored?.certificates && stored.certificates.length > 0)
+                ? stored.certificates
+                : (freshUser.certificates && freshUser.certificates.length > 0 ? freshUser.certificates : []);
+              const merged = { ...freshUser, role: stored?.role || 'doctor', certificates: existingCerts };
+              this.user = merged;
               this.currentUserSignal.set(merged);
               this.saveUserToStorage(merged);
             }
           },
-          error: () => {}
+          error: () => { }
         });
       }
     } else {
@@ -184,7 +184,6 @@ export class AuthService {
   private saveUserToStorage(user: UserProfile | null) {
     if (!this.isBrowser) return;
     if (user) {
-      // Store ONLY required basic fields in session storage
       const basicUser: UserProfile = {
         id: user.id,
         name: user.name,
@@ -196,7 +195,7 @@ export class AuthService {
         creditPoints: user.creditPoints || 0,
         purchasedCourseIds: [],
         completedCourseIds: [],
-        certificates: []
+        certificates: user.certificates || []
       };
       localStorage.setItem('medcme_user', JSON.stringify(basicUser));
     } else {
@@ -378,7 +377,7 @@ export class AuthService {
       yearsOfExperience: user.experience || 0,
       clinicAddress: user.clinicAddress || '',
       practicingInterest: user.practicingInterest || (user.interests ? user.interests.join(', ') : ''),
-      cmeInterests:user.interests,
+      cmeInterests: user.interests,
       emailOptIn: user.emailConsent ?? true,
       whatsappOptIn: user.whatsappConsent ?? true,
       termsAccepted: true,
@@ -387,10 +386,10 @@ export class AuthService {
 
     // const url = this.getEndpoint('/api/profile/update-my-profile');
     // return this.http.put<any>(url, payload, { headers });
-     return this.http.put<any>('api/profile/update-my-profile',payload, { headers }).pipe(
+    return this.http.put<any>('api/profile/update-my-profile', payload, { headers }).pipe(
       catchError((err) => {
         if (err?.status === 404 || err?.status === 0) {
-          return this.http.post<any>(`${this.backendUrl}api/profile/update-my-profile`,payload, { headers });
+          return this.http.post<any>(`${this.backendUrl}api/profile/update-my-profile`, payload, { headers });
         }
         return throwError(() => err);
       })
@@ -403,9 +402,9 @@ export class AuthService {
     const middleName = bp.middleName ? bp.middleName.trim() + ' ' : '';
     const lastName = bp.lastName || '';
     const fullName = bp.name || `${bp.designation || 'Dr.'} ${firstName} ${middleName}${lastName}`.trim();
-    
 
-    console.log("The bp from the mapBackendProfileToUser @@@@@",bp);
+
+    console.log("The bp from the mapBackendProfileToUser @@@@@", bp);
     return {
       id: String(bp.id || 'doc_' + Date.now()),
       name: fullName,
@@ -438,14 +437,14 @@ export class AuthService {
     };
   }
 
-   
+
   /** Set backend authenticated user session & token */
   loginWithBackendUser(profile: any, token: string) {
     console.log("Inside loginWithBackendUSer  $$$$$$");
     const user = profile;
-    console.log("The user inside loginWithBackenuser is ----",user);
+    console.log("The user inside loginWithBackenuser is ----", user);
     this.currentUserSignal.set(user);
-    console.log("The seted current user signal is ",this.currentUserSignal());
+    console.log("The seted current user signal is ", this.currentUserSignal());
     this.saveUserToStorage(user);
     if (this.isBrowser && token) {
       localStorage.setItem('medcme_jwt_token', token);
@@ -502,8 +501,8 @@ export class AuthService {
     const cleanPass = passOrOtp.trim();
 
     if ((cleanId === 'doctor@medcme.org' || cleanId === '9876543210' || cleanId.includes('doctor')) &&
-        (cleanPass === 'doctor123' || cleanPass === '123456' || cleanPass.length >= 4)) {
-      
+      (cleanPass === 'doctor123' || cleanPass === '123456' || cleanPass.length >= 4)) {
+
       const user = { ...this.staticDoctorAccount };
       this.currentUserSignal.set(user);
       this.saveUserToStorage(user);
@@ -549,8 +548,8 @@ export class AuthService {
     const cleanPass = passOrOtp.trim();
 
     if ((cleanId === 'admin@medcme' || cleanId === 'admin@medcme.org' || cleanId === '9999999999' || cleanId.includes('admin')) &&
-        (cleanPass === 'admin123' || cleanPass === '999999' || cleanPass.length >= 4)) {
-      
+      (cleanPass === 'admin123' || cleanPass === '999999' || cleanPass.length >= 4)) {
+
       const admin = { ...this.staticAdminAccount };
       this.currentUserSignal.set(admin);
       this.saveUserToStorage(admin);
@@ -695,7 +694,7 @@ export class AuthService {
     };
     this.currentUserSignal.set(updated);
     this.saveUserToStorage(updated);
-    
+
     this.usersSignal.update(list => {
       const next = list.map(u => u.id === user.id ? updated : u);
       if (this.isBrowser) {
@@ -708,7 +707,7 @@ export class AuthService {
   updateProfileWithInterests(updatedUser: UserProfile) {
     this.currentUserSignal.set(updatedUser);
     this.saveUserToStorage(updatedUser);
-    
+
     this.usersSignal.update(list => {
       const next = list.map(u => u.id === updatedUser.id ? updatedUser : u);
       if (this.isBrowser) {
@@ -718,54 +717,54 @@ export class AuthService {
     });
   }
 
+  updateUserCertificates(certificates: Certificate[]): void {
+    if (!certificates || certificates.length === 0) return;
+    const current = this.currentUserSignal();
+    if (current) {
+      const merged = { ...current, certificates };
+      this.user = merged;
+      this.currentUserSignal.set(merged);
+      this.saveUserToStorage(merged);
+    }
+    if (this.isBrowser) {
+      localStorage.setItem('medcme_cached_db_certificates', JSON.stringify(certificates));
+    }
+  }
+
   getUserCertificates(): Certificate[] {
     const user = this.currentUserSignal();
     if (!user) return [];
 
-    let certs = [...user.certificates];
+    let certs = [...(user.certificates || [])];
 
     if (this.isBrowser) {
       try {
-        // 1. Check persistent issued certificates list
+        const dbCached = localStorage.getItem('medcme_cached_db_certificates');
+        if (dbCached) {
+          const list: Certificate[] = JSON.parse(dbCached);
+          for (const item of list) {
+            const alreadyInList = certs.some(c =>
+              (c.id && c.id === item.id) ||
+              (c.backendId && item.backendId && c.backendId === item.backendId) ||
+              (c.verificationCode && item.verificationCode && c.verificationCode === item.verificationCode)
+            );
+            if (!alreadyInList) {
+              certs.push(item);
+            }
+          }
+        }
+
         const savedCerts = localStorage.getItem('medcme_issued_event_certificates');
         if (savedCerts) {
           const list: Array<{ userId: string; cert: Certificate }> = JSON.parse(savedCerts);
           for (const item of list) {
             if (item.userId === user.id || item.cert.recipientName === user.name) {
-              if (!certs.some(c => c.id === item.cert.id || (c.courseId === item.cert.courseId && c.type === 'event'))) {
-                certs.unshift(item.cert);
-              }
-            }
-          }
-        }
-
-        // 2. Check event registrations where certificateIssued === true
-        const savedRegs = localStorage.getItem('medcme_registrations');
-        const savedEvents = localStorage.getItem('medcme_events');
-        if (savedRegs) {
-          const regs: any[] = JSON.parse(savedRegs);
-          const events: any[] = savedEvents ? JSON.parse(savedEvents) : [];
-
-          for (const reg of regs) {
-            if (reg.certificateIssued && (reg.userId === user.id || reg.userName === user.name)) {
-              const eventObj = events.find((e: any) => e.id === reg.eventId);
-              const eventTitle = eventObj ? eventObj.title : 'CME Medical Conference & Clinical Seminar';
-              const creditPoints = eventObj ? (eventObj.creditPoints || 2) : 2;
-
-              const alreadyInList = certs.some(c => c.courseId === reg.eventId && c.type === 'event');
+              const alreadyInList = certs.some(c =>
+                (c.id && c.id === item.cert.id) ||
+                (c.verificationCode && item.cert.verificationCode && c.verificationCode === item.cert.verificationCode)
+              );
               if (!alreadyInList) {
-                const autoCert: Certificate = {
-                  id: 'EVT-CERT-' + reg.eventId,
-                  courseId: reg.eventId,
-                  courseTitle: eventTitle,
-                  issueDate: reg.attendedAt ? reg.attendedAt.split('T')[0] : new Date().toISOString().split('T')[0],
-                  creditPoints,
-                  recipientName: reg.userName || user.name,
-                  verificationCode: 'EVTCME-2026-' + reg.eventId.replace(/[^0-9]/g, '88'),
-                  issuer: 'Indian Council of Continuing Medical Education (ICCME)',
-                  type: 'event'
-                };
-                certs.unshift(autoCert);
+                certs.unshift(item.cert);
               }
             }
           }

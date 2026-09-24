@@ -18,13 +18,13 @@ import { jsPDF } from 'jspdf';
 })
 export class MyLearningComponent implements OnInit {
   activeTab = signal<'in_progress' | 'certificates'>('in_progress');
-  
+
   // Greeting state
   greeting: string = 'Welcome';
 
   showExploreMenu = false;
   activeSubMenu = 'specialties';
-  
+
   // Certificate viewer state
   selectedCertificate: Certificate | null = null;
   showCertModal = false;
@@ -140,7 +140,7 @@ export class MyLearningComponent implements OnInit {
 
   get inProgressCourses(): Course[] {
     const allCourses = this.courseService.getCourses();
-    return allCourses.filter(c => 
+    return allCourses.filter(c =>
       this.authService.isCoursePurchased(c.id) && !this.authService.isCourseCompleted(c.id)
     );
   }
@@ -182,21 +182,64 @@ export class MyLearningComponent implements OnInit {
     return Number.isFinite(value) ? value : 0;
   }
 
+  private getCertificateTimestamp(cert: Certificate): number {
+    const value = new Date(cert.issueDate || '').getTime();
+    return Number.isFinite(value) ? value : 0;
+  }
+
   get certificates(): Certificate[] {
-    return this.backendCertificates.length > 0 ? this.backendCertificates : this.authService.getUserCertificates();
+    const userCerts = this.authService.getUserCertificates();
+    const combined = [...this.backendCertificates];
+    for (const uc of userCerts) {
+      const alreadyPresent = combined.some(c =>
+        (c.id && c.id === uc.id) ||
+        (c.backendId && uc.backendId && c.backendId === uc.backendId) ||
+        (c.verificationCode && uc.verificationCode && c.verificationCode === uc.verificationCode)
+      );
+      if (!alreadyPresent) {
+        combined.push(uc);
+      }
+    }
+    return combined.sort(
+      (a, b) => this.getCertificateTimestamp(b) - this.getCertificateTimestamp(a)
+    );
   }
 
   private loadCertificates() {
-    if (!this.cmeApi.hasJwtToken()) return;
+    if (!this.isBrowser) return;
+
+    // Load from local storage cache immediately for zero-latency refresh
+    const cached = localStorage.getItem('medcme_cached_db_certificates');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.backendCertificates = parsed;
+        }
+      } catch (e) { }
+    }
+
     this.cmeApi.getAllCertificates().subscribe({
-      next: (response) => {
+      next: (response: any) => {
         const payload = response?.data ?? response;
-        const certificates = Array.isArray(payload) ? payload : payload?.certificates;
-        if (Array.isArray(certificates)) {
-          this.backendCertificates = certificates.map(cert => this.mapBackendCertificate(cert));
+        let certificates: any[] = [];
+        if (Array.isArray(payload)) {
+          certificates = payload;
+        } else if (Array.isArray(payload?.certificates)) {
+          certificates = payload.certificates;
+        } else if (Array.isArray(response?.certificates)) {
+          certificates = response.certificates;
+        }
+
+        if (certificates.length > 0) {
+          const mapped = certificates.map(cert => this.mapBackendCertificate(cert));
+          this.backendCertificates = mapped;
+          this.authService.updateUserCertificates(mapped);
         }
       },
-      error: (error) => console.error('Failed to load certificates from backend', error)
+      error: (error) => {
+        console.error('Failed to load certificates from backend DB', error);
+      }
     });
   }
 
@@ -205,14 +248,14 @@ export class MyLearningComponent implements OnInit {
     return {
       id: String(cert.id ?? cert.certificateId ?? cert.certificateID ?? ''),
       backendId: Number.isInteger(backendId) && backendId > 0 ? backendId : undefined,
-      courseId: String(cert.eventId ?? cert.courseId ?? ''),
-      courseTitle: cert.title ?? cert.courseTitle ?? cert.eventTitle ?? 'CME Certificate',
-      issueDate: cert.issueDate ?? cert.issuedAt ?? '',
-      creditPoints: Number(cert.creditPoints ?? cert.credits ?? 0),
-      recipientName: cert.recipientName ?? this.authService.currentUser()?.name ?? '',
-      verificationCode: cert.verificationCode ?? cert.verificationId ?? '',
-      issuer: cert.issuer ?? 'Indian Council of Continuing Medical Education (ICCME)',
-      type: 'event'
+      courseId: String(cert.eventId ?? cert.event_id ?? cert.courseId ?? ''),
+      courseTitle: cert.title ?? cert.eventTitle ?? cert.courseTitle ?? 'CME Certificate',
+      issueDate: cert.issueDate ?? cert.issue_date ?? cert.issuedAt ?? cert.createdAt ?? '',
+      creditPoints: Number(cert.creditPoints ?? cert.credit_points ?? cert.credits ?? cert.cmeCreditPoints ?? 0),
+      recipientName: cert.recipientName ?? cert.doctorName ?? cert.fullName ?? this.authService.currentUser()?.name ?? '',
+      verificationCode: cert.verificationCode ?? cert.verification_code ?? cert.verificationId ?? cert.verificationNumber ?? cert.certificateNo ?? '',
+      issuer: cert.issuer ?? cert.issuingAuthority ?? 'Indian Council of Continuing Medical Education (ICCME)',
+      type: cert.type || 'event'
     };
   }
 
@@ -323,18 +366,18 @@ export class MyLearningComponent implements OnInit {
   openLiveRoom(event: CmeEvent) {
     this.activeLiveEvent = event;
     this.showLiveRoomModal = true;
-    
+
     // Pre-populate chat messages
     this.liveChatMessages = [
       { sender: 'Moderator 1 (Dr. Anjali Sharma)', text: 'Welcome to this Live CME Event! Please use this chat for Q&A with our panel.', time: '10:00 AM', isUser: false },
       { sender: 'Consultant 1 (Dr. Suresh Patel)', text: 'Hello doctors. I am online to answer your questions regarding today\'s clinical protocols.', time: '10:02 AM', isUser: false }
     ];
-    
+
     // Reset quizzes
     this.basicMcqAnswered = false;
     this.basicMcqSelectedOption = -1;
     this.basicMcqIsCorrect = null;
-    
+
     this.midMcqAnswered = false;
     this.midMcqSelectedOption = -1;
     this.midMcqIsCorrect = null;
@@ -388,7 +431,7 @@ export class MyLearningComponent implements OnInit {
       alert('Please select a star rating first.');
       return;
     }
-    
+
     this.liveFeedbackSubmitted = true;
     this.liveSessionCompleted = true;
 
@@ -499,13 +542,13 @@ export class MyLearningComponent implements OnInit {
 
   sendLiveChatMessage() {
     if (!this.newChatMessageText.trim()) return;
-    
+
     const user = this.authService.currentUser();
     const userName = user ? user.name : 'Dr. Tushar Kudale';
-    
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    
+
     // Add user message
     this.liveChatMessages.push({
       sender: userName,
@@ -513,10 +556,10 @@ export class MyLearningComponent implements OnInit {
       time: timeStr,
       isUser: true
     });
-    
+
     const query = this.newChatMessageText.trim();
     this.newChatMessageText = '';
-    
+
     // Scroll chat after DOM update
     setTimeout(() => {
       const container = document.getElementById('chat-history-scroll-ml');
@@ -524,7 +567,7 @@ export class MyLearningComponent implements OnInit {
         container.scrollTop = container.scrollHeight;
       }
     }, 50);
-    
+
     // Simulate response from Consultant
     setTimeout(() => {
       this.simulateConsultantReply(query, userName);
@@ -534,10 +577,10 @@ export class MyLearningComponent implements OnInit {
   simulateConsultantReply(query: string, doctorName: string) {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    
+
     let reply = `Thank you for your question, ${doctorName}. For this specific scenario, standard guidelines recommend following local institution policies and cross-referencing with the CME lecture slide deck.`;
     const qLower = query.toLowerCase();
-    
+
     if (qLower.includes('dosage') || qLower.includes('dose') || qLower.includes('mg') || qLower.includes('drug')) {
       reply = `Excellent point, ${doctorName}. Standard initial dosing guidelines for cardiac resuscitation suggest Epinephrine 1mg IV/IO every 3-5 minutes, and Amiodarone 300mg bolus for refractory VF/pVT.`;
     } else if (qLower.includes('sepsis') || qLower.includes('icu') || qLower.includes('ventilator') || qLower.includes('protocol')) {
@@ -547,14 +590,14 @@ export class MyLearningComponent implements OnInit {
     } else if (qLower.includes('mcq') || qLower.includes('quiz') || qLower.includes('test')) {
       reply = `Please complete the interactive MCQs in the outline tab on the left of your panel to verify your understanding, ${doctorName}!`;
     }
-    
+
     this.liveChatMessages.push({
       sender: 'Consultant 1 (Dr. Suresh Patel)',
       text: reply,
       time: timeStr,
       isUser: false
     });
-    
+
     // Scroll chat after DOM update
     setTimeout(() => {
       const container = document.getElementById('chat-history-scroll-ml');
@@ -736,7 +779,7 @@ export class MyLearningComponent implements OnInit {
 
     ctx.fillStyle = '#d4a017';
     ctx.font = '11px Georgia, serif';
-    ctx.fillText('ACCREDITED CME CERTIFICATE OF CLINICAL EXCELLENCE  ·  INDIA', W / 2, embY + 14);
+    ctx.fillText('CME CERTIFICATE OF CLINICAL EXCELLENCE  ·  INDIA', W / 2, embY + 14);
 
     // ── 7. Thin gold rule below header ─────────────────────────────
     ctx.strokeStyle = '#d4a017';
@@ -778,8 +821,8 @@ export class MyLearningComponent implements OnInit {
     ctx.fillStyle = '#475569';
     ctx.font = '15px Georgia, serif';
     const completionText = cert.type === 'event'
-      ? 'has successfully attended the accredited continuing medical education event'
-      : 'has successfully completed the accredited medical continuing education course';
+      ? 'has successfully attended the continuing medical education event'
+      : 'has successfully completed the medical continuing education course';
     ctx.fillText(completionText, W / 2, 326);
 
     // ── 12. Course/event title ─────────────────────────────────────

@@ -13,7 +13,7 @@
 .dashboard-layout {
   min-height: 100vh;
   background: #f0f4f8;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: var(--font-body, 'Instrument Sans', sans-serif);
 }
 
 /* ===== COVELIS TOP BAR (Sony-style) ======================================= */
