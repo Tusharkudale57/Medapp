@@ -185,7 +185,7 @@
     <div class="tabs-navigation-strip">
       <div class="tabs-list">
         <button class="tab-button" [class.active]="activeTab() === 'in_progress'" (click)="setTab('in_progress')">
-          In Progress
+        Registered Events
         </button>
         <button class="tab-button" [class.active]="activeTab() === 'certificates'" (click)="setTab('certificates')">
           CME Event Certificates
@@ -196,8 +196,7 @@
     <!-- Tab Section: In Progress -->
     <section class="tab-content-panel" *ngIf="activeTab() === 'in_progress'">
       <div class="section-header">
-        <h2>Continuing Education in Progress</h2>
-        <p>Pick up where you left off in your self-paced courses or check registered live CME events.</p>
+       
       </div>
 
       <!-- In Progress Lists -->
